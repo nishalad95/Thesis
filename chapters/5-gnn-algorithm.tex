@@ -1,0 +1,63 @@
+%--------------------------------------------------
+%	Chapter 5. GNN Pattern Recognition Algorithm
+%--------------------------------------------------
+
+\chapter{Graph Neural Network Pattern Recognition Algorithm}\label{chapter-5}
+
+% The excitation and inhibition rules of individual GNN nodes will be designed to facilitate the “simple-to-complex” approach for “hits-to-tracks” association, such that the network starts with relatively “easy” areas of an event (low hit density) and gradually progresses towards more complex areas (high hit density). 
+
+This work aims at implementing a realistic GNN-based algorithm that can be deployed in an real particle detector experiments.
+
+The main algorithm - the overview, its purpose, the main aims, the different stages, the different techniques used, hyper parameter tuning, implementation of KFs - linear with OU model for extraction and parabolic model for information aggregation/extrapolation.
+
+Mention that this work is presented in XXX conference (and reference).
+
+\section{Algorithm Overview}
+
+\section{Network Initialization}
+\subsection{Track State Estimates}
+\subsection{Molière Theory of Multiple Scattering}
+
+\section{Gaussian Mixture Reduction}
+\subsection{Clustering and KL divergence}
+
+\section{Information Aggregation}
+\subsection{Message Passing}
+\subsection{Extrapolation and Validation}
+\subsection{Linear and Parabolic model}
+
+\section{Updating Network State}
+
+\section{Track Extraction}
+\subsection{Implementation of KFs}
+\subsection{CCA}
+\subsection{Merging Close Proximity Nodes}
+\subsection{Community Detection}
+%Community Detection: divides nodes into various clusters based on edge structure. It learns from edge weights, and distance and graph objects similarly. 
+
+
+%---------------------------------------------
+%	6. Application & Perform of GNN Algorithm
+%---------------------------------------------
+
+\section{Application and Performance of GNN Algorithm}
+\label{chapter-gnn}
+
+The main application of the GNN algorithm on the trackML data, the data preparation, what data was exactly used and why, the ML classification algorithm used to build the edge connections. The main results we get from application of this algorithm, the track reconstruction efficiency, the purity metrics, computational performance. Comparison with other algorithms.
+
+\subsection{Data Preparation}
+
+Talk specifically about the TrackML data here and how it was prepared.
+
+%nips-2018-competation
+%Data.
+%We used the fast (10s per event) and accurate simulation engine ACTS4 [6] to generate the challenge data. It allowed us to generate realistic data emulating a full Silicon LHC detector (see Fig 3), while providing us with the ground truth of particle trajectory membership. Thus, for each event we obtained the “detected” 3D points coordinates (and additional features), and, as ground truth, the list of points associated to each track. There is a one to one relationship between the true 3D points and the reconstructed ones.
+
+\subsection{Results}
+Track reconstruction efficiency, track purity, particle purity
+\subsection{Performance Evaluation}
+\subsection{Analysis and Optimisation}
+\subsection{Comparison and Outlook}
+\subsection{Execution time}
+
+\section{Conclusions}
