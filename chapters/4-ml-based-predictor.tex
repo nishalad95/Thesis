@@ -10,9 +10,7 @@
 \chapter{Machine Learning Hit-Pair Predictor} 
 \label{chapter-4}
 
-In order to build a graph network to be used for track reconstruction, one must first consider the ability to identify compatible edge connections for seed building. A beneficial step towards enhancing this process is to reduce the number of fake seeds constructed and hence increase the accuracy in predicting such compatible hit-pairs. Future upgrades to particle detectors, will be particularly problematic for the silicon tracking detectors where hit occupancy is the largest. Therefore, it is essential that resource use is also reduced, whilst maintaining the capability to reconstruct tracks with minimal efficiency loss.
-
-This chapter presents a methodology to accomplish such a task and is implemented in the optimisation of the HLT ID track seeding [X] software for ATLAS Run-3 and beyond. Section \ref{measurement-to-track-association} presents the development of an ML-based algorithm to predict if a pair of hits belong to the same track given input hit features, focusing on cluster width and inverse track inclination. The implementation of the trained predictor in the form of Look-Up Tables is presented in Section \ref{application-of-hit-pair-predictor}, alongside performance results including tracking efficiency and speed-up factor using simulated data is also discussed. \textbf{Work presented in XX conference.}
+When constructing graph networks for track reconstruction, one must first consider the ability to identify compatible edge connections to build track seeds. A beneficial step towards enhancing this process is to reduce the number of fake seeds constructed and hence increase the accuracy in predicting such compatible hit-pairs. As future upgrades to particle detectors will be problematic for the silicon tracking detectors where hit occupancy is the largest, it is essential that resource use is also reduced, whilst maintaining the capability to reconstruct tracks with minimal efficiency loss. This chapter presents a methodology to accomplish such a task. This work is presented in the Journal of Physics: Conference Series \cite{Lad_2023} and is implemented in the optimisation of the HLT ID track seeding software for ATLAS Run-3 and beyond \cite{Grandi:2728111, Long:2813981}. Section \ref{measurement-to-track-association} presents the development of an ML-based algorithm to predict if a pair of hits belong to the same track given input hit features, focusing on cluster width and inverse track inclination. The implementation of the trained predictor in the form of Look-Up Tables is presented in Section \ref{application-of-hit-pair-predictor}, alongside performance results including tracking efficiency and speed-up factor using simulated data is also discussed.
 
 
 \section{Measurement to track association}
@@ -20,7 +18,7 @@ This chapter presents a methodology to accomplish such a task and is implemented
 
 \subsection{Data Exploration and Feature Extraction}
 
-%  Top quark simulation is often used for algorithm validation due of many possible final states including electron muon and $\tau$ lepton, \textit{b, c} and up quark.
+%  TIP: Top quark simulation is often used for algorithm validation due of many possible final states including electron muon and $\tau$ lepton, \textit{b, c} and up quark. The decay signature of a top quark is complex as there are many of them, such that the combinatorics of the resulting seeds formed are high. - This makes top quark simulated events useful here
 
 - also write about fake seeds here
   - pixel only seeds, reducing the fake rate. 
@@ -33,7 +31,7 @@ Seeds constructed at the combinatorial stage of ATLAS track seeding from the Run
 \begin{figure}[!htbp]
 \centering
     \includegraphics[width=0.8\linewidth]{images/4-ml-based-predictor/triplet_illustation.png}
-    \caption{Seed illustration in the $r$-$z$ plane (mm) of the ID. The inner doublet consists of hits 1 and 2 and the outer doublet consists of hits 2 and 3. The longitudinal pixel-cluster width $w_{\eta}$ (mm) is measured in the direction of $\eta$, where $\theta$ is the angle of inclination with respect to the $z$ axis.}
+    \caption{Seed illustration in the $r$-$z$ plane (mm) of the ID. The inner doublet consists of hits (1, 2) and the outer doublet consists of hits (2, 3). The longitudinal pixel-cluster width $w_{\eta}$ (mm) is measured in the direction of $\eta$, where $\theta$ is the angle of inclination with respect to the $z$ axis.}
 \label{fig:triplet-illustration}
 \end{figure}
 
@@ -70,20 +68,26 @@ The choice of bandwidth is important, as increasing the bandwidth too high resul
 
 \subsection{Classifier Training}
 
+%Figure \ref{fig:1-dimensional-classifier-training} shows distributions of $\rvert cot(\theta)\rvert$ for Pixel barrel hit pairs in the ATLAS pixel detector, where $\theta$ is the inclination angle of the doublet with respect to the $z$-axis. from t ̄t Monte Carlo 13 TeV with mean pile-up interaction multiplicity of <μ> = 80. Shown are pixel-barrel doublets from triplets constructed at the combinatorial stage in ATLAS track seeding. These triplets are formed from pairs of doublets which share a common spacepoint where that shared middle spacepoint consists of pixel clusters with wη ≤ 0.4 mm, where wη is the cluster width measured in the η direction. Shown are the distributions for doublets with hits correctly associated to corresponding truth particles by the tracking algorithms, for which its doublet spacepoints belong to the same track and also shown are doublets that have hits incorrectly associated, for which its spacepoints do not belong to the same track. The data was used to train a Machine Learning classifier to predict whether a doublet of spacepoints has correct hit association and hence belong to the same track corresponding to truth particles, or incorrect hit association, using the input hit features of wη and the absolute inverse track inclination |cot(θ)|. This study was conducted in order to speed up the track seeding stage and reduce CPU time in the ATLAS fast tracking trigger algorithm.
+
+% roc curve:
+%Shown is the Receiver Operating Characteristic (ROC) curve indicating the rates of false positive and true positive of pixel-barrel doublets from the ATLAS pixel detector to tracks corresponding to truth particles, for spacepoints with wη ≤ 0.4 mm, where wη is the cluster width measured in the η direction, using a Machine Learning (ML) classifier to predict whether a doublet of spacepoints belong to the same track and hence defined as having correct hit association, or have incorrect hit association. The classifier was trained using pixel-barrel doublets from Monte Carlo 13 TeV t ̄t <μ> = 80 samples. Each pair of false positive and true positive rates correspond to a prediction probability, which can be used as a tuning parameter. The classifier’s predictions were adjusted using the prediction probability derived from the ROC curve which would yield a true positive rate of 0.95. The Area Under the Curve (AUC) is a measure of the ability of the classifier to distinguish between correct and incorrect hit association classes and is in the range 0.0 ≤ AUC ≤ 1.0, where AUC = 1 corresponds to perfect classification. The AUC achieved by the ML classifier shown was AUC = 0.79. Also shown is the ‘no skill’ classifier result with AUC = 0.5, which cannot discriminate between correct or incorrect hit association classes and would predict a random class in all cases with 50% probability for each class. A similar procedure was executed for training a model to determine whether spacepoints in pixel-endcap doublets belonged to the same track, using truth from Monte Carlo 13 TeV t ̄t <μ> = 80 samples. This study was conducted in order to speed up the track seeding stage and reduce CPU time in the ATLAS fast tracking trigger algorithm.
 
 \begin{figure}[!htbp]
 \centering
-    \begin{subfigure}[a]{0.86\textwidth}
+    \begin{subfigure}[a]{0.9\textwidth}
         \includegraphics[width=\linewidth]{images/4-ml-based-predictor/histo.pdf}
-        \caption{XXXX}
+        \caption{$\lvert cot(\theta) \rvert$ distributions for Pixel barrel hit pairs with $w_{\eta} \leq 0.4$ mm }
+        \label{fig:truth-histo}
     \end{subfigure}
     \hfill
-    \begin{subfigure}[b]{0.86\textwidth}
+    \begin{subfigure}[b]{0.9\textwidth}
         \centering
         \includegraphics[width=\linewidth]{images/4-ml-based-predictor/roc.pdf}
-        \caption{XXXX}
+        \caption{ROC curve for Pixel barrel hit pairs with $w_{\eta} \leq 0.4$ mm }
+        \label{fig:roc-curve}
     \end{subfigure}
-\caption{XXXX}
+\caption{(a) $\lvert cot(\theta) \rvert$ for Pixel barrel hit pairs in the ATLAS Pixel detector, where $\theta$ is the inclination angle of the hit pair with respect to the $z$-axis. (b) The corresponding Receiver Operating Characteristic (ROC) curve for the classifier trained on the data shown in (a). The curve indicates the rates of false positive and true positive of Pixel barrel hit pairs to tracks corresponding to truth particles.}
 \label{fig:1-dimensional-classifier-training}
 \end{figure}
 
@@ -91,6 +95,7 @@ The choice of bandwidth is important, as increasing the bandwidth too high resul
 \subsection{Probability Calibration}
 
 \subsection{Classifier Predictions and Evaluation}
+
 
 \begin{figure}[!htbp]
 \centering
@@ -205,12 +210,16 @@ When training With varying permutations of train and test sets, a second accepta
 
 Another supervised learning algorithm investigated was the Support Vector Machine (SVM) \cite{svm}. The objective of the SVM classifier is to find a hyperplane (known as a decision boundary) in a N-dimensional space (where N is the number of features) that distinctly classifies the data points and is typically used in binary classification. The optimal decision boundary is one which maximizes the margins between both classes, this provides some reinforcement that future data points can be classified with more confidence. For non-linear decision boundaries, the SVM uses the so-called \textit{kernel trick} to project the data into a higher dimensional space. 
 
+% what the SVM was applied on - the plane of axes. SVM would be normally applied to the plaine of ... however we need to transform it using PCA bec of ... So we end up principal component axes, the 1st axes shows, the 2nd shows...
+
 
 A prior step to training the SVM classifier, was to apply Principal Component Analysis (PCA).
 
 A combination of Principal Component Analysis (PCA) and SVM was applied. PCA is commonly used as a dimensionality reduction technique \cite{pca}, however in this instance it is applied to remove the ordinal nature (the discrete bands) which affects the SVM and hence obtain a continuous 2D-dimensional phase space. 
-    
-A hyper-parameter sweep of different kernels was executed using cross-validation and the polynomial kernel of degree 3 was found to produce the highest TPR. The predictions of PCA-SVM on the barrel data is shown in Figure \ref{fig:barrel-svm-pca}, the red (orange) region shows which doublets are accepted and the blue region shows which doublets are rejected. The corresponding data points also reflect class predictions. 
+
+% further detail on training the SVM
+
+A hyper-parameter sweep of various kernels was executed using cross-validation and the polynomial kernel of third degree was found to produce the highest TPR. The predictions of the PCA-SVM classifier on Pixel barrel data is shown in Figure \ref{fig:barrel-svm-pca}. The red (orange) region shows which doublets are accepted and the blue region shows which doublets are rejected. The corresponding data points also reflect class predictions. 
 
 SVMs generally perform well, even when trained with imbalanced data sets. This coupled with the fact that a distinct decision boundary could be easily extracted and converted into a LUT would lead to less ambiguity in comparison to applying an extrapolation using morphological smoothing. However, there are key disadvantages by using a SVM classifier rather than Bayes' theorem in this instance. The probabilistic information contained within each discrete 1 dimensional distribution of $w_{\eta}$ is lost, which is an important feature when tuning each individual distribution. Additionally, the SVM typically fits a continuous function for the decision boundary and hence may not be strict enough in certain regions. This factor is important when considering the number of fake seeds being accepted using a LUT generated from such a decision boundary. 
 
