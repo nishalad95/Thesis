@@ -9,8 +9,12 @@
 %\section{The Compressed Pattern Space}
 \chapter{Machine Learning Hit-Pair Predictor} 
 \label{chapter-4}
+% DONE
 
-When constructing graph networks for track reconstruction, one must first consider the ability to identify compatible edge connections to build track seeds. A beneficial step towards enhancing this process is to reduce the number of fake seeds constructed and hence increase the accuracy in predicting such compatible hit-pairs. As future upgrades to particle detectors will be problematic for the silicon tracking detectors where hit occupancy is the largest, it is essential that resource use is also reduced, whilst maintaining the capability to reconstruct tracks with minimal efficiency loss. This chapter presents a methodology to accomplish such a task. This work is presented in the Journal of Physics: Conference Series \cite{Lad_2023} and is implemented in the optimisation of the HLT ID track seeding software for ATLAS Run-3 and beyond \cite{Grandi:2728111, Long:2813981}. Section \ref{measurement-to-track-association} presents the development of an ML-based algorithm to predict if a pair of hits belong to the same track given input hit features, focusing on cluster width and inverse track inclination. The implementation of the trained predictor in the form of Look-Up Tables is presented in Section \ref{application-of-hit-pair-predictor}, alongside performance results including tracking efficiency and speed-up factor using simulated data is also discussed.
+
+% This study was conducted in order to speed up the track seeding stage and reduce CPU time in the ATLAS fast tracking trigger algorithm.
+
+When constructing graph networks for track reconstruction, one must first consider the ability to identify compatible edge connections to build track seeds. A beneficial step towards enhancing this process is to reduce the number of fake seeds constructed and hence increase the accuracy in predicting such compatible hit-pairs. As future upgrades to particle detectors will be problematic for the silicon tracking detectors where hit occupancy is the largest, it is essential that resource use is also reduced, whilst maintaining the capability to reconstruct tracks with minimal efficiency loss. This chapter presents a methodology to accomplish such a task. This work is presented in the Journal of Physics: Conference Series \cite{Lad_2023} and is implemented in the optimisation of the HLT ID track seeding software for ATLAS Run-3 and beyond \cite{Grandi:2728111, Long:2813981}. Section \ref{measurement-to-track-association} presents the development of a ML-based algorithm to predict if a pair of hits belong to the same track given input hit features, focusing on cluster width and inverse track inclination. The implementation of the trained predictor in the form of Look-Up Tables is presented in Section \ref{application-of-hit-pair-predictor}, alongside performance results including tracking efficiency and speed-up factor using simulated data is also discussed.
 
 
 \section{Measurement to track association}
@@ -18,27 +22,26 @@ When constructing graph networks for track reconstruction, one must first consid
 
 \subsection{Data Exploration and Feature Extraction}
 
-%  TIP: Top quark simulation is often used for algorithm validation due of many possible final states including electron muon and $\tau$ lepton, \textit{b, c} and up quark. The decay signature of a top quark is complex as there are many of them, such that the combinatorics of the resulting seeds formed are high. - This makes top quark simulated events useful here
+Seeds constructed at the combinatorial stage of ATLAS track seeding software from the Run-2 geometry were used to extract hit-pairs to form a training dataset. Monte Carlo (MC) $t\bar{t}$ event samples with centre-of-mass energy $\sqrt{s}$ = 13 TeV at mean pile-up interaction multiplicity $< \mu >$ = 80 were used. Top quark simulation is often used for developing algorithms in tracking due to its many possible final states including electron, muon and $\tau$ leptons, as well as \textit{b, c} and up quarks. As the decay signature of a top quark is complex, the combinatorics of the constructed seeds are high. This indicates that a larger proportion of fakes will be present and provides a good description of the environment in high luminosity conditions.
 
-- also write about fake seeds here
-  - pixel only seeds, reducing the fake rate. 
-% mention the importance of why pixel based ML-based classifier is needed, the hit occupancy etc - most advantageous and beneficial here.
-%The training is focused on pixel-detector layers, being closest to the beamline and thereby an advantageous region to reduce the proportion of fakes. The classifier predictions are used as input in the Fast Tracking algorithm.
+The training is focused on Pixel detector layers, being closest to the beamline and having highest hit occupancy. An illustration of a seed in the ID pixel layers is shown in Figure \ref{fig:triplet-illustration}. These triplets are deconstructed into pairs of doublets which share a common middle spacepoint. For each seed, the inner doublet (defined as hit-pair 1 and 2) and outer doublet (defined as hit-pair 2 and 3) are extracted. For each hit-pair the minimum and maximum absolute inverse slope of the track, $|cot(\theta)|$, are calculated using $r$-$z$ coordinates and used as an input feature for training. $\theta$ is the angle of inclination of a hit-pair with respect to the $z$ axis. The longitudinal pixel cluster width, $w_{\eta}$, measured in the $\eta$ direction was also extracted, where $\eta$ is defined in Eq. \ref{eq:pseudorap}. The MC generated data in the [$|cot(\theta)|$, $w_{\eta}$] phase space behaves as a set of 1-dimensional distributions, each with discrete $w_{\eta}$. This characteristic is exploited to form an ensemble of predictors. 
 
-Seeds constructed at the combinatorial stage of ATLAS track seeding from the Run-2 geometry were used to extract hit-pairs to form a training dataset. Monte Carlo (MC) $t\bar{t}$ samples with centre-of-mass energy $\sqrt{s}$ = 13 TeV at mean pile-up interaction multiplicity $< \mu >$ = 80 were used. An illustration of a seed in the ID pixel layers is shown in Figure \ref{fig:triplet-illustration}. From each triplet seed, the inner doublet (defined as hit-pair 1 and 2) and outer doublet (defined as hit-pair 2 and 3) are extracted. For each doublet the minimum and maximum absolute inverse slope of the track, $|cot(\theta)|$, were calculated using $r$-$z$ coordinates and used as an input feature for training. $\theta$ is the angle of inclination of a hit-pair with respect to the $z$ axis. The longitudinal pixel cluster width, $w_{\eta}$, measured in the $\eta$ direction was also extracted, where $\eta$ is defined in Eq. \ref{eq:pseudorap}. The MC generated data in the [$|cot(\theta)|$, $w_{\eta}$ ] phase space behaves as a set of 1-dimensional distributions, each with discrete $w_{\eta}$. This characteristic is exploited to form an ensemble of predictors. MC truth for seeds and their corresponding doublets were extracted from ATLAS track seeding and used as targets in training. Doublets with correct hit association were defined as truth 1, for which its hit-pairs belong to the same track. Conversely doublets with incorrect hit association defined as truth 0, for which its hit-pairs do not belong to the same track. Hit-pairs for the pixel barrel and endcap are handled separately in order to build regional classifiers, where a similar methodology was used for both outlined in Section ...
+The MC truth class for seeds and their corresponding hit-pairs were extracted from ATLAS track seeding and used as targets in training. Doublets with correct hit association were defined as truth 1, for which its hit-pairs belong to the same truth track. Conversely doublets with incorrect hit association defined as truth 0, for which its hit-pairs do not belong to the same track. Hit-pairs for the Pixel barrel and endcap are handled separately in order to build regional classifiers. The same methodology was used for both the barrel and endcap, presented in Section \ref{section:classifier-dev} and \label{application-of-hit-pair-predictor} is the procedure and the results for the barrel.
 
 
 \begin{figure}[!htbp]
 \centering
-    \includegraphics[width=0.8\linewidth]{images/4-ml-based-predictor/triplet_illustation.png}
+    \includegraphics[width=0.85\linewidth]{images/4-ml-based-predictor/triplet_illustation.png}
     \caption{Seed illustration in the $r$-$z$ plane (mm) of the ID. The inner doublet consists of hits (1, 2) and the outer doublet consists of hits (2, 3). The longitudinal pixel-cluster width $w_{\eta}$ (mm) is measured in the direction of $\eta$, where $\theta$ is the angle of inclination with respect to the $z$ axis.}
 \label{fig:triplet-illustration}
 \end{figure}
 
 
 \subsection{Classifier Development}
+\label{section:classifier-dev}
 
 \subsubsection{Not-so-Naive Bayes}
+% DONE
 
 The basis of Bayes’ theorem \cite{naive-bayes} is used to build a classifier to discriminate between doublet classes, for both the barrel and endcap regions. Bayesian analysis is based on having a prior probability of belief of an outcome of an event and a likelihood probability, where naive Bayes’ assumes that the conditional probabilities of the independent variables are statistically independent. The final classification is produced by computing the posterior probability by combining both the prior beliefs and the likelihood, which then determines the most probable class label. Using Bayes’ theorem is advantageous in this data-driven setting, as prior knowledge of the behaviour of the system is known. The posterior probability $P(c|x)$ that a given data point x belongs to class c is defined as:
 
@@ -51,6 +54,7 @@ $P(x|c)$ is the conditional likelihood, $P(c)$ is the class prior probability an
 Bayes' theorem is implemented using a generative model for each class. This was achieved by computing the likelihood function via a Kernel Density Estimate (KDE) for each of the 1-dimensional $\tau$ distributions, forming a set of generative Bayesian classifiers. This method removes the 'naive' element and performs the same classification with a more sophisticated generative model for each class.
 
 \subsubsection{Kernel Density Estimation}
+% DONE
 
 KDE is a non-parametric approach to estimate the probability density function of a random variable. The idea is that a kernel function is defined and centred on each data point in the sample. The sum of these functions together forms the kernel density estimate. The kernel density is defined as:
     
@@ -67,6 +71,12 @@ where $K(x)$ is the kernel function, typically a smooth, symmetric and non-negat
 The choice of bandwidth is important, as increasing the bandwidth too high results in a smooth distribution where granular information is lost (over-smoothing). When using a bandwidth that is too small, this can lead to narrow peaks in close proximity to each other, resulting in a very noisy distribution (under-smoothing). There are several methods to determine the optimum bandwidth discussed in \cite{bandwidth-selection-methods}, many of which show similar properties. The method used in this study was the so-called \textit{Silverman's rule of thumb}, which works only for 1-dimensional data. Silverman's rule finds the bandwidth that minimizes the mean integrated squared error assuming that the data is Gaussian and a Gaussian kernel was used.
 
 \subsection{Classifier Training}
+
+% talk about as many results as possible, i.e. roc auc
+
+% training:
+% A discrete 1-dimensional nature is observed increasing in increments of 0.2 mm, as a direct result of varying permutations of ‘standard’ and ‘long’ pixels in cluster width calculation, where each 1-dimensional band was independently trained and tuned to yield a true positive rate of 0.95. A similar procedure was executed for training and predicting doublet hit association for pixel-endcaps doublets using truth from Monte Carlo 13 TeV ����̅ <��> = 80 samples. This study was conducted in order to speed up the track seeding stage and reduce CPU time in the ATLAS fast tracking trigger algorithm.
+
 
 %Figure \ref{fig:1-dimensional-classifier-training} shows distributions of $\rvert cot(\theta)\rvert$ for Pixel barrel hit pairs in the ATLAS pixel detector, where $\theta$ is the inclination angle of the doublet with respect to the $z$-axis. from t ̄t Monte Carlo 13 TeV with mean pile-up interaction multiplicity of <μ> = 80. Shown are pixel-barrel doublets from triplets constructed at the combinatorial stage in ATLAS track seeding. These triplets are formed from pairs of doublets which share a common spacepoint where that shared middle spacepoint consists of pixel clusters with wη ≤ 0.4 mm, where wη is the cluster width measured in the η direction. Shown are the distributions for doublets with hits correctly associated to corresponding truth particles by the tracking algorithms, for which its doublet spacepoints belong to the same track and also shown are doublets that have hits incorrectly associated, for which its spacepoints do not belong to the same track. The data was used to train a Machine Learning classifier to predict whether a doublet of spacepoints has correct hit association and hence belong to the same track corresponding to truth particles, or incorrect hit association, using the input hit features of wη and the absolute inverse track inclination |cot(θ)|. This study was conducted in order to speed up the track seeding stage and reduce CPU time in the ATLAS fast tracking trigger algorithm.
 
@@ -94,24 +104,45 @@ The choice of bandwidth is important, as increasing the bandwidth too high resul
 
 \subsection{Probability Calibration}
 
+% READ THIS:
+% https://machinelearningmastery.com/calibrated-classification-model-in-scikit-learn/
+% https://scikit-learn.org/stable/modules/calibration.html
+
+KDE Calibration curve for pixel-barrel doublets with 0 - weta - 0.4. We can evaluate how well our model \& the predicted probabilities are calibrated. Calibration curve (reliability diagram) is generated for each weta bands, by analysing uncalibrated model, isotonic \& sigmoid calibration. Models are evaluated based on their Brier score (mean squared error). Uncalibrated KDE classifier (blue line) yields lowest error - no calibration needed
+
+\begin{figure}[!htbp]
+% \begin{figure}[htbp]
+\centering
+\includegraphics[width=0.88\linewidth]{images/4-ml-based-predictor/calibration.png}
+\caption{Probability Calibration/ Reliability curve indicating whether probability calibration was needed....}
+\label{fig:calibration}
+\end{figure}
+
+
 \subsection{Classifier Predictions and Evaluation}
 
+% TODO: make sure to go through all plot captions on HLT public results page for ATLAS Simulation Preliminary plots because there are explanation sentences in there for this chapter
 
 \begin{figure}[!htbp]
 \centering
-    \begin{subfigure}[a]{0.86\textwidth}
+    \begin{subfigure}[a]{0.91\textwidth}
         \includegraphics[width=\linewidth]{images/4-ml-based-predictor/scatter_kde_predictions.pdf}
-        \caption{XXXX}
+        \caption{Classifier predictions for Pixel barrel hit pairs plotted as $\lvert cot(\theta) \rvert$ vs. $w_{\eta}$}
     \end{subfigure}
     \hfill
-    \begin{subfigure}[b]{0.86\textwidth}
+    \begin{subfigure}[b]{0.91\textwidth}
         \centering
         \includegraphics[width=\linewidth]{images/4-ml-based-predictor/triplet_eff_metrics.pdf}
-        \caption{XXXX}
+        \caption{Seed selection efficiency and total rejection efficiency}
     \end{subfigure}
-\caption{XXXX}
+\caption{(a) Predicted classification of Pixel barrel hit pairs from the ATLAS Pixel detector, trained using a set of ML classifiers to distinguish hit pairs matched to tracks corresponding to truth particles. Hit pair features used in training: $\lvert cot(\theta) \rvert$, where $\theta$ is the inclination angle of the hit pair to the z-axis and the Pixel cluster width $w_{\eta}$. The corresponding seed selection efficiency and total rejection efficiency are shown in (b). Errors shown here are purely statistical.}
 \label{fig:predictions-pixel-barrel-and-triplet-efficiencies}
 \end{figure}
+
+
+
+%The seed selection efficiency is defined as the proportion of seeds with both its constituent doublet pairs classified as correctly associated, out of all correctly associated seeds corresponding to Monte Carlo truth from ATLAS tracking algorithms, and the total seed rejection efficiency considers the proportion of rejected seeds, thereby providing an estimate of the total CPU time saved. The lower efficiency and corresponding reduced purity around ��! ~ 2.0 mm is due to the transition between the barrel and endcap pixel detector. Errors shown here are purely statistical.
+
 
 
 \section{Application of hit-pair predictor}
@@ -119,36 +150,41 @@ The choice of bandwidth is important, as increasing the bandwidth too high resul
 
 \subsection{Look-Up Table Generation}
 
+The classifier predictions are used as input in the Fast Tracking trigger stage/algorithm.
+
 Classifier predictions are converted into Look-Up Tables (LUT) such that the acceptance region can be fed into the FTF. Using a predefined LUT is a much more efficient procedure than computing class label on the fly and it is very low cost to store in memory. It consists of binning both the W eta axes (45 bins between 0.0 - 3.0) and the $\tau$ axes (30 bins between 0.0 - 3.0), recording the bin numbers to accept. These divisions were chosen such to compare with the current estimation, referred to as strict LUT.
 
 \subsubsection{Morphological Filtering}
+
+%Classifier predictions for the pixel barrel (Figure 4) and endcap regions were implemented directly into the ATLAS HLT Fast Tracking to reduce computational overheads. This was achieved by converting the predefined acceptance region into a Look-Up Table (LUT) using a common image processing technique known as Morphological Filtering [6].
 
 An ensemble approach was taken combining the strict LUT and KDE predictions. Morphological filtering was then applied to achieve a smoothed structure. Morphological filtering is an image processing technique whereby non-linear transformations are applied to the binary matrix of an image, altering the features. Such non-linear operations include dilation and erosion. Dilation enlarges bright regions and shrinks dark regions, whereas erosion does the inverse of this. A combination of dilation and erosion was applied to the ensemble LUT via rectangular structuring elements, in order to encourage horizontal
 extrapolation of the acceptance region. The binned predictions from the KDE classifiers and smoothed LUTs are shown in Figures 9 and 10; orange representing acceptance regions and blue rejection regions.
 Referring to 9a, KDE predictions for the barrel coincide well with the ’linear corridor’ estimation from the strict LUT. Whereas a V-shaped LUT is obtained for the endcap region.
 
+% \subsubsection{ML Filtering Modes}
 
-\subsection{ML filtering modes}
-
-\subsection{Seed Classes}
 
 
 
 \subsection{Performance Evaluation}
 
-There is little deviation from the standard trigger seeding with application of the machine learning extensions, where the average tracking efficiency achieved was 93.9\% and the greatest efficiency loss from the standard trigger seeding is at large $\lvert \eta \rvert$.
+The full scan ID efficiencies as a function of MC truth track $\eta$ and $p_T$ for the \texttt{Fast tracking} trigger stage, are shown in Figures \ref{fig:efficiencies-ml-hit-pair-predictor-eta} and \ref{fig:efficiencies-ml-hit-pair-predictor-pt}. The nominal seeding approach is compared with the application of ML filtering within the Pixel detector. The nominal seeding achieved an average tracking efficiency of 95\% with respect to MC truth tracks. The application of ML filtering at $\langle \mu \rangle$ = 80, achieved an average tracking efficiency of 93.9\% and the speed-up factor was observed to be a factor of 2.3. The main loss in efficiency is observed at regions of large $\lvert \eta \rvert$, due to the transition between the barrel and endcap Pixel detector. Overall, there is little deviation from the standard trigger seeding with application of ML extensions.
+
 
 \begin{figure}[!htbp]
 \centering
     \begin{subfigure}[a]{0.86\textwidth}
         \includegraphics[width=\linewidth]{images/4-ml-based-predictor/efficiency_eta.pdf}
         \caption{Efficiency vs. MC truth track $\eta$}
+    \label{fig:efficiencies-ml-hit-pair-predictor-eta}
     \end{subfigure}
     \hfill
     \begin{subfigure}[b]{0.86\textwidth}
         \centering
         \includegraphics[width=\linewidth]{images/4-ml-based-predictor/efficiency_pT.pdf}
         \caption{Efficiency vs. MC truth track $p_{\mathrm{T}}$}
+    \label{fig:efficiencies-ml-hit-pair-predictor-pt}
     \end{subfigure}
 \caption{Tracking efficiencies as a function of track parameters, for $p_{T}$ > 3 GeV for the ATLAS full detector tracking with $t\overline{t}$ Monte Carlo 13 TeV and mean pile-up interaction multiplicity of $\langle \mu \rangle$ = 80. The data points show the efficiency when using machine learning extensions in the seed building stages of the fast tracking trigger in the ATLAS pixel detector, prior to the track fitting. The dashed line shows the efficiency of the standard trigger seeding with no application of machine learning extensions. The errors shown are purely statistical \cite{public-hlt}. }
 \label{fig:efficiencies-ml-hit-pair-predictor}
@@ -157,11 +193,14 @@ There is little deviation from the standard trigger seeding with application of 
 
 
 \subsubsection{CPU Time Comparison}
+% DONE
 
-Table \ref{tab:cpu} summarises the breakdown in speed-up factor achieved at various stages within the \texttt{Fast Tracking} trigger algorithm, with the application of the trained LUT for the pixel region. The greatest saving in CPU time is achieved during the \texttt{Seed Processing} stage, as a direct result of a significant reduction in the number of seeds. The average number of seeds processed for a given region of interest for the standard tracking is $O(10^{4})$, whereas with the introduction of ML filtering for pixel seeds, about 78\% fewer seeds were observed. This significant reduction in CPU time does not only benefit the \texttt{Seed Processing} stage of the combinatoric track following, but also propagates to \texttt{Track Fitting}.
+% TODO: know how the speed-up factor was measured - within an isolated testbed environment, with as little other processes occuring at the same time. Measuring the fastest time, and hence the greatest speed-up factor, not the average! - this is important here
+
+Table \ref{tab:cpu} summarises the breakdown in speed-up factors achieved at various stages within the \texttt{Fast Tracking} trigger algorithm, with the application of the trained LUT for the Pixel region. The total speed-up factor achieved in the full detector with application of ML extensions at $\langle \mu \rangle$ = 80 was observed to be 2.3. The greatest saving in CPU time is achieved during the \texttt{Seed Processing} stage, as a direct result of the significant reduction in the number of seeds. The average number of seeds processed for a given region of interest for the standard tracking is $O(10^{4})$, whereas with the introduction of ML filtering for pixel seeds, approximately 78\% fewer seeds were observed. This significant reduction in CPU time does not only benefit the \texttt{Seed Processing} stage of the combinatorial track following algorithm in ATLAS, but also propagates to the \texttt{Track Fitting} stage.
 
 \begin{table}[htb!]
-\caption{Performance of the ATLAS full detector tracking with MC 13 TeV $t\bar{t}$ samples at $<\mu> = 80$, with the application of ML extensions for filtering on pixel detector hit-pairs in the \texttt{Fast Tracking} trigger stage \cite{public-hlt}. The total speed-up factor and breakdown of speed-ups at different stages of the \texttt{Fast Tracking} trigger algorithm are presented, each speed-up is presented with respect to the standard trigger seeding where no ML extensions were applied.}
+\caption{Performance of the ATLAS full detector tracking with MC 13 TeV $t\bar{t}$ samples at $<\mu> = 80$, with the application of ML extensions for filtering on pixel detector hit-pairs in the \texttt{Fast Tracking} trigger stage \cite{public-hlt}. The total speed-up factor and breakdown of speed-ups at different stages of the \texttt{Fast Tracking} trigger algorithm are presented, each speed-up is presented with respect to the standard trigger seeding where no ML extensions are applied.}
 \begin{center}
 \begin{tabular}{llll}
 \toprule
@@ -175,9 +214,12 @@ Total Speed-up Factor & Seed Generation & Seed Processing & Track Fitting \\
 \end{table}
 
 \subsubsection{Changing Pileup Conditions}
-Table \ref{tab:pileup} summarises the relative efficiency loss and relative speed-up factor, with application of ML extensions for the ATLAS pixel detector in various mean pile-up interaction multiplicities $<\mu>$. The speed-up factor increases as $<\mu>$ increases with minimal loss in efficiency.
+% DONE
 
-\begin{table}[htb!]
+Table \ref{tab:pileup} summarises the relative efficiency loss and relative speed-up factor, with application of ML extensions for the ATLAS pixel detector in various mean pile-up interaction multiplicities $<\mu>$. The absolute loss in average tracking efficiency and the total speed-up factor for seeded track finding in the ATLAS pixel detector is presented with respect to the standard trigger seeding where no machine learning extensions were applied. A general trend is observed whereby the speed-up factor increases as $<\mu>$ increases with minimal loss in efficiency. At $<\mu>$ = 80 the efficiency loss observed was 1.1\%, which was acceptable by the ID trigger performance requirements at the time of writing.
+
+
+\begin{table}[!htbp]
 \caption{Performance of the ATLAS full detector tracking with MC 13 TeV $t\bar{t}$ samples at $<\mu>$ = 40, 60 and 80, with the application of ML extensions for filtering on pixel detector hit-pairs in the \texttt{Fast Tracking} trigger stage prior to the track fitting \cite{public-hlt}. The absolute loss in average tracking efficiency and the total speed-up factor for seeded track finding in the ATLAS pixel detector are presented with respect to the standard trigger seeding where no ML extensions were applied. The efficiency loss is mainly observed at large $|\eta|$. The statistical uncertainties in efficiencies are $O(10^{-3})$, hence are not quoted.}
 \begin{center}
 \begin{tabular}{ccc}
@@ -196,60 +238,59 @@ $<\mu>$ & Efficiency Loss (\%) & Total Speed-up Factor  \\
 
 \section{Other Approaches}
 \subsection{Multiple Acceptance Regions}
+% DONE
 
-When training With varying permutations of train and test sets, a second acceptance region was frequently predicted for the barrel at low-cluster width and high track inclination angle, highlighted in Figure \ref{fig: multiple-acceptance}. The spacepoints predicted as belonging to the $good$ doublet class at the tail ends of these distributions were isolated and their local cluster position in the $\eta$ direction were considered, see Figure \ref{fig: multiple-acceptance}. The majority of hits possessed the largest absolute local cluster position. This was observed for each occurrence of a second acceptance region appearing at low cluster-width and high track inclination. This corresponds to the extremes of the barrel module, since its dimensions are approximately $20mm$ $x$ $60mm$ \cite{pixel-module-dimensions}, and hence the second acceptance region had originated from module edge pixels. These spacepoints would need to be dealt with separately or accepted by default. One reason for this is, due to the fact that the morphological smoothing is applied uniformly to an image, this will affect the shape of the main acceptance region for the barrel and will introduce a greater proportion of fakes by dilation.
-    
+When training on varying permutations of train and test data sets, a second acceptance region was frequently predicted for some of the 1-dimensional distributions where Pixel barrel hit-pairs possess low cluster width and high track inclination. This second region is highlighted in Figure \ref{fig:multiple-acceptance} which shows the KDE-based classifier's predictions for a particular train and test permutation. The hit-pairs predicted as belonging to class 1 having correct hit association for $w_{\eta} = 0.6$mm and $w_{\eta} = 1.0$mm appear at the tail ends of these distributions. These hits were isolated and their local cluster position in the $\eta$ direction was analysed. Approximately 60\% of hits possessed the largest absolute local cluster position and this was observed for each occurrence of a second acceptance region appearing at low cluster-width and high track inclination. This corresponds to hits being located at the extremes of the barrel module since its dimensions are approximately 20mm $\times$ 60mm \cite{pixel-module-dimensions} and strongly suggests that the second acceptance region had originated from module edge Pixels. Further investigation would be needed whereby these spacepoints would be handled separately or accepted by default. One reason for this is, as morphological smoothing is applied uniformly to an image, this dilation may interact with the general shape of the main acceptance region for the barrel and would have the potential to accept a greater proportion of fakes.
+
+\begin{figure}[!htbp]
+% \begin{figure}[htbp]
+\centering
+\includegraphics[width=0.9\linewidth]{images/4-ml-based-predictor/Multiple_acceptance_regions.pdf}
+\caption{KDE-based classifier predictions for the Pixel barrel hit pairs. Multiple acceptance regions are observed at large track inclination for $w_{\eta} = 0.6$mm and $w_{\eta} = 1.0$mm, circled in red.}
+\label{fig:multiple-acceptance}
+\end{figure}
+
 
 \subsection{Support Vector Machine}
+% DONE
 
 % See this website for further explanation 
 % https://towardsdatascience.com/support-vector-machine-introduction-to-machine-learning-algorithms-934a444fca47
-
 % multi class classification: one-to-rest
 % https://towardsdatascience.com/multiclass-classification-with-support-vector-machines-svm-kernel-trick-kernel-functions-f9d5377d6f02
 
-Another supervised learning algorithm investigated was the Support Vector Machine (SVM) \cite{svm}. The objective of the SVM classifier is to find a hyperplane (known as a decision boundary) in a N-dimensional space (where N is the number of features) that distinctly classifies the data points and is typically used in binary classification. The optimal decision boundary is one which maximizes the margins between both classes, this provides some reinforcement that future data points can be classified with more confidence. For non-linear decision boundaries, the SVM uses the so-called \textit{kernel trick} to project the data into a higher dimensional space. 
+Another supervised learning algorithm investigated was the Support Vector Machine (SVM) \cite{svm}. The objective of a SVM classifier is to find a hyperplane (known as a decision boundary) in a N-dimensional space (where N is the number of features) that distinctly classifies the data points and is typically used in binary classification. The optimal decision boundary is one which maximizes the margins between both classes. This provides some reinforcement that unseen data points can be classified with more confidence. For non-linear decision boundaries, the SVM uses the so-called \textit{kernel trick} to project the data into a higher dimensional space to find a plane where the data is linearly separable. 
 
-% what the SVM was applied on - the plane of axes. SVM would be normally applied to the plaine of ... however we need to transform it using PCA bec of ... So we end up principal component axes, the 1st axes shows, the 2nd shows...
+The SVM classifier was directly applied to the data in the phase space of  [$|cot(\theta)|$, $w_{\eta}$], however in this instance the observed discrete nature affected the mechanics of the classifier and its ability to determine a decision boundary. Therefore, a prior step to training the SVM was to apply Principal Component Analysis (PCA). PCA is commonly used as a dimensionality reduction technique \cite{pca}, whereas it was applied here to remove the ordinal nature of the cluster widths. By doing so, the data was transformed into a continuous 2-dimensional phase space, where the variance of the truth 1 class is maximal along the first principal component axis. A hyperparameter sweep of various kernels was executed using cross-validation and the polynomial kernel of third degree, with hyperparameters $C=0.75$ and $\gamma=0.05$, was found to produce the highest TPR of 95\%. The predictions of the PCA-SVM classifier on Pixel barrel data and the corresponding decision boundary is shown in Figure \ref{fig:barrel-svm-pca}. The shaded orange-red region indicates predicted hit-pairs with correct association, whereas the shaded blue region indicates predicted hit-pairs with incorrect association. The corresponding data points also reflect class predictions.  
 
-
-A prior step to training the SVM classifier, was to apply Principal Component Analysis (PCA).
-
-A combination of Principal Component Analysis (PCA) and SVM was applied. PCA is commonly used as a dimensionality reduction technique \cite{pca}, however in this instance it is applied to remove the ordinal nature (the discrete bands) which affects the SVM and hence obtain a continuous 2D-dimensional phase space. 
-
-% further detail on training the SVM
-
-A hyper-parameter sweep of various kernels was executed using cross-validation and the polynomial kernel of third degree was found to produce the highest TPR. The predictions of the PCA-SVM classifier on Pixel barrel data is shown in Figure \ref{fig:barrel-svm-pca}. The red (orange) region shows which doublets are accepted and the blue region shows which doublets are rejected. The corresponding data points also reflect class predictions. 
-
-SVMs generally perform well, even when trained with imbalanced data sets. This coupled with the fact that a distinct decision boundary could be easily extracted and converted into a LUT would lead to less ambiguity in comparison to applying an extrapolation using morphological smoothing. However, there are key disadvantages by using a SVM classifier rather than Bayes' theorem in this instance. The probabilistic information contained within each discrete 1 dimensional distribution of $w_{\eta}$ is lost, which is an important feature when tuning each individual distribution. Additionally, the SVM typically fits a continuous function for the decision boundary and hence may not be strict enough in certain regions. This factor is important when considering the number of fake seeds being accepted using a LUT generated from such a decision boundary. 
-
-
-\begin{figure}[!htbp]
+% \begin{figure}[!htbp]
+\begin{figure}[htbp]
 \centering
-\includegraphics[width=0.85\linewidth]{images/4-ml-based-predictor/barrel-svm-pca.png}
-\caption{PCA transform applied to the pixel barrel hit pairs. SVM classifier decision boundary predictions are shown in the above plot. The black dotted line represents the threshold value of 0.40, yielding a TPR of 95\%. The SVM kernel used for the classifier was a polynomial degree 3 kernel with hyperparameters $C=0.75$ and $\gamma=0.05$. 1st principal component indicates the axis of largest variance within the class with correct hit association doublet class.}
+\includegraphics[width=0.87\linewidth]{images/4-ml-based-predictor/barrel-svm-pca.png}
+\caption{PCA transform and SVM classifier applied to Pixel barrel hit pairs. The SVM decision boundary predictions are illustrated, where the black dotted line represents the threshold value of 0.40 yielding a TPR of 95\%. Predicted hit-pairs with correct association are illustrated by diamonds and predicted hit pairs with incorrect association are illustrated with +. The SVM kernel used for the classifier was a polynomial degree 3 kernel with hyperparameters $C=0.75$ and $\gamma=0.05$. The 1st principal component indicates the axis of largest variance within the class with correct hit association doublet class.}
 \label{fig:barrel-svm-pca}
 \end{figure}
 
-Figure \ref{fig:barrel-svm-pca} it is clear to see that the area of acceptance predicted by the SVM is much greater than the KDE based classifier. The seed multiplicity in these areas would inevitably lead to a larger amounts of time spent on processing seeds through the combinatorial stage of the FTF. Therefore this method was not pursued. However, a further investigation would be needed to evaluate the efficiency and speed-up provided from these predictions, compared with the KDE based classifier.
+By applying a combination of Principal Component Analysis (PCA) and SVM, the classifier was able to separate the two classes well. However the corresponding FPR obtained was 82\% and the ROC AUC was 0.53, very similar to the no-skill classifier. Both of these metrics indicate that a large proportion of hit-pairs were incorrectly accepted by the model and hence this would increase the proportion of fake seeds constructed by downstream algorithms.
+
+SVMs generally perform well, even when trained with imbalanced data sets. This coupled with the fact that a distinct decision boundary could be easily extracted and converted into a LUT would lead to less ambiguity in comparison to applying an extrapolation using morphological smoothing. However, there are key disadvantages by using a SVM rather than Bayes' theorem in this instance. The probabilistic information contained within each discrete 1 dimensional distribution of $w_{\eta}$ is lost, which is an important feature when tuning each individual distribution. Additionally, the SVM typically fits a continuous function for the decision boundary and hence may not be strict enough in certain regions. This factor is important when considering the proportion of fake seeds being accepted using a LUT generated from such a decision boundary. Due to these key differences in classifiers, this method was not pursued.
 
 
-\subsection{Comparison with Deep Learning Algorithm}
+\subsection{Comparison with a Deep Learning Approach}
 
 Comparison with outrunner algorithm (number 2 in TrackML) - deep learning methodoloy vs. our classic ML approach.
+%At the end of this chapter, mention that a similar classifier was implemented to find pairs of hits for TrackML algorithm as well. Interestingly it also goes to a LUT input because this is the fastest way to do inference and implement this in any realistic detector setup, instead of training the classifier each time on the fly. Of course, for different geometrical setups or for particular signatures i.e. jets, the training would need to be done again specifically for that purpose.
 
 
 \section{Conclusions}
+%DONE
 
-% ---------------------------------------
-% TODO
-% ---------------------------------------
-%At the end of this chapter, mention that a similar classifier was implemented to find pairs of hits for TrackML algorithm as well. Interestingly it also goes to a LUT input because this is the fastest way to do inference and implement this in any realistic detector setup, instead of training the classifier each time on the fly. Of course, for different geometrical setups or for particular signatures i.e. jets, the training would need to be done again specifically for that purpose.
+As the luminosity and collision rate increases during future upgrades of the LHC program, novel and precise tracking methodologies, as well as efficient use of computing power will become increasingly important in the selection of physics objects. Therefore, it is essential that resource use is reduced, whilst maintaining the ability to reconstruct tracks with minimal efficiency loss. 
 
-As the luminosity, and hence collision rate, increases during future upgrades of the LHC program, novel and precise tracking methodologies, as well as efficient use of computing power will become an increasingly
-important factor in the selection of physics objects.
+The above work prsents the algorithms and techniques implemented to optimise the HLT ID track seeding software for ATLAS Run-3 and beyond, in order to reduce the number of fake seeds. The ML-based algorithm developed is used to predict if a pair of hits belong to the same track given input hit features of Pixel cluster width and inverse track inclination. It is encouraging to see that the application of the ML-based classifier for seed selection in the ATLAS ID has provided significant CPU savings on trained MC data at various pileup levels. The trained predictor in the form of a LUT yields 2.3$\times$ speed-up with minimal loss in efficiency (1.1\%) at $< \mu >$= 80 compared with the standard trigger tracking. 
 
-The application of a ML-based classifier for seed selection in the ATLAS ID has provided significant CPU savings on trained MC data at various pileup levels. The trained predictor in the form of a LUT yields 2.3$\times$ speed-up with minimal loss in efficiency (1.1\%) at $< \mu >$= 80 compared with the standard trigger tracking. The developed ML pipeline provides a way to generate custom LUTs by training the predictor to yield a required TPR, dependent on the degree of efficiency required. Reducing the proportion of fakes at an earlier stage in the ATLAS HLT track seeding, ensures the reduction in CPU usage overall. Efficient use of computing power will become an increasingly important factor in the selection of physics objects as the luminosity and pileup increase during future upgrades of the LHC program.
+The developed ML pipeline is advantageous for many reasons. It provides a flexible way to generate custom LUTs depending on the degree of efficiency required; the predictor can be trained to yield a desired TPR. This ML setup can also be used to generate a custom LUT for different geometrical setups, isolating different requirements for the barrel and endcap regions. This machinery can also provide ways to generate custom LUTs for particular decay signatures depending on the requirements. The fast lookup implementation bodes well in a realistic detector setup, instead of training the classifier each time on the fly. Overall, the reduction in fakes at an earlier stage in the HLT track seeding, ensures the reduction of bad seed propagation into downstream tracking stages and hence allows significant savings in CPU.
 
-%It is encouraging to see that the use of a ML based classifier for seed filtering in the ID, together with the proper selection of seed types, has provided significant CPU savings based on trained MC data. The application of the trained KDE based predictor in the form of a smoothed LUT for seed filtering within the barrel and endcap, as well as propagation of high purity seed types, yields greater than 2x speed up with minimal loss in efficiency, compared with the default. By applying an ensemble approach in LUT generation, this results in a much smaller drop in efficiency than using the strict LUT estimation alone. The use of different ML filtering modes applied to the triplets, can produce varying efficiencies (and speed up), where the three least redundant combinations are presented in this study. This procedure also shows greater efficiency across full range in η for the ID, compared with the strict LUT, which rejects a larger proportion of good seeds, particularly within the high seed multiplicity (low cluster width) range. Additionally, proper training and tuning of the classifier can yield a required TPR, therefore allowing the flexibility in strictness. By reducing the proportion of fakes an at earlier stage in the HLT track seeding, this ensures the reduction of bad seed propagation into later tracking stages and hence saving CPU.
+%i.e. jets, the training would need to be done again specifically for that purpose.
 
+%. The use of different ML filtering modes applied to the triplets, can produce varying efficiencies (and speed up), where the three least redundant combinations are presented in this study. Additionally, proper training and tuning of the classifier can yield a required TPR, therefore allowing the flexibility in strictness.
