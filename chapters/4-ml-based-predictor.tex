@@ -24,14 +24,14 @@ When constructing graph networks for track reconstruction, one must first consid
 
 Seeds constructed at the combinatorial stage of ATLAS track seeding software from the Run-2 geometry were used to extract hit-pairs to form a training dataset. Monte Carlo (MC) $t\bar{t}$ event samples with centre-of-mass energy $\sqrt{s}$ = 13 TeV at mean pile-up interaction multiplicity $< \mu >$ = 80 were used. Top quark simulation is often used for developing algorithms in tracking due to its many possible final states including electron, muon and $\tau$ leptons, as well as \textit{b, c} and up quarks. As the decay signature of a top quark is complex, the combinatorics of the constructed seeds are high. This indicates that a larger proportion of fakes will be present and provides a good description of the environment in high luminosity conditions.
 
-The training is focused on Pixel detector layers, being closest to the beamline and having highest hit occupancy. An illustration of a seed in the ID pixel layers is shown in Figure \ref{fig:triplet-illustration}. These triplets are deconstructed into pairs of doublets which share a common middle spacepoint. For each seed, the inner doublet (defined as hit-pair 1 and 2) and outer doublet (defined as hit-pair 2 and 3) are extracted. For each hit-pair the minimum and maximum absolute inverse slope of the track, $|cot(\theta)|$, are calculated using $r$-$z$ coordinates and used as an input feature for training. $\theta$ is the angle of inclination of a hit-pair with respect to the $z$ axis. The longitudinal pixel cluster width, $w_{\eta}$, measured in the $\eta$ direction was also extracted, where $\eta$ is defined in Eq. \ref{eq:pseudorap}. The MC generated data in the [$|cot(\theta)|$, $w_{\eta}$] phase space behaves as a set of 1-dimensional distributions, each with discrete $w_{\eta}$. This characteristic is exploited to form an ensemble of predictors. 
+The training is focused on Pixel detector layers, being closest to the beamline and having highest hit occupancy. An illustration of a seed in the ID pixel layers is shown in Figure \ref{fig:triplet-illustration}. These triplets are deconstructed into pairs of doublets which share a common middle spacepoint. For each seed, the inner doublet (defined as hit-pair 1 and 2) and outer doublet (defined as hit-pair 2 and 3) are extracted. The number of Pixel barrel and Pixel endcap hit-pairs extracted were 365,937 and 18,537 respectively. For each hit-pair the minimum and maximum absolute inverse slope of the track, $|cot(\theta)|$, are calculated using $r$-$z$ coordinates and used as an input feature for training. $\theta$ is the angle of inclination of a hit-pair with respect to the $z$ axis. The longitudinal pixel cluster width, $w_{\eta}$, measured in the $\eta$ direction was also extracted, where $\eta$ is defined in Eq. \ref{eq:pseudorap}. The MC generated data in the [$|cot(\theta)|$, $w_{\eta}$] phase space behaves as a set of 1-dimensional distributions, each with discrete $w_{\eta}$. This is a direct result of charge deposition in the simulated Pixel modules. The geometry of the Pixel modules is subdivided into majority \textit{standard} pixels of width 400$\mu$m and 10\% of \textit{long} pixels of width 600$\mu$m. The long pixels are responsible for covering the gap between the front-end chips on the modules and provide full coverage \cite{pixel-module-dimensions}. Hence the discrete cluster widths are observed to be increasing in increments of 200$\mu$m. This characteristic is exploited to form an ensemble of predictors. 
 
-The MC truth class for seeds and their corresponding hit-pairs were extracted from ATLAS track seeding and used as targets in training. Doublets with correct hit association were defined as truth 1, for which its hit-pairs belong to the same truth track. Conversely doublets with incorrect hit association defined as truth 0, for which its hit-pairs do not belong to the same track. Hit-pairs for the Pixel barrel and endcap are handled separately in order to build regional classifiers. The same methodology was used for both the barrel and endcap, presented in Section \ref{section:classifier-dev} and \label{application-of-hit-pair-predictor} is the procedure and the results for the barrel.
+The MC truth class for seeds and their corresponding hit-pairs were extracted from ATLAS track seeding and used as targets in training. Doublets with correct hit association were defined as truth 1, for which its hit-pairs belong to the same truth track. Conversely doublets with incorrect hit association defined as truth 0, for which its hit-pairs do not belong to the same track. Hit-pairs for the Pixel barrel and endcap are handled separately in order to build regional classifiers. The same methodology was used for both the barrel and endcap, presented in Section \ref{section:classifier-dev} and \ref{application-of-hit-pair-predictor} are the procedures and the results for the barrel.
 
 
 \begin{figure}[!htbp]
 \centering
-    \includegraphics[width=0.85\linewidth]{images/4-ml-based-predictor/triplet_illustation.png}
+    \includegraphics[width=0.83\linewidth]{images/4-ml-based-predictor/triplet_illustation.png}
     \caption{Seed illustration in the $r$-$z$ plane (mm) of the ID. The inner doublet consists of hits (1, 2) and the outer doublet consists of hits (2, 3). The longitudinal pixel-cluster width $w_{\eta}$ (mm) is measured in the direction of $\eta$, where $\theta$ is the angle of inclination with respect to the $z$ axis.}
 \label{fig:triplet-illustration}
 \end{figure}
@@ -70,18 +70,16 @@ where $K(x)$ is the kernel function, typically a smooth, symmetric and non-negat
 
 The choice of bandwidth is important, as increasing the bandwidth too high results in a smooth distribution where granular information is lost (over-smoothing). When using a bandwidth that is too small, this can lead to narrow peaks in close proximity to each other, resulting in a very noisy distribution (under-smoothing). There are several methods to determine the optimum bandwidth discussed in \cite{bandwidth-selection-methods}, many of which show similar properties. The method used in this study was the so-called \textit{Silverman's rule of thumb}, which works only for 1-dimensional data. Silverman's rule finds the bandwidth that minimizes the mean integrated squared error assuming that the data is Gaussian and a Gaussian kernel was used.
 
+\newpage
 \subsection{Classifier Training}
+% DONE
 
-% talk about as many results as possible, i.e. roc auc
+The hit-pair data was split into a training and a test dataset using a 70:30 split. The training data was plotted in the phase space of [$|cot(\theta)|$, $w_{\eta}$]. Figure \ref{fig:truth-histo} shows the 1-dimensional distributions of $|cot(\theta)|$ for Pixel barrel hit-pairs with $w_{\eta} \le$ 0.4 mm with respect to each truth class, where a clear distinction is observed. The Bayes’ classifier was implemented here in a generative way, computing the likelihood via a fitted KDE to each correct hit association distribution of discrete $w_{\eta}$. Each model was trained as follows; the feature vector \textbf{x} comprised of $|cot(\theta)|$ and the truth label of the hit-pair formed the target vector \textbf{y}. For unknown data points, the class which maximised the posterior was the class prediction.
 
-% training:
-% A discrete 1-dimensional nature is observed increasing in increments of 0.2 mm, as a direct result of varying permutations of ‘standard’ and ‘long’ pixels in cluster width calculation, where each 1-dimensional band was independently trained and tuned to yield a true positive rate of 0.95. A similar procedure was executed for training and predicting doublet hit association for pixel-endcaps doublets using truth from Monte Carlo 13 TeV ����̅ <��> = 80 samples. This study was conducted in order to speed up the track seeding stage and reduce CPU time in the ATLAS fast tracking trigger algorithm.
+After training, the predictions from each classifier were adjusted using the model's corresponding Receiver Operating Characteristic (ROC) curve \cite{Davis2006-oh}. The ROC curve indicates the performance of the classification model at all classification thresholds. The curve plots two parameters: True Positive Rate (TPR, also known as recall) and False Positive Rate (FPR), where each point on the curve corresponds to a prediction probability. The ROC curve for the classifier trained on the distribution for $w_{\eta} \le$ 0.4 mm is shown in Figure \ref{fig:roc-curve}. The classifier’s predictions were adjusted using the prediction probability derived from the ROC curve which would yield a TPR of 0.95. This TPR was chosen in order to maintain a high purity of correct hit-pairs. 
 
+The Area Under the Curve (AUC) represents the degree or measure of separability. It indicates the ability of a model to distinguish between classes. The value of the AUC is in the range 0.0 $\leq$ AUC $\leq$ 1.0, where AUC = 1 corresponds to perfect classification. The AUC achieved by the ML classifier for the $w_{\eta} \leq 0.4$mm distribution was 0.79. Also shown in Figure \ref{fig:roc-curve} is the ‘no skill’ classifier with AUC = 0.5. This cannot discriminate between correct or incorrect hit association classes and would predict a random class in all cases with 50\% probability.
 
-%Figure \ref{fig:1-dimensional-classifier-training} shows distributions of $\rvert cot(\theta)\rvert$ for Pixel barrel hit pairs in the ATLAS pixel detector, where $\theta$ is the inclination angle of the doublet with respect to the $z$-axis. from t ̄t Monte Carlo 13 TeV with mean pile-up interaction multiplicity of <μ> = 80. Shown are pixel-barrel doublets from triplets constructed at the combinatorial stage in ATLAS track seeding. These triplets are formed from pairs of doublets which share a common spacepoint where that shared middle spacepoint consists of pixel clusters with wη ≤ 0.4 mm, where wη is the cluster width measured in the η direction. Shown are the distributions for doublets with hits correctly associated to corresponding truth particles by the tracking algorithms, for which its doublet spacepoints belong to the same track and also shown are doublets that have hits incorrectly associated, for which its spacepoints do not belong to the same track. The data was used to train a Machine Learning classifier to predict whether a doublet of spacepoints has correct hit association and hence belong to the same track corresponding to truth particles, or incorrect hit association, using the input hit features of wη and the absolute inverse track inclination |cot(θ)|. This study was conducted in order to speed up the track seeding stage and reduce CPU time in the ATLAS fast tracking trigger algorithm.
-
-% roc curve:
-%Shown is the Receiver Operating Characteristic (ROC) curve indicating the rates of false positive and true positive of pixel-barrel doublets from the ATLAS pixel detector to tracks corresponding to truth particles, for spacepoints with wη ≤ 0.4 mm, where wη is the cluster width measured in the η direction, using a Machine Learning (ML) classifier to predict whether a doublet of spacepoints belong to the same track and hence defined as having correct hit association, or have incorrect hit association. The classifier was trained using pixel-barrel doublets from Monte Carlo 13 TeV t ̄t <μ> = 80 samples. Each pair of false positive and true positive rates correspond to a prediction probability, which can be used as a tuning parameter. The classifier’s predictions were adjusted using the prediction probability derived from the ROC curve which would yield a true positive rate of 0.95. The Area Under the Curve (AUC) is a measure of the ability of the classifier to distinguish between correct and incorrect hit association classes and is in the range 0.0 ≤ AUC ≤ 1.0, where AUC = 1 corresponds to perfect classification. The AUC achieved by the ML classifier shown was AUC = 0.79. Also shown is the ‘no skill’ classifier result with AUC = 0.5, which cannot discriminate between correct or incorrect hit association classes and would predict a random class in all cases with 50% probability for each class. A similar procedure was executed for training a model to determine whether spacepoints in pixel-endcap doublets belonged to the same track, using truth from Monte Carlo 13 TeV t ̄t <μ> = 80 samples. This study was conducted in order to speed up the track seeding stage and reduce CPU time in the ATLAS fast tracking trigger algorithm.
 
 \begin{figure}[!htbp]
 \centering
@@ -102,32 +100,41 @@ The choice of bandwidth is important, as increasing the bandwidth too high resul
 \end{figure}
 
 
-\subsection{Probability Calibration}
+\subsubsection{Probability Calibration}
 
 % READ THIS:
 % https://machinelearningmastery.com/calibrated-classification-model-in-scikit-learn/
 % https://scikit-learn.org/stable/modules/calibration.html
 
-KDE Calibration curve for pixel-barrel doublets with 0 - weta - 0.4. We can evaluate how well our model \& the predicted probabilities are calibrated. Calibration curve (reliability diagram) is generated for each weta bands, by analysing uncalibrated model, isotonic \& sigmoid calibration. Models are evaluated based on their Brier score (mean squared error). Uncalibrated KDE classifier (blue line) yields lowest error - no calibration needed
+Instead of predicting class values directly, it can be convenient to predict the probability of an observation belonging to each possible class. This is known as probability calibration and can provide more nuanced ways to evaluate the skill of the model. The discrepancies between the predicted probabilities of each KDE-based classifier and its relative observed frequency for the positive class were analysed. There are several methods of probability calibration \cite{prob-calibration}; Isotonic calibration fits a non-parametric regressor, whilst Sigmoid calibration corresponds to a parametric approach. Each method was applied for the discrete 1-dimensional distributions. The calibration performance was evaluated using the Brier score; the mean squared difference between the predicted probability and the actual outcome. Figure \ref{fig:calibration} shows the calibration curve for the classifier applied to the distribution $w_{\eta} \leq 0.4$mm. The uncalibrated classifier yielded the lowest Brier score in this instance, and this was also observed for all other 1-dimensional distributions in $w_{\eta}$. When applying a calibrated classifier, such as the Isotonic or Sigmoid, very small discrepancies were observed. As a result, no additional probability calibration was applied in development of the classifiers.
+
+%KDE Calibration curve for pixel-barrel doublets with 0 - weta - 0.4. We can evaluate how well our model \& the predicted probabilities are calibrated. Calibration curve (reliability diagram) is generated for each weta bands, by analysing uncalibrated model, isotonic \& sigmoid calibration. Models are evaluated based on their Brier score (mean squared error). Uncalibrated KDE classifier (blue line) yields lowest error - no calibration needed
 
 \begin{figure}[!htbp]
 % \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.88\linewidth]{images/4-ml-based-predictor/calibration.png}
-\caption{Probability Calibration/ Reliability curve indicating whether probability calibration was needed....}
+\caption{Reliability curve for the KDE-based classifier predictions on Pixel barrel hit-pairs with $ w_{\eta} \leq 0.4mm$. Comparison of the uncalibrated KDE-based classifier with calibrated classifiers applied to the same training and test dataset. Shown are the Brier scores for each model.}
 \label{fig:calibration}
 \end{figure}
 
 
-\subsection{Classifier Predictions and Evaluation}
+\subsection{Predictions and Evaluation}
 
-% TODO: make sure to go through all plot captions on HLT public results page for ATLAS Simulation Preliminary plots because there are explanation sentences in there for this chapter
+Figure \ref{fig:predictions-pb-2d} shows the adjusted classifier predictions for Pixel barrel hit-pairs after using the probability thresholds obtained from the corresponding ROC curves. A 2-dimensional acceptance-rejection region is observed; the black region of acceptance shows hit-pairs predicted with correct hit association. This follows a somewhat \textit{linear corridor} trend with a moving average as $w_{\eta}$ increases. Regions of hit-pair rejection are shown in red and fall into two main categories; the first are predicted to have low $w_{\eta}$ and large track inclination, the second predicted to have large $w_{\eta}$ and small track inclination. This is expected to originate from the forward region of the detector and.... Overall, the recall achieved for hit-pairs with correct hit association was determined to be a tuned 95\%. The purity achieved was 56\% and the F1 score 71\%. 
+
+For each classifier, the triplet selection efficiency and total seed rejection efficiency were evaluated. The seed selection efficiency is defined as the proportion of seeds with both its constituent doublet pairs classified as correctly associated, out of all correctly associated seeds corresponding to MC truth from ATLAS tracking algorithms. This provides an indication of recall. The total seed rejection efficiency considers the proportion of rejected seeds, thereby providing an estimate of the total CPU time saved. The lower efficiency and corresponding reduced purity around $w_{\eta} \sim$ 2.0 mm is due to the transition between the barrel and endcap Pixel detector layers. Overall, the seed selection efficiency achieved was 74.8 $\pm$ 0.1\% and total seed rejection efficiency was 41.5 $\pm$ 0.1\%. This is primarily dominated by the low cluster width distribution ($w_{\eta} \leq$ 0.4 mm) where there exists the greatest statistics.
+
+
+
+%The seed selection efficiency is defined as the proportion of seeds with both its constituent doublet pairs classified as correctly associated, out of all correctly associated seeds corresponding to MC truth from ATLAS tracking algorithms. and the total seed rejection efficiency considers the proportion of rejected seeds, thereby providing an estimate of the total CPU time saved. The lower efficiency and corresponding reduced purity around ��! ~ 2.0 mm is due to the transition between the barrel and endcap pixel detector. Errors shown here are purely statistical.
 
 \begin{figure}[!htbp]
 \centering
     \begin{subfigure}[a]{0.91\textwidth}
         \includegraphics[width=\linewidth]{images/4-ml-based-predictor/scatter_kde_predictions.pdf}
         \caption{Classifier predictions for Pixel barrel hit pairs plotted as $\lvert cot(\theta) \rvert$ vs. $w_{\eta}$}
+        \label{fig:predictions-pb-2d}
     \end{subfigure}
     \hfill
     \begin{subfigure}[b]{0.91\textwidth}
@@ -141,26 +148,18 @@ KDE Calibration curve for pixel-barrel doublets with 0 - weta - 0.4. We can eval
 
 
 
-%The seed selection efficiency is defined as the proportion of seeds with both its constituent doublet pairs classified as correctly associated, out of all correctly associated seeds corresponding to Monte Carlo truth from ATLAS tracking algorithms, and the total seed rejection efficiency considers the proportion of rejected seeds, thereby providing an estimate of the total CPU time saved. The lower efficiency and corresponding reduced purity around ��! ~ 2.0 mm is due to the transition between the barrel and endcap pixel detector. Errors shown here are purely statistical.
-
-
-
 \section{Application of hit-pair predictor}
 \label{application-of-hit-pair-predictor}
 
 \subsection{Look-Up Table Generation}
 
-The classifier predictions are used as input in the Fast Tracking trigger stage/algorithm.
+Classifier predictions for the Pixel barrel and endcap regions are implemented directly into the ATLAS HLT \texttt{Fast Tracking} algorithm in the form of a look-up table (LUT). This was achieved by first extrapolating the classifier predictions using Morphological filtering and then converting the acceptance region into a binned table.
 
-Classifier predictions are converted into Look-Up Tables (LUT) such that the acceptance region can be fed into the FTF. Using a predefined LUT is a much more efficient procedure than computing class label on the fly and it is very low cost to store in memory. It consists of binning both the W eta axes (45 bins between 0.0 - 3.0) and the $\tau$ axes (30 bins between 0.0 - 3.0), recording the bin numbers to accept. These divisions were chosen such to compare with the current estimation, referred to as strict LUT.
+Morphological filtering is an image processing technique whereby non-linear transformations are applied to the binary matrix of an image, altering the features. Such non-linear operations include \texttt{dilation} and \texttt{erosion}. Dilation enlarges bright regions and shrinks dark regions, whereas erosion does the inverse of this. A combination of dilation and erosion was applied to the predictions made by the KDE-based classifiers for both the Pixel barrel and endcap via rectangular structuring elements. This was done in order to encourage horizontal extrapolation of the acceptance and achieve a smoothed structure. 
 
-\subsubsection{Morphological Filtering}
+The resulting acceptance region was converted into a binned LUT, the $w_{\eta}$ axes was divided into 45 bins between 0.0 - 3.0 mm and the $\lvert cot(\theta) \rvert$ axes divided into 30 bins between 0.0 - 9.0. The acceptance bins was recorded in the LUT. Using a predefined LUT is a much more efficient procedure than training and predicting class labels on the fly. The LUT is fed directly into the \texttt{Fast Tracking} trigger algorithm. It provides fast look-up to reduce computational overheads and the table itself is a very low cost option to store in memory. 
 
-%Classifier predictions for the pixel barrel (Figure 4) and endcap regions were implemented directly into the ATLAS HLT Fast Tracking to reduce computational overheads. This was achieved by converting the predefined acceptance region into a Look-Up Table (LUT) using a common image processing technique known as Morphological Filtering [6].
 
-An ensemble approach was taken combining the strict LUT and KDE predictions. Morphological filtering was then applied to achieve a smoothed structure. Morphological filtering is an image processing technique whereby non-linear transformations are applied to the binary matrix of an image, altering the features. Such non-linear operations include dilation and erosion. Dilation enlarges bright regions and shrinks dark regions, whereas erosion does the inverse of this. A combination of dilation and erosion was applied to the ensemble LUT via rectangular structuring elements, in order to encourage horizontal
-extrapolation of the acceptance region. The binned predictions from the KDE classifiers and smoothed LUTs are shown in Figures 9 and 10; orange representing acceptance regions and blue rejection regions.
-Referring to 9a, KDE predictions for the barrel coincide well with the ’linear corridor’ estimation from the strict LUT. Whereas a V-shaped LUT is obtained for the endcap region.
 
 % \subsubsection{ML Filtering Modes}
 
@@ -168,8 +167,9 @@ Referring to 9a, KDE predictions for the barrel coincide well with the ’linear
 
 
 \subsection{Performance Evaluation}
+%DONE
 
-The full scan ID efficiencies as a function of MC truth track $\eta$ and $p_T$ for the \texttt{Fast tracking} trigger stage, are shown in Figures \ref{fig:efficiencies-ml-hit-pair-predictor-eta} and \ref{fig:efficiencies-ml-hit-pair-predictor-pt}. The nominal seeding approach is compared with the application of ML filtering within the Pixel detector. The nominal seeding achieved an average tracking efficiency of 95\% with respect to MC truth tracks. The application of ML filtering at $\langle \mu \rangle$ = 80, achieved an average tracking efficiency of 93.9\% and the speed-up factor was observed to be a factor of 2.3. The main loss in efficiency is observed at regions of large $\lvert \eta \rvert$, due to the transition between the barrel and endcap Pixel detector. Overall, there is little deviation from the standard trigger seeding with application of ML extensions.
+The full detector scan of ID efficiencies as a function of MC truth track $\eta$ and $p_T$ for the \texttt{Fast tracking} trigger stage are shown in Figure \ref{fig:efficiencies-ml-hit-pair-predictor}. The nominal seeding approach is compared with the application of ML filtering within the Pixel detector. The nominal seeding achieved an average tracking efficiency of 95\% with respect to MC truth tracks. The application of ML filtering at $\langle \mu \rangle$ = 80, achieved an average tracking efficiency of 93.9\% and the speed-up factor was observed to be 2.3. The main loss in efficiency is observed at large $\lvert \eta \rvert$, due to the transition between the barrel and endcap Pixel detector. Overall, there is little deviation from the standard trigger seeding with application of ML extensions.
 
 
 \begin{figure}[!htbp]
@@ -199,7 +199,7 @@ The full scan ID efficiencies as a function of MC truth track $\eta$ and $p_T$ f
 
 Table \ref{tab:cpu} summarises the breakdown in speed-up factors achieved at various stages within the \texttt{Fast Tracking} trigger algorithm, with the application of the trained LUT for the Pixel region. The total speed-up factor achieved in the full detector with application of ML extensions at $\langle \mu \rangle$ = 80 was observed to be 2.3. The greatest saving in CPU time is achieved during the \texttt{Seed Processing} stage, as a direct result of the significant reduction in the number of seeds. The average number of seeds processed for a given region of interest for the standard tracking is $O(10^{4})$, whereas with the introduction of ML filtering for pixel seeds, approximately 78\% fewer seeds were observed. This significant reduction in CPU time does not only benefit the \texttt{Seed Processing} stage of the combinatorial track following algorithm in ATLAS, but also propagates to the \texttt{Track Fitting} stage.
 
-\begin{table}[htb!]
+\begin{table}[!htbp]
 \caption{Performance of the ATLAS full detector tracking with MC 13 TeV $t\bar{t}$ samples at $<\mu> = 80$, with the application of ML extensions for filtering on pixel detector hit-pairs in the \texttt{Fast Tracking} trigger stage \cite{public-hlt}. The total speed-up factor and breakdown of speed-ups at different stages of the \texttt{Fast Tracking} trigger algorithm are presented, each speed-up is presented with respect to the standard trigger seeding where no ML extensions are applied.}
 \begin{center}
 \begin{tabular}{llll}
