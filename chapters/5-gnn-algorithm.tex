@@ -4,42 +4,105 @@
 
 \chapter{Graph Neural Network Pattern Recognition Algorithm}\label{chapter-5}
 
+%encapsulates the development of a novel pattern recognition algorithm utilising graph neural network (GNN) architectures and Kalman filters in order to identify and extract track candidates in a silicon based Pixel detector. The GNN track reconstruction algorithm is outlined in this chapter.
+
+
 % The excitation and inhibition rules of individual GNN nodes will be designed to facilitate the “simple-to-complex” approach for “hits-to-tracks” association, such that the network starts with relatively “easy” areas of an event (low hit density) and gradually progresses towards more complex areas (high hit density). 
 
 This work aims at implementing a realistic GNN-based algorithm that can be deployed in an real particle detector experiments.
-
 The main algorithm - the overview, its purpose, the main aims, the different stages, the different techniques used, hyper parameter tuning, implementation of KFs - linear with OU model for extraction and parabolic model for information aggregation/extrapolation.
-
 Mention that this work is presented in XXX conference (and reference).
 
+
+
 \section{Algorithm Overview}
+Introduction to the main iterations and the stages, as well as the key concepts and techniques used within the algorithm.
+
+
 
 \section{Network Initialization}
+\begin{itemize}
+\item Using networkX python package?
+\item Event conversion and graph construction nodes and edges?
+\item Gaussian mixture equations
+\item Track State equations, covariances, derivations, r-z plane and transverse plane
+\item edges having priots and weights (strength and compatibility) - because of Gaussian mixture
+\item edges act as bidrectional conduits - passing information both ways between nodes
+\end{itemize}
+
 \subsection{Track State Estimates}
+\begin{itemize}
+\item In both xy and rz planes, joint track state estimate
+\item parabolic model - in local coordinate system of node itself
+\item rz joint vector - tau parameter, inverse track inclination
+\item how were the covariances dervied and the sigma errors chosen
+\end{itemize}
+
 \subsection{Molière Theory of Multiple Scattering}
-
+\begin{itemize}
+\item highland formula and handling the error/effects due to multiple scattering for the barrel and endcap in slightly different ways
+\end{itemize}
 % moliere theory links:
-
 %https://gray.mgh.harvard.edu/attachments/article/337/Techniques%20of%20Proton%20Radiotherapy%20(06)%20Multiple%20Scattering.pdf
-
 %https://pdg.lbl.gov/2005/reviews/passagerpp.pdf
 
+
+
 \section{Gaussian Mixture Reduction}
-\subsection{Clustering and KL divergence}
+\begin{itemize}
+    \item GMR theory
+    \item Clustering, KL divergence
+    \item Mahalanobis distance and merging of states
+    \item training the optimal threshold using an SVM
+    \item feeding in using a fast look-up table
+\end{itemize}
+
+
 
 \section{Information Aggregation}
-\subsection{Message Passing}
-\subsection{Extrapolation and Validation}
-\subsection{Linear and Parabolic model}
+\begin{itemize}
+    \item Message Passing
+    \item Extrapolation and Validation
+    \item Linear and Parabolic model - 2 different extrapolations for xy componenets of state vector and rz componenet, illustrations here
+    \item Kalman Filter Update, OU process for correlated noise
+\end{itemize}
+
+
 
 \section{Updating Network State}
+\begin{itemize}
+    \item As edges get turned on and off - local neighbourhoods change, track states and covariances need updating
+    \item reweighting - calculation of Gaussian likelihood in order to update the weights
+    \item deactivation of any weights that are below a tuned threshold
+    \item recalculation of priors
+    \item Gaussian mixture update local to each neighbourhood
+\end{itemize}
+
+
 
 \section{Track Extraction}
-\subsection{Implementation of KFs}
-\subsection{CCA}
-\subsection{Merging Close Proximity Nodes}
-\subsection{Community Detection}
+\begin{itemize}
+    \item CCA
+    \item criteria for a good track candidate
+    \item Implementation of KFs/ KF track fit
+    \item Merging Close Proximity Nodes
+    \item Community Detection
+\end{itemize}
 %Community Detection: divides nodes into various clusters based on edge structure. It learns from edge weights, and distance and graph objects similarly. 
+
+
+
+\section{Implementation of KFs}
+\begin{itemize}
+\item emphasis on the use of KFs both in information aggregation stage and in track extraction, both are implemented in different ways, is a useful and unique part to this algorithm
+\end{itemize}
+
+
+
+\section{Application and Performance on a Simple Toy MC Model}
+\begin{itemize}
+\item Application on a simple toy mc model and heat network - track extracted and metrics
+\end{itemize}
 
 
 

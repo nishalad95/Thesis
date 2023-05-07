@@ -6,39 +6,25 @@
 %\setcounter{section}{0}
 \chapter{Introduction}
 
-%\begin{itemize}
-%\item Introduction to the thesis
-%\item The overall narrative and where this thesis is going
-%\item "The bigger picture"
-%\item Particle detector experiments in general, the increase in luminosity, the physics motivation, the challenges to tracking that arise from this - the CPU usage, optimisations etc, the pileup, emphasize the i importance of optimisations in tracking
-%\item The importance of ML is tackling these challenges
-%\item Graph networks as a solution which is used in tracking, traditionally multi-layered perceptrons are trained, but this approach is unique
-%\item First it is important to find good edge connections in the network (QT task) and then find good track candidates within the network that can be extracted (GNN)
-%\end{itemize}
+\setlength\parindent{0pt}
 
-%Background and impact.
-%Importance of the problem and anticipated impact.
+This thesis describes efforts to improve the understanding of track reconstruction via graph based methods, primarily through the development of algorithms used to build graph networks with compatible edge connections and extraction of good track candidates. This thesis is structured in the following manner:
 
-%nips-2018-competition
-%Our challenge program inserts itself in a bigger effort of the Atlas collaboration (one of the three experiments analyzing data collected at CERN on the Large Hadron Collider– LHC) to use Machine Learning to assist high energy physicists in discovering and characterizing new particles.
-%In the LHC, proton bunches (beams) circulates and collide at high energy. Each beam- beam collision (further called an event) produces a firework of new particles (figure 2). To identify the types and measure the kinematic properties of these particles, a complex apparatus, the detector records the small energy deposited by the particles when they impact well-defined locations in the detector.
-%The tracking problem refers to reconstructing the trajectories of the particles from the information recorded by the detector. The augmentation of data throughput creates a major scaling bottleneck for the associated pattern recognition-tracking task. Thus, current methods [5] will soon become obsolete and there is an urgent need for novel algorithms.
+Chapter \ref{chapter-2} describes the ATLAS detector and the CERN accelerator complex. Details of future upgrades to the particle detector experiment are also given.
 
-%This thesis describes efforts to improve the understanding of the Higgs boson and its coupling to heavy flavour quarks, primarily through the development of algorithms used to reconstruct and identify jets. The thesis is structured in the following manner:
-%Chapter 2 describes the theoretical foundations of the work presented in the rest of the thesis.
-%Chapter 3 describes the ATLAS detector and the CERN accelerator complex. Details of reconstructed physics objects and the b-jet identification algorithms are given.
-%Chapter 4 provides an overview of the challenges facing successful charged particle trajectory (track) reconstruction and correspondingly b-jet identification, with a particular focus on the high transverse momentum regime. Preliminary investigations into reconstruction improvements are provided.
-%Chapter 5 describes the development of an algorithm which predicts the origins of tracks. The tool is used to improve b-tagging performance by the identification and removal of fake tracks before their input to the b-tagging algorithms.
-%Chapter 6 introduces a novel, monolithic b-jet identification algorithm which makes use of graph neural networks and auxiliary training objectives.
-%Chapter 7 describes the measurement of the associated production of a Higgs boson decaying into a pair of b-quarks at high transverse momentum.
-%Chapter 8 contains some concluding remarks.
+Chapter \ref{chapter-3} provides an overview of charged particle trajectory (track) reconstruction in silicon based particle detectors. This chapter also presents the TrackML detector model, a realistic detector model simulation and online Machine Learning challenge, as well as an introduction to graph network structures and track reconstruction using graph based architectures.
 
-%The author’s contribution to the work presented in this thesis is as follows.
-%Tracking: The author was an active member of the Cluster and Tracking in Dense Environments group throughout their PhD, starting with their qualification task on the understanding of tracking performance at high transverse momentum. The author played a key role in the validation for the tracking group of Release 22 of the ATLAS software, including the validation of the quasi-stable particle interaction simulation and the radiation damage Monte-Carlo simulation. The author helped design and improve several tracking software frameworks, and contributed to heavy flavour tracking efficiency studies in dense environments. The author developed a tool to identify and reject fake-tracks, which is being investigated for use in the upcoming tracking paper.
-%b-tagging: The author has been an active member of the Flavour Tagging group since October 2020. The author played a key role in investigating the performance of the low level taggers at high transverse momentum and led studies into the labelling and classification of track origins. Based on work by Jonathan Shlomi [2], the author helped develop a new flavour tagging algorithm which offers a large performance improvement with respect to the current state of the art. The author was the primary editor of a public note associated with this work [3], which will also be further developed in an upcoming paper. The author also contributed to the proliferation of the new algorithm to the trigger, High Luminosity LHC, and X → bb use cases. The author also played a key role in software r22 validation studies for the Flavour Tagging group, including the validation of the quasi-stable particle interaction simulation. The author maintains and contributes to various software frameworks used in the Flavour Tagging group, including as lead developer of three packages, to create training datasets, pre-process samples for performance studies and a framework for training graph neural networks, and contributes to group documentation.
-%Higgs: The author was an active member of the Boosted VHbb analysis group. The author performed various studies deriving systematic uncertainties for the V +jets and diboson backgrounds. The author also produced and maintained samples, ran fit studies and cross checks, and gave the diboson unblinding approval talk to the Higgs group. The author also contributed to the development of the analysis software.
+Chapter \ref{chapter-4} describes the development and application of a machine learning based algorithm which predicts if a pair of hits belong to the same track given input hit features. This chapter showcases a methodology that can be used for graph building within track reconstruction.
 
+Chapter \ref{chapter-5} encapsulates the development of a novel pattern recognition algorithm utilising graph neural network (GNN) architectures and Kalman filters in order to identify and extract track candidates in a silicon based Pixel detector. The GNN track reconstruction algorithm is outlined in this chapter.
 
+Chapter \ref{chapter-6} provides an overview of the application and performance of the GNN algorithm on the TrackML detector model, as well as the challenges faced during development. Preliminary investigations into improvements and an outlook to software enhancement are also discussed.
 
-%\end{document}
+Chapter \ref{chapter-7} contains some concluding remarks.
+
+The author’s contribution to the work presented in this thesis is as follows.
+
+The author was an active member of the Inner Detector (ID) trigger group at the ATLAS experiment throughout their PhD, starting with their qualification task on developing a machine learning based classifier for measurement-to-track association to predict if a pair of hits belong to the same track for the ATLAS ID trigger. The author has presented at the Advanced Computing and Analysis Techniques (ACAT) online conference in Daejeon Korea, in 2021 and at the Institute of Physics (IoP) High Energy Particle Physics and Astroparticle Physics (HEPP and APP) conference in 2022. The author is published in the Journal of Physics: Conference Series \cite{Lad_2023} and the software is implemented in the optimisation of the HLT ID track seeding software for ATLAS Run-3 and beyond \cite{Grandi:2728111, Long:2813981}. The author also played a key role in contributing to the ID trigger validation tasks. Such tasks involved weekly reprocessing for validation of upcoming software releases, in order to catch signs of rare bugs, test online monitoring and validate the output of the High Level Trigger (HLT) algorithms.
+
+The author presented the GNN-based algorithm for track reconstruction at the 2022 Connecting the Dots (CTD) conference at the University of Princeton USA, and is currently under review for publication in the Springer Journal: Computing for Software and Big Science \cite{Lad_2023_gnn}. The author has also presented at several workshops, including the Google DeepMind GNN seminar held at UCL in 2023.
 
