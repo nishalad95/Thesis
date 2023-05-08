@@ -26,25 +26,25 @@
 %	6. Application & Perform of GNN Algorithm
 %---------------------------------------------
 
-\chapter{Application and Performance of GNN Algorithm}
+\chapter{Application and Performance on the TrackML Model}
 \label{chapter-6}
 
 % This chapter focuses on the track finding algorithm development and its application on the publicly available dataset designed for the Kaggle TrackML challenge. The preliminary results related to track reconstruction efficiency and purity metrics are presented and discussed.
 
 The main application of the GNN algorithm on the trackML data, the data preparation, what data was exactly used and why, the ML classification algorithm used to build the edge connections. The main results we get from application of this algorithm, the track reconstruction efficiency, the purity metrics, computational performance. Comparison with other algorithms.
 
-\section{Application and Performance on the TrackML Model}
 
-\subsection{Data Preparation}
+\section{Data Preparation}
 Talk specifically about the TrackML data here and how it was prepared. How the trackml hits are converted into nodes and edges. Close proximity node merging. Checks that are put in place in order to make sure there are no hits that have the same module id (more than 2 hits that are simultaneously in the same module and volume and layer).
 
-\subsection{Endcap Results}
+\section{Endcap Results and Performance Evaluation}
+
+% TODO: mention here that the parabolic track state model was used and the joint track state was used, and mention the section here
 
 %nips-2018-competation
 %Data.
 %We used the fast (10s per event) and accurate simulation engine ACTS4 [6] to generate the challenge data. It allowed us to generate realistic data emulating a full Silicon LHC detector (see Fig 3), while providing us with the ground truth of particle trajectory membership. Thus, for each event we obtained the “detected” 3D points coordinates (and additional features), and, as ground truth, the list of points associated to each track. There is a one to one relationship between the true 3D points and the reconstructed ones.
 
-\subsection{Results}
 \begin{itemize}
     \item Application on TrackML model, endcap volume only, metrics, performance eval etc, track reconstruction efficiency, track purity and particle purity, comparison with TrackML solutions
     \item Track reconstruction efficiency, track purity, particle purity
@@ -53,8 +53,13 @@ Talk specifically about the TrackML data here and how it was prepared. How the t
 \end{itemize}
 
 \section{Outlook}
+
+\subsection{Extension to the Barrel Region}
+
+\subsection{Software Optimisations}
+
 \begin{itemize}
-    \item extension to barrel, analysis of results, performance  evaluation, challenges & outlook
+    \item extension to barrel, analysis of results, performance  evaluation, challenges and outlook
     \item Optimisation - GPU acceleration etc
 \end{itemize}
 
