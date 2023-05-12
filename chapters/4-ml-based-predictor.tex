@@ -74,29 +74,26 @@ The choice of bandwidth is important, as too large bandwidth results in a distri
 \subsection{Classifier Training}
 % DONE
 
-The hit-pair data was separated into a training and a test dataset using a 70:30 split. The training data was analysed in the phase space of [$|cot(\theta)|$, $w_{\eta}$]. Figure \ref{fig:truth-histo} shows an example of the 1-dimensional distributions of $|cot(\theta)|$ for Pixel barrel hit-pairs with $w_{\eta} \le$ 0.4mm, where a clear distinction is observed between each truth class. The Bayes’ classifier was implemented in a generative way, computing the likelihood via a fitted KDE to each correct hit association distribution parameterised by discrete $w_{\eta}$. Each model was trained as follows; the feature vector \textbf{x} was comprised of $|cot(\theta)|$ and the truth label of the hit-pair formed the target vector \textbf{y}. For unknown data points, the class which maximised the posterior was the class prediction.
+The hit-pair data was separated into a training and a test dataset using a 70:30 split. The training data was analysed in the phase space of [$|cot(\theta)|$, $w_{\eta}$]. Figure \ref{fig:truth-histo} shows an example of the 1-dimensional distributions of $|cot(\theta)|$ for Pixel barrel hit-pairs with $w_{\eta} \le$ 0.4mm, where a clear distinction is observed between each truth class. The Bayes’ classifier was implemented in a generative way, computing the likelihood via a fitted KDE to each correct hit association distribution parameterised by $w_{\eta}$. The feature vector \textbf{x} was comprised of $|cot(\theta)|$ and the truth label of the hit-pair formed the target vector \textbf{y}. For unknown data points, the class which maximised the posterior was the class prediction.
 
 After training, the predictions from each classifier were adjusted using the model's corresponding Receiver Operating Characteristic (ROC) curve \cite{Davis2006-oh}. The ROC curve indicates the performance of the classification model at all classification thresholds. The ROC curve plots two parameters: True Positive Rate (TPR, also known as recall) and False Positive Rate (FPR), where each point on the curve corresponds to a prediction probability. The ROC curve for the classifier trained on the distribution for $w_{\eta} \le$ 0.4mm is shown in Figure \ref{fig:roc-curve}. The classifier’s predictions were adjusted using the prediction probability derived from the ROC curve to yield a TPR of 0.95. Such a high TPR was chosen in order to maintain a high purity of correct hit-pairs. 
 
 The Area Under the Curve (AUC) represents a measure of separability and indicates the ability of a model to distinguish between classes. The value of the AUC is in the range 0.0 $\leq$ AUC $\leq$ 1.0, where AUC = 1 corresponds to perfect classification. The AUC achieved by the ML classifier for the $w_{\eta} \leq 0.4$mm distribution was 0.79. The ‘no skill’ classifier with AUC = 0.5 is also shown in Figure \ref{fig:roc-curve}. This classifier cannot discriminate between correct or incorrect hit association classes and would predict a random class in all cases with 50\% probability.
 
 
-\begin{figure}[!htbp]
-\centering
-    \begin{subfigure}[a]{0.9\textwidth}
-        \includegraphics[width=\linewidth]{images/4-ml-based-predictor/histo.pdf}
-        \caption{$\lvert cot(\theta) \rvert$ distributions for Pixel barrel hit pairs with $w_{\eta} \leq 0.4$ mm }
-        \label{fig:truth-histo}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}[b]{0.9\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{images/4-ml-based-predictor/roc.pdf}
-        \caption{ROC curve for Pixel barrel hit pairs with $w_{\eta} \leq 0.4$ mm }
-        \label{fig:roc-curve}
-    \end{subfigure}
-\caption{(a) $\lvert cot(\theta) \rvert$ for Pixel barrel hit pairs in the ATLAS Pixel detector, where $\theta$ is the inclination angle of the hit pair with respect to the $z$-axis. (b) The corresponding Receiver Operating Characteristic (ROC) curve for the classifier trained on the data shown in (a). The curve indicates the rates of false positive and true positive of Pixel barrel hit pairs to tracks corresponding to truth particles.}
-\label{fig:1-dimensional-classifier-training}
+\begin{figure}[htbp!] 
+    \centering
+    \subfloat[$\lvert cot(\theta) \rvert$ distributions for Pixel barrel hit pairs with $w_{\eta} \leq 0.4$ mm]{%
+        \includegraphics[width=0.96\textwidth]{images/4-ml-based-predictor/histo.pdf}%
+        \label{fig:truth-histo}%
+        }%
+    \hfill%
+    \subfloat[ROC curve for Pixel barrel hit pairs with $w_{\eta} \leq 0.4$ mm]{%
+        \includegraphics[width=0.96\textwidth]{images/4-ml-based-predictor/roc.pdf}%
+        \label{fig:roc-curve}%
+        }%
+    \caption{(a) $\lvert cot(\theta) \rvert$ for Pixel barrel hit pairs in the ATLAS Pixel detector, where $\theta$ is the inclination angle of the hit pair with respect to the $z$-axis. (b) The corresponding Receiver Operating Characteristic (ROC) curve for the classifier trained on the data shown in (a). The curve indicates the rates of false positive and true positive of Pixel barrel hit pairs to tracks corresponding to truth particles.}
+    \label{fig:1-dimensional-classifier-training}
 \end{figure}
 
 
@@ -125,28 +122,27 @@ Figure \ref{fig:predictions-pb-2d} shows the adjusted classifier predictions for
 
 % This is expected to originate from the forward region of the detector and....
 
-For each classifier, the triplet selection efficiency and total seed rejection efficiency were evaluated. The seed selection efficiency is defined as the proportion of seeds with both its constituent doublet pairs classified as correctly associated, out of all correctly associated seeds corresponding to MC truth from ATLAS tracking algorithms. This provides an indication of recall. The total seed rejection efficiency considers the proportion of rejected seeds, thereby providing an estimate of the total CPU time saved. The lower efficiency and corresponding reduced purity around $w_{\eta} \sim$ 2.0 mm is due to the transition between the barrel and endcap Pixel detector layers. Overall, the seed selection efficiency achieved was 74.8 $\pm$ 0.1\% and total seed rejection efficiency was 41.5 $\pm$ 0.1\%. This is primarily dominated by the low cluster width distribution ($w_{\eta} \leq$ 0.4 mm) where the greatest statistics is available for training data.
-
+For each classifier, the triplet selection efficiency and total seed rejection efficiency were evaluated, shown in Figure \ref{fig:predictions-pixel-barrel-and-triplet-efficiencies}. The seed selection efficiency is defined as the proportion of seeds with both its constituent doublet pairs classified as correctly associated, out of all correctly associated seeds corresponding to MC truth from ATLAS tracking algorithms. This provides an indication of recall. The total seed rejection efficiency considers the proportion of rejected seeds, thereby providing an estimate of the total CPU time saved. The lower efficiency and corresponding reduced purity around $w_{\eta} \sim$ 2.0 mm is due to the transition between the barrel and endcap Pixel detector layers. Overall, the seed selection efficiency achieved was 74.8 $\pm$ 0.1\% and total seed rejection efficiency was 41.5 $\pm$ 0.1\%. This is primarily dominated by the low cluster width distribution ($w_{\eta} \leq$ 0.4 mm) where the greatest statistics is available for training data.
 
 
 %The seed selection efficiency is defined as the proportion of seeds with both its constituent doublet pairs classified as correctly associated, out of all correctly associated seeds corresponding to MC truth from ATLAS tracking algorithms. and the total seed rejection efficiency considers the proportion of rejected seeds, thereby providing an estimate of the total CPU time saved. The lower efficiency and corresponding reduced purity around ��! ~ 2.0 mm is due to the transition between the barrel and endcap pixel detector. Errors shown here are purely statistical.
 
-\begin{figure}[!htbp]
-\centering
-    \begin{subfigure}[a]{0.91\textwidth}
-        \includegraphics[width=\linewidth]{images/4-ml-based-predictor/scatter_kde_predictions.pdf}
-        \caption{Classifier predictions for Pixel barrel hit pairs plotted as $\lvert cot(\theta) \rvert$ vs. $w_{\eta}$}
-        \label{fig:predictions-pb-2d}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}[b]{0.91\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{images/4-ml-based-predictor/triplet_eff_metrics.pdf}
-        \caption{Seed selection efficiency and total rejection efficiency}
-    \end{subfigure}
-\caption{(a) Predicted classification of Pixel barrel hit pairs from the ATLAS Pixel detector, trained using a set of ML classifiers to distinguish hit pairs matched to tracks corresponding to truth particles. Hit pair features used in training: $\lvert cot(\theta) \rvert$, where $\theta$ is the inclination angle of the hit pair to the z-axis and the Pixel cluster width $w_{\eta}$. The corresponding seed selection efficiency and total rejection efficiency are shown in (b). Errors shown here are purely statistical.}
-\label{fig:predictions-pixel-barrel-and-triplet-efficiencies}
+
+\begin{figure}[htbp!] 
+    \centering
+    \subfloat[Classifier predictions for Pixel barrel hit pairs plotted as $\lvert cot(\theta) \rvert$ vs. $w_{\eta}$]{%
+        \includegraphics[width=0.96\textwidth]{images/4-ml-based-predictor/scatter_kde_predictions.pdf}%
+        \label{fig:predictions-pb-2d}%
+        }%
+    \hfill%
+    \subfloat[Seed selection efficiency and total rejection efficiency]{%
+        \includegraphics[width=0.96\textwidth]{images/4-ml-based-predictor/triplet_eff_metrics.pdf}%
+        \label{fig:predictions-pixel-barrel-and-triplet-efficiencies}%
+        }%
+    \caption{(a) Predicted classification of Pixel barrel hit pairs from the ATLAS Pixel detector, trained using a set of ML classifiers to distinguish hit pairs matched to tracks corresponding to truth particles. Hit pair features used in training: $\lvert cot(\theta) \rvert$, where $\theta$ is the inclination angle of the hit pair to the z-axis and the Pixel cluster width $w_{\eta}$. The corresponding seed selection efficiency and total rejection efficiency are shown in (b). Errors shown here are purely statistical.}
 \end{figure}
+
+
 
 
 
@@ -154,6 +150,7 @@ For each classifier, the triplet selection efficiency and total seed rejection e
 \label{application-of-hit-pair-predictor}
 
 \subsection{Look-Up Table Generation}
+\label{LUT-generation}
 
 Classifier predictions for the Pixel barrel and endcap regions were implemented directly into the ATLAS HLT \texttt{Fast Tracking} algorithm in the form of a look-up table (LUT). This was achieved by first smoothing classifier predictions using Morphological filtering \cite{morphological-filtering} and then converting the acceptance region into a table.
 
@@ -174,23 +171,22 @@ The resulting acceptance region was converted into a binned LUT, the $w_{\eta}$ 
 The track reconstruction efficiency as a function of MC truth track $\eta$ and $p_T$ for the \texttt{Fast tracking} trigger stage are shown in Figure \ref{fig:efficiencies-ml-hit-pair-predictor}. The standard track seeding approach is compared with the application of ML filtering within the Pixel detector. The standard seeding achieved an average tracking efficiency of 95\% with respect to MC truth tracks. The application of ML filtering at $\langle \mu \rangle$ = 80, achieved an average tracking efficiency of 93.9\%. The main loss in efficiency is observed at large $\lvert \eta \rvert$, due to the transition between the barrel and endcap Pixel detector. Overall, there is little deviation in track reconstruction efficiency from the standard trigger seeding with application of ML extensions.
 
 
-\begin{figure}[!htbp]
-\centering
-    \begin{subfigure}[a]{0.86\textwidth}
-        \includegraphics[width=\linewidth]{images/4-ml-based-predictor/efficiency_eta.pdf}
-        \caption{Efficiency vs. MC truth track $\eta$}
-    \label{fig:efficiencies-ml-hit-pair-predictor-eta}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}[b]{0.86\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{images/4-ml-based-predictor/efficiency_pT.pdf}
-        \caption{Efficiency vs. MC truth track $p_{\mathrm{T}}$}
-    \label{fig:efficiencies-ml-hit-pair-predictor-pt}
-    \end{subfigure}
-\caption{Tracking efficiencies as a function of track parameters, for $p_{T}$ > 3 GeV for the ATLAS full detector tracking with $t\overline{t}$ Monte Carlo 13 TeV and mean pile-up interaction multiplicity of $\langle \mu \rangle$ = 80. The data points show the efficiency when using machine learning extensions in the seed building stages of the fast tracking trigger in the ATLAS pixel detector, prior to the track fitting. The dashed line shows the efficiency of the standard trigger seeding with no application of machine learning extensions. The errors shown are purely statistical \cite{public-hlt}. }
-\label{fig:efficiencies-ml-hit-pair-predictor}
+
+\begin{figure}[htbp!] 
+    \centering
+    \subfloat[Efficiency vs. MC truth track $\eta$]{%
+        \includegraphics[width=0.9\textwidth]{images/4-ml-based-predictor/efficiency_eta.pdf}%
+        \label{fig:efficiencies-ml-hit-pair-predictor-eta}%
+        }%
+    \hfill%
+    \subfloat[Efficiency vs. MC truth track $p_{\mathrm{T}}$]{%
+        \includegraphics[width=0.9\textwidth]{images/4-ml-based-predictor/efficiency_pT.pdf}%
+        \label{fig:efficiencies-ml-hit-pair-predictor-pt}%
+        }%
+    \caption{Tracking efficiencies as a function of track parameters, for $p_{T}$ > 3 GeV for the ATLAS full detector tracking with $t\overline{t}$ Monte Carlo 13 TeV and mean pile-up interaction multiplicity of $\langle \mu \rangle$ = 80. The data points show the efficiency when using machine learning extensions in the seed building stages of the fast tracking trigger in the ATLAS pixel detector, prior to the track fitting. The dashed line shows the efficiency of the standard trigger seeding with no application of machine learning extensions. The errors shown are purely statistical \cite{public-hlt}.}
+    \label{fig:efficiencies-ml-hit-pair-predictor}
 \end{figure}
+
 
 
 
