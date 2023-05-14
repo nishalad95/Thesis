@@ -58,7 +58,7 @@ where $C_{ij}$ are the track state covariances. All edges act as bidirectional c
 
 
 \section{Gaussian Mixture Reduction}
-For nodes with a high multiplicity of edge connections, the number of track states can quickly rise. To make inferences within a reasonable amount of processing time, GMR is used to prevent the number of components from exploding. One computationally efficient algorithm for GMR is a clustering. A high order Gaussian mixture is approximated by one with lower order, using the traditional k-means clustering \cite{kmeans}. At each node, similar track states are grouped together forming a reduced mixture and their corresponding edges remain active, as illustrated in Figure \ref{fig:GMR-example}. For a given node $i$, the merged state estimate $X^{M}$ and merged state covariance $C^{M}$ is formed using the clustered states and the inverse-variance weighting \cite{inverse-variance-weighting} given by Eq \eqref{eqn:inverse-variance-weighting}, where $G_{ij}$ = $C_{ij}^{-1}$. Outlier states are identified and their edges are deactivated.
+For nodes with a high multiplicity of edge connections, the number of track states can quickly rise. To make inferences within a reasonable amount of processing time, GMR is used to prevent the number of components from exploding. One computationally efficient algorithm for GMR is a clustering. A high order Gaussian mixture is approximated by one with lower order, using the traditional k-means clustering \cite{kmeans}. At each node, similar track states are grouped together forming a reduced mixture and their corresponding edges remain active, as illustrated in Figure \ref{fig:GMR-example}. For a given node $i$, the merged state estimate $X^{M}$ and merged state covariance $C^{M}$ is formed using the clustered states and the inverse-variance weighting \cite{inverse-variance-weighting} given by Eqs \eqref{eqn:inverse-variance-weighting}, where $G_{ij}$ = $C_{ij}^{-1}$. Outlier states are identified and their edges are deactivated.
 
 \begin{equation}
     X^{M} = C^{M} \sum_{j} G_{ij} X_{ij},  \quad  C^{M} = \left( \sum_{j} G_{ij} \right) ^{-1}
@@ -105,7 +105,7 @@ The message passing mechanism of graph networks is leveraged in order to improve
 
 
 \subsection{Validation}
-Once state information has been propagated to neighbours, the parameter estimation begins with a linear projection of the incoming track state onto the subspace of measurements. As illustrated in Figure \ref{fig:extrapolation}, for a given node $i$ each incoming $X^M$ is projected via a measurement matrix $H$, which relates the incoming track state to the measurement values. See \ref{gnn-application-toy-model} and \ref{chapter-6-extrapolation} for implementation of matrix $H$. In order to validate if the connection between node $i$ and $j$ is compatible, the Mahalanobis distance, $\Delta \chi^{2}_{ij}$, is calculated using the residual between the projected state $HX$ and the measurement at the neighbour node. If $\Delta \chi^{2}_{ij} < d_{\chi}$, where $d_{\chi}$ is a tuned distance threshold, the connection is deemed compatible and the state can be extrapolated via a KF. If $\Delta \chi^{2}_{ij} > d_{\chi}$ then the connection is deemed incompatible and the corresponding edge is deactivated. The threshold $d_{\chi}$ represents the maximum $\Delta \chi^{2}_{ij}$ acceptable for an incoming track state.
+Once state information has been propagated to neighbours, the parameter estimation begins with a linear projection of the incoming track state onto the subspace of measurements. As illustrated in Figure \ref{fig:extrapolation}, for a given node $i$ each incoming $X^M$ is projected via a measurement matrix $H$, which relates the incoming track state to the measurement values. See Section \ref{gnn-application-toy-model} for implementation of matrix $H$. In order to validate if the connection between node $i$ and $j$ is compatible, the Mahalanobis distance, $\Delta \chi^{2}_{ij}$, is calculated using the residual between the projected state $HX$ and the measurement at the neighbour node. If $\Delta \chi^{2}_{ij} < d_{\chi}$, where $d_{\chi}$ is a tuned distance threshold, the connection is deemed compatible and the state can be extrapolated via a KF. If $\Delta \chi^{2}_{ij} > d_{\chi}$ then the connection is deemed incompatible and the corresponding edge is deactivated. The threshold $d_{\chi}$ represents the maximum $\Delta \chi^{2}_{ij}$ acceptable for an incoming track state.
 
 \begin{figure}[htbp]
         \centering
@@ -117,14 +117,14 @@ Once state information has been propagated to neighbours, the parameter estimati
 
 \subsection{KF Update and Extrapolation}
 
-For compatible states where $\Delta \chi^{2}_{ij} < d_{\chi}$, the KF update is applied.
-
-The KF computes the extrapolated track state estimate $\tilde{X}_{ij}$ using the state transition Jacobian $F_{ij}$ from nodes $i$ to node $j$ and the corresponding extrapolated covariance matrix $\widetilde{C}_{ij}$ is given by Eq. \eqref{eqn:extrapolation}. The matrix $\widetilde{C}_{ij}$ includes the addition of the process noise $Q$ modelled by the Ornstein-Uhlenbeck (OU) process \cite{OU} which encompasses all material effects. See Section \ref{kf} for further details. The full derivation of $F$ and $Q$ are shown in Appendix \ref{appendix:Appendix-A} The KF is implemented using the Python package Filterpy \cite{filterpy}.
+For compatible incoming states where $\Delta \chi^{2}_{ij} < d_{\chi}$, the KF update is applied in order to compute the extrapolated track state estimate $\tilde{X}_{ij}$ and the corresponding extrapolated covariance matrix $\widetilde{C}_{ij}$. The KF is implemented via the Python library \textit{Filterpy} \cite{filterpy}. $\tilde{X}_{ij}$ and $\widetilde{C}_{ij}$ are given by Eqs. \eqref{eqn:extrapolation},
 
 \begin{equation}
-\tilde{X}_{ij} = F_{ij} X_{ij}^{M} \qquad \tilde{C}_{ij} = F_{ij} \biggl( \sum C_{ij}^{M} + Q \biggl) F^{T}_{ij}
+\tilde{X}_{ij} = F_{ij} X_{ij}^{M}, \qquad \tilde{C}_{ij} = F_{ij} \biggl( \sum C_{ij}^{M} + Q \biggl) F^{T}_{ij}
 \label{eqn:extrapolation}
 \end{equation}
+
+where $F_{ij}$ is the state transition Jacobian from nodes $i$ to node $j$, and $Q$ is the process noise matrix. See Section \ref{gnn-application-toy-model} for implementation of the KF update, matrix $F$ and $Q$. 
 
 
 
@@ -161,6 +161,8 @@ Following this update, the algorithm iterations repeat. A further GMR would foll
 
 
 
+
+
 \section{Track Splitting and Extraction}
 \label{gnn-track-extration}
 \begin{itemize}
@@ -168,6 +170,15 @@ Following this update, the algorithm iterations repeat. A further GMR would foll
     \item criteria for a good track candidate
     \item Implementation of KFs/ KF track fit
 \end{itemize}
+
+% As opposed to handling a track segment in the kf just like in the extrapolation stage, the KF for track fitting must consider the whole chain of track segments.
+
+%Within the GNN-based framework it is possible to iteratively discover good track candidates at each stage as soon as ambiguities are resolved. Therefore, after each stage a graph splitting algorithm is applied. 
+
+%Initially, the NetworkX CCA method \textit{weakly connected components} is used, as the network may have connections which have been deactivated and so a potential subgraph can be separated from the main network. The criteria for good candidates are defined as follows; subgraphs must have a minimum number of four nodes within the volume of interest and must contain one node per layer such that there are no are intersecting tracks or holes. The KF is then applied in order to perform a track fit on all separated networks and iteratively predict and update track parameters. In order to assess the quality of extracted track candidates, the p-value is computed from the $\chi^2$-based KF track fit quality and must be greater than 0.01. 
+
+%\ref{fig:flowchart}
+
 
 
 
