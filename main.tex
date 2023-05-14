@@ -1,5 +1,5 @@
 \documentclass[12pt, a4paper]{book}
-\usepackage{amsmath}
+\usepackage{amsmath, nccmath}
 \usepackage{subfiles}
 \usepackage[colorlinks]{hyperref}
 %\usepackage{units}
@@ -35,7 +35,6 @@
 \pagenumbering{roman}
 \newcommand{\sectionbreak}{\clearpage}
 \makeglossaries
-%\usepackage[T1]{fontenc}
 \hypersetup{urlcolor=blue, linkcolor=blue, citecolor=blue}
 \geometry{margin=1.25in}
 \usepackage{fancyhdr}
@@ -50,33 +49,6 @@
 \usepackage{lineno}
 \linenumbers
 
-
-
-%% acronyms
-\newacronym{lhc}{LHC}{Large Hadron Collider}
-\newacronym{hl-lhc}{HL-LHC}{High Luminosity Large Hadron Collider}
-\newacronym{atlas}{ATLAS}{A Toroidal LHC AppratuS}
-\newacronym{pca}{PCA}{Principal Component Analysis}
-\newacronym{cms}{CMS}{Compact Muon Solenoid}
-\newacronym{cern}{CERN}{European Council for Nuclear Research}
-\newacronym{sm}{SM}{Standard Model}
-\newacronym{alice}{ALICE}{A Large Ion Collider Experiment}
-\newacronym{qcd}{QCD}{Quantum ChromoDynamics}
-\newacronym{bsm}{BSM}{Beyond Standard Model}
-\newacronym{id}{ID}{Inner Detector}
-\newacronym{em}{EM}{Electromagnetic}
-\newacronym{tdr}{TDR}{Technical Design Report}
-\newacronym{sct}{SCT}{Semiconductor Tracker}
-\newacronym{trt}{TRT}{Transition Radiation Tracker}
-\newacronym{ibl}{IBL}{Insertable B-Layer}
-\newacronym{itk}{ITk}{Inner Tracker}
-\newacronym{tdaq}{TDAQ}{Trigger and Data Acquisition}
-\newacronym{hlt}{HLT}{High Level Trigger}
-\newacronym{roi}{RoI}{Regions of Interest}
-\newacronym{ftk}{FTK}{Fast TracKer}
-\newacronym{ef}{EF}{Event Filter}
-\newacronym{mc}{MC}{Monte Carlo}
-\newacronym{gnn}{GNN}{Graph Neural Network}
 
 
 %\titlespacing{\section}{0pt}{\parskip}{-\parskip}
@@ -252,6 +224,7 @@ Submitted in partial fulfillment of the \\
 \restoregeometry
 \doublespacing
 
+
 \pagestyle{fancy}
 \fancyhf{}
 %\fancyhead[LE,RO]{\thepage}
@@ -264,6 +237,7 @@ Submitted in partial fulfillment of the \\
 \fancyhead[R]{\thepage}
 \fancyhead[L]{\textbf{\nouppercase{\rightmark}}}
 }
+
 
 
 %---------------------
