@@ -32,7 +32,7 @@ The excitation and inhibition rules of individual edge connections are designed 
 \section{Graph Network Initialization}
 \label{gnn-network-initialization}
 
-The graph network is constructed using the Python library \textit{NetworkX} \cite{SciPyProceedings_11}. Hits from a particle event are represented as nodes and predicted hit-pairs as edge connections. See chapter \ref{chapter-4} for further details on the hit-pair predictor used to form edge connections. Following this, a common computer vision technique, known as Connected Component Analysis (CCA), is applied using a built-in function\cite{networkx}. CCA detects connected regions in data structures and allows the network to be split into smaller, more manageable graphs referred to as \textit{subgraphs}. 
+The graph network is constructed using the Python library \texttt{NetworkX} \cite{SciPyProceedings_11}. Hits from a particle event are represented as nodes and predicted hit-pairs as edge connections. See chapter \ref{chapter-4} for further details on the hit-pair predictor used to form edge connections. Following this, a common computer vision technique, Connected Component Analysis (CCA), is applied using a built-in function\cite{networkx}. CCA detects connected regions in data structures and allows the network to be split into smaller, more manageable graphs referred to as \textit{subgraphs}. 
 
 Each pairwise connection between node $i$ and neighbour node $j$ forms a Gaussian state, $X_{ij}$, representing the local track parameter estimate. Each edge has an associated prior probability $p_{ij}$ and edge weight $w_{ij}$. The prior probability of node $i$ and neighbour node $j$ belonging to the same track is determined, assuming a track can produce at most one hit per layer of the detector. $w_{ij}$ is a mixture weight for the compatibility of the Gaussian state transmitted from node $i$ to neighbour node $j$, representing the strength of the connection. $w_{ij}$ are initialised as uniform dependent on the number of neighbours local to a node and are updated based on how the network evolves. $w_{ij}$ are not to be confused with the traditional weights associated to features within neural networks.
 
@@ -118,7 +118,7 @@ Once state information has been propagated to neighbours, the parameter estimati
 \subsection{KF Update and Extrapolation}
 \label{chapter-5-kf-extrapolation}
 
-For compatible incoming states where $\Delta \chi^{2}_{ij} < d_{\chi}$, the KF update is applied in order to compute the extrapolated track state estimate $\tilde{X}_{ij}$ and the corresponding extrapolated covariance matrix $\widetilde{C}_{ij}$. The KF is implemented via the Python library \textit{Filterpy} \cite{filterpy}. $\tilde{X}_{ij}$ and $\widetilde{C}_{ij}$ are given by Eqs. \eqref{eqn:extrapolation},
+For compatible incoming states where $\Delta \chi^{2}_{ij} < d_{\chi}$, the KF update is applied in order to compute the extrapolated track state estimate $\tilde{X}_{ij}$ and the corresponding extrapolated covariance matrix $\widetilde{C}_{ij}$. The KF is implemented via the Python library \texttt{Filterpy} \cite{filterpy}. $\tilde{X}_{ij}$ and $\widetilde{C}_{ij}$ are given by Eqs. \eqref{eqn:extrapolation},
 
 \begin{equation}
 \tilde{X}_{ij} = F_{ij} X_{ij}^{M}, \qquad \tilde{C}_{ij} = F_{ij} \biggl( \sum C_{ij}^{M} + Q \biggl) F^{T}_{ij}
@@ -135,7 +135,7 @@ where $F_{ij}$ is the state transition Jacobian from nodes $i$ to node $j$, and 
 \section{Updating Network State}
 \label{gnn-updating-network-state}
 
-As the network evolves and specific connections are deactivated, the local track parameter estimates change at each node. Therefore, the corresponding edge weights $w_{ij}$ should reflect this for the strength of each connection, and hence $w_{ij}$ are updated. For the connection between nodes $i$ and $j$, the updated edge weights $\widetilde{w}_{ij}$ are computed using the normalised Gaussian measurement likelihood given by Eq. \eqref{eqn:likelihood}stated, where $S_{ij}$ is the joint measurement covariance matrix.
+As the network evolves and specific connections are deactivated, the local track parameter estimates change at each node. Therefore, the corresponding edge weights $w_{ij}$ should reflect this for the strength of each connection, and hence $w_{ij}$ are updated. For the connection between nodes $i$ and $j$, the updated edge weights $\widetilde{w}_{ij}$ are computed using the normalised Gaussian measurement likelihood given by Eq. \eqref{eqn:likelihood} stated, where $S_{ij}$ is the joint measurement covariance matrix.
 
 \begin{equation}
 \beta_{ij} = (2 \pi \lvert S_{ij} \rvert )^{-1/2}  e^{-\Delta \chi^{2}_{ij} / 2}
@@ -169,13 +169,13 @@ Following this update, the algorithm iterations repeat. A further GMR would foll
 
 The GNN-based framework is designed such that it is possible to iteratively discover track candidates after each stage. As shown in Figure \ref{fig:flowchart}, a track extraction algorithm is executed after the GMR and Information Aggregation stages.
 
-Initially, the graph network is split into smaller components, taking into account only edges which remain active. A CCA is applied to the graph network by using the NetworkX built-in function \textit{weakly connected components}. This ensures that smaller, more manageable subgraphs can be separated from the main network.
+Initially, the graph network is split into smaller components, taking into account only edges which remain active. A CCA is applied to the graph network by using the NetworkX built-in function \texttt{weakly\_connected\_components}. This ensures that smaller, more manageable subgraphs can be separated from the main network.
 
 The criteria that a subgraph must possess in order to be considered for track extraction is as follows. Subgraphs must contain a minimum number of four nodes within the volume of interest. There must exist only one node per layer, such that there are no are intersecting tracks or holes within the track candidate. 
 
 If the above criteria are met, a KF is then applied in order to perform a track fit. As opposed to applying the KF on one track segment between two nodes, similar to the method used in Section \ref{chapter-5-kf-extrapolation} for state extrapolation, the KF for track fitting must consider the whole chain of track segments. Here, the filter iteratively predicts and updates track state parameters as it receives $X_{ij}$ and $C_{ij}$ from each subsequent node in the subgraph.
 
-In order to assess the quality of the track fit the p-value is computed from the $\chi^2$ statistic. The p-value obtained must be greater than 0.01. Such subgraphs that fulfill all conditions are defined as good track candidates and extracted from the network, where their corresponding nodes and edges are removed. Any subgraphs that do not meet the above criteria for track extraction, remain in the graph network for further processing.
+In order to assess the quality of the track fit the p-value is computed from the $\chi^2$ statistic. The p-value obtained must be greater than 0.01. Subgraphs that fulfill all conditions are defined as good track candidates and are extracted from the network, such that their corresponding nodes and edges are removed. Subgraphs that do not meet the above criteria for track extraction, remain in the graph network for further processing.
 
 
 
@@ -209,7 +209,11 @@ S = \begin{bmatrix} \sigma_0^{2} & 0 \\ 0 & \sigma_0^{2} \end{bmatrix}  \quad G 
 
 In order to efficiently resolve ambiguities, a method was devised to automatically determine a suitable region for initiating the GNN pattern recognition algorithm. For a given node, the variance of edge orientation $\sigma_e^2$ of its connections was considered. Figure \ref{fig:heat-map} shows a heat map labelled by node degree (the number of edges associated to each node). Nodes that are white are referred to as ``hot'' nodes which have a high degree, whereas nodes that are orange-red are referred to as ``cold'' nodes, which have a low multiplicity of edge connections. The node degree is an indirect characteristic of how complex a local neighbourhood is and gives an indication of the best region to begin the GNN pattern recognition algorithm in order to identify outlier connections. Nodes with $\sigma_e^2 > 0.8$ were temporarily removed and the GNN algorithm was initially applied to the remaining network.
 
+\textbf{TODO: Then the GMR was applied to this reduced network. Need to also talk about the implementation of the projection H vector and linear model extrapolation equations here, and explicitly mention that Q is the zero matrix.}
+
 Figure \ref{fig:example-application-1} shows an example of the GNN algorithm applied to the simulated network in figure \ref{fig:heat-map}. Figure \ref{fig:weakly-connected-graphs} displays the graph network where nodes with $\sigma_e^2 > 0.8$ have been removed and an initial CCA has been applied. Three smaller subgraphs have been identified as shown by the separate colours. The extracted track candidates from this network are shown in Figure \ref{fig:extracted-candidates-1}. Outlier edge connections have been successfully removed, as this particular simulation shows successful extraction of all seven truth tracks within two stages.
+
+
 
 \begin{center}
 \begin{figure}[htbp]%
@@ -233,6 +237,22 @@ Figure \ref{fig:example-application-1} shows an example of the GNN algorithm app
     \subfloat[\centering Extracted track candidates]{{\includegraphics[width=11.5cm]{images/5-gnn-algorithm/mc-example-2.png} } \label{fig:mc-example-2}}%
     \caption{Results of the GNN-based algorithm for track finding a) Simulated graph network where nodes $\sigma_e^2 > 0.8$ are removed and CCA is applied. Each colour represents a separate network. b) The extracted track candidates after GMR and Information Aggregation.}%
     \label{fig:example-application-1}%
+\end{figure}
+\end{center}
+
+
+\begin{center}
+\begin{figure}[!htbp]%
+    %\centerfloat
+    \centering
+    \subfloat[\centering Weakly connected graph networks]{{\includegraphics[width=0.51\textwidth]{images/5-gnn-algorithm/mc-example-3.png} } \label{fig:mc-example-3}}%
+    %\qquad
+    \subfloat[\centering Intermediate network state post GMR]{{\includegraphics[width=0.5\textwidth]{images/5-gnn-algorithm/mc-example-4.png} } \label{fig:mc-example-4}}%
+    %\qquad
+    \vskip\baselineskip
+    \subfloat[\centering Extracted track candidates after stage 1]{{\includegraphics[width=0.8\textwidth]{images/5-gnn-algorithm/mc-example-5.png} } \label{fig:mc-example-5}}%
+    \caption{Results of the GNN-based algorithm described in ... for track finding a) Simulated graph network where nodes with $\sigma_e^2 > 0.8$ are removed and CCA is applied. b) The resulting network state after Gaussian Mixture Reduction via clusterisation is applied. Faded colour represents masked outlier edge connections. c) The extracted track candidates after stage 1.}%
+    \label{fig:example-application-2}%
 \end{figure}
 \end{center}
 
