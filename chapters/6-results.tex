@@ -3,21 +3,18 @@
 %	6. Application & Perform of GNN Algorithm
 %---------------------------------------------
 
-%\chapter{Application and Performance of GNN Algorithm}\label{chapter-6}
-
-%The main application of the GNN algorithm on the trackML data, the data preparation, what data was exactly used and why, the ML classification algorithm used to build the edge connections. The main results we get from application of this algorithm, the track reconstruction efficiency, the purity metrics, computational performance. Comparison with other algorithms.
-
-%nips-2018-competation
-%Data.
-%We used the fast (10s per event) and accurate simulation engine ACTS4 [6] to generate the challenge data. It allowed us to generate realistic data emulating a full Silicon LHC detector (see Fig 3), while providing us with the ground truth of particle trajectory membership. Thus, for each event we obtained the “detected” 3D points coordinates (and additional features), and, as ground truth, the list of points associated to each track. There is a one to one relationship between the true 3D points and the reconstructed ones.
-
+%WIt allowed us to generate realistic data emulating a full Silicon LHC detector (see Fig 3), while providing us with the ground truth of particle trajectory membership. Thus, for each event we obtained the... and, as ground truth, the list of points associated to each track. There is a one to one relationship between the true 3D points and the reconstructed ones.
 
 \chapter{Application of the GNN Algorithm on the TrackML Model}
 \label{chapter-6}
 
+The following chapter focuses of the application of the GNN algorithm on the publicly available dataset designed for the Kaggle TrackML challenge (reference).
+
+Sections ... to ... describe the implementation of the GNN algorithm and how the simple toy model described in .... was adapted in order to apply onto a more realistic detector setup. specific models used to build track state estimates. Section ... gives emphasis to the application of KFs within the framework, and specific implementation for the TrackML detector is presented. Section ... presents the results of the application of the GNN algorithm on the endcap region and Section ... discusses an outlook onto ....
+
 % This chapter focuses on the track finding algorithm development and its application on the publicly available dataset designed for the Kaggle TrackML challenge. The preliminary results related to track reconstruction efficiency and purity metrics are presented and discussed.
 
-%The main application of the GNN algorithm on the trackML data, the data preparation, what data was exactly used and why, the ML classification algorithm used to build the edge connections. The main results we get from application of this algorithm, the track reconstruction efficiency, the purity metrics, computational performance. Comparison with other algorithms.
+%The main results we get from application of this algorithm, the track reconstruction efficiency, the purity metrics, computational performance. Comparison with other algorithms.
 
 
 \section{Implementation}
@@ -29,9 +26,11 @@
 
 %Talk specifically about the TrackML data here and how it was prepared. How the trackml hits are converted into nodes and edges. Close proximity node merging. Checks that are put in place in order to make sure there are no hits that have the same module id (more than 2 hits that are simultaneously in the same module and volume and layer).
 
+%The main application of the GNN algorithm on the trackML data, the data preparation, what data was exactly used and why, the ML classification algorithm used to build the edge connections. The main results we get from application of this algorithm, the track reconstruction efficiency, the purity metrics, computational performance. Comparison with other algorithms.
 
 
-\subsection{Constructing Track State Estimates}
+
+\subsection{Construction of Track State Estimates}
 \label{constructing-track-states}
 
 Track parameters in both the transverse $x$-$y$ plane and the $r$-$z$ plane are considered in order to construct track state estimates $X_{ij}$.
@@ -91,42 +90,61 @@ X_{ij} = \begin{bmatrix} a \\ b \\ \tau \end{bmatrix}
 
 
 
-\subsection{Derivation of Covariance}
+\subsection{Derivation of Edge State Covariance}
 
-\subsection{Moliere Theory of Multiple Scattering}
+\subsubsection{Moli\`ere Theory of Multiple Scattering}
+
+The contribution due to multiple scattering is given by Eq \eqref{eqn:moliere-equation}.
+
+\begin{equation}
+    \sigma_{ms}^{2} = \frac{13.6 \text{MeV}}{\beta c p} z \sqrt{\frac{x}{X_0}} \left[ 1 + 0.038ln \left( \frac{x}{X_0} \right) \right] 
+    \label{eqn:moliere-equation}
+\end{equation}
+
+where $p$, $\beta c$, and $z$ are the momentum, velocity, and charge number of the incident particle, and $x/X_0$ is the thickness of the scattering medium, measured in radiation lengths. As the logarithmic correction term is negligible, $\sigma_{ms}^{2}$ becomes
+
+\begin{equation}
+    \sigma_{ms}^{2} = \frac{13.6 \text{MeV}}{p} \sqrt{\frac{x}{X_0}}
+    \label{eqn:simplified-moliere-equation}
+\end{equation}
+
+where $\beta c$, and $z$ are set to 1. The full particle momentum $p$, can be derived using the track curvature $\kappa$ and inverse track inclination $\tau$, where $\kappa$ is a function of parabolic parameters. .... The magnetic field of the TrackML model is such that a particle with transverse momentum $p_\text{T}$ has a radius of trajectory $r = p_\text{T} / 0.3 $. ...what is 0.3 here?
+
+what are x and x0 here? 
+
+
 \begin{itemize}
-\item highland formula and handling the error/effects due to multiple scattering for the barrel and endcap in slightly different ways
-\item how were the covariances dervied and the sigma errors chosen
-\item Derivation of the edge state covariance
-\item 2 different ones, we start with the edge covariance, and derive the state covariance
+\item handling the error/effects due to multiple scattering for the barrel and endcap in slightly different ways
+\item how were the edge state covariances dervied and the sigma errors chosen
 \end{itemize}
 % moliere theory links:
 %https://gray.mgh.harvard.edu/attachments/article/337/Techniques%20of%20Proton%20Radiotherapy%20(06)%20Multiple%20Scattering.pdf
-%https://pdg.lbl.gov/2005/reviews/passagerpp.pdf
 
 
 
 
 
-\subsection{Determining the Optimal KL Threshold}
+\subsection{The Optimal KL Threshold}
 \label{chapter-6-kl-threshold}
 
-If $d_{KL}$ $\leq$ some threshold, then states can be clustered together and merged into a single state.
+To determine the optimal pairwise $d_{KL}$ between track state estimates $X_{ij}$ for a given node, a SVM classifier was trained using pairwise $d_{KL}$ and $\sigma_{e}$ as input features. A MC simulation of $10,000$ particle collision events, each event with ten truth tracks, was used to build a training dataset. Loosely compatible edge connections were formed using a hit-pair predictor based on track inclination angle of neighbouring hits, similar to the graph network constructed in \ref{fig:heat-map}. The feature vector was comprised of $\sigma_{e}$ for a given node and pairwise $d_{KL}$ between its track states. The truth particle was extracted for each pairwise connection, where truth 1 corresponded to hits from both track states originating from the same truth particle, and truth 0 otherwise. The truth data is presented is Figure \ref{fig:KL-distance-truth}.
 
-To determine the optimal pairwise $d_{KL}$ between track state estimates $X_{ij}$ for a given node, a SVM classifier was trained using pairwise $d_{KL}$ and $\sigma_{e}$ as input features. A MC simulation of $10,000$ particle collision events, each event with ten truth tracks, was used to build a training dataset. Loosely compatible edge connections were formed using a hit-pair predictor based on track inclination angle of neighbouring hits. The feature vector was comprised of $\sigma_{e}$ for a given node, and pairwise $d_{KL}$ between track states. The ground truth particle was extracted for each pairwise connection, where truth 1 corresponded to hits from both track states originating from the same truth particle, and truth 0 otherwise. A SVM was trained to discriminate between the two classes \cite{scikit-learn}, using a polynomial degree three kernel. Predictions were adjusted such that the TPR was tuned to 95\% and the decision boundary was converted into a fast LUT using a similar methodology outlined in Section \ref{LUT-generation}.  Other classification algorithms were explored, however the SVM was the most appropriate in this instance to determine a decision boundary to best separate the classes.
+A SVM was trained to discriminate between the two classes \cite{scikit-learn}, using a polynomial degree three kernel. SVM predictions were adjusted such that the TPR was tuned to 95\% in order to maintain a high purity. The SVM decision boundary was converted into a fast LUT using a similar methodology outlined in Section \ref{LUT-generation} and was directly used within the k-means clustering of the GMR stage. The predictions and corresponding decision boundary is shown in Figure \ref{fig:KL-distance-predictions}. If $d_{KL}$ $\leq$ the predicted threshold for a node with particle $\sigma_e$, then pairwise states were clustered together and merged into a single state $X^M$.
+
+Other classification algorithms were explored, however the SVM was the most appropriate to determine a decision boundary to best separate the classes.
 
 \begin{figure}[htbp!] 
     \centering
-    \subfloat[]{%
-        \includegraphics[width=0.8\linewidth]{images/6-results/kl-truth.png}%
+    \subfloat[Ground truth data from MC simulation]{%
+        \includegraphics[width=0.85\linewidth]{images/6-results/kl-truth.png}%
         \label{fig:KL-distance-truth}%
         }%
     \hfill%
-    \subfloat[]{%
-        \includegraphics[width=0.8\linewidth]{images/6-results/kl-predictions.png}%
+    \subfloat[SVM predictions and decision boundary]{%
+        \includegraphics[width=0.85\linewidth]{images/6-results/kl-predictions.png}%
         \label{fig:KL-distance-predictions}%
         }%
-    \caption{}
+    \caption{........}
     \label{fig:KL-distance}
 \end{figure}
 
@@ -136,7 +154,6 @@ To determine the optimal pairwise $d_{KL}$ between track state estimates $X_{ij}
 
 \subsection{Extrapolation Models}
 \label{chapter-6-extrapolation}
-\subsubsection{Linear Extrapolation Model}
 \subsubsection{Parabolic Extrapolation Model}
 \begin{itemize}
     \item Information propagation via Message Passing Mechanism
@@ -148,6 +165,8 @@ To determine the optimal pairwise $d_{KL}$ between track state estimates $X_{ij}
 Mention here that both the linear and parabolic models were used in this instance, where the track state estimate comprised of a 3x1 vector, a, b, tau. The extrapolation and KF update will be different here, different transition Jacobian matrix. Also mention about tuning the chi2 distance thresholds during extrapolation
 
 %The matrix $\widetilde{C}_{ij}$ includes the addition of the process noise $Q$ modelled by the Ornstein-Uhlenbeck (OU) process \cite{OU} which encompasses all material effects. See Section \ref{kf} for further details. The full derivation of $F$ and $Q$ are shown in Appendix \ref{appendix:Appendix-A}
+
+\subsubsection{Linear Extrapolation Model}
 
 
 \subsection{Implementation of Kalman Filters}
