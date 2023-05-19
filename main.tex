@@ -67,10 +67,15 @@
     {\begin{center}%
     \bfseries{\summaryname} \end{center}}
     
+% \newenvironment{Impact}%
+%     {\clearpage\thispagestyle{empty}\null\vfill\begin{center}%
+%     \bfseries Impact Statement\end{center}}%
+%     {\vfill\null}
+
 \newenvironment{Impact}%
-    {\clearpage\thispagestyle{empty}\null\vfill\begin{center}%
-    \bfseries Impact Statement\end{center}}%
-    {\vfill\null}
+    {\begin{center}%
+    \bfseries Impact Statement\end{center}}
+    % {\vfill\null}
 
 \newenvironment{acknowledgements}%
     {\clearpage\thispagestyle{empty}\null\vfill\begin{center}%
@@ -248,8 +253,9 @@ Submitted in partial fulfillment of the \\
 \input{chapters/3-track-reconstruction}
 \input{chapters/4-ml-based-predictor}
 \input{chapters/5-gnn-algorithm}
-\input{chapters/6-results}
-\input{chapters/7-summary-and-outlook}
+\input{chapters/6-trackml}
+\input{chapters/7-results-discussion}
+\input{chapters/8-summary-and-outlook}
 
 
 \newpage

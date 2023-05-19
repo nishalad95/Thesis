@@ -4,8 +4,7 @@
 
 \chapter{Graph Neural Network Pattern Recognition Algorithm}\label{chapter-5}
 
-Once compatible hit-pairs from a particle collision event have been established, they can be used to build a graph network. This chapter presents a novel pattern recognition algorithm utilising GNN architectures to prune outlier connections in such a network, in order to reconstruct tracks in a silicon-based Pixel detector. The application is focused on the Pixel detector, with the aim that the approach will serve as a sophisticated track seeding technique for Pixel hits and form preliminary track candidates. These seeds can then be extended into the Strips using standard track following. Such an approach could be efficient for saving computational resources if the GNN does not produce large proportions of fake tracks. The ultimate aim of this work is to develop a realistic algorithm for fast track reconstruction that can be deployed in future high-luminosity phases of particle detector experiments. This research was presented at the 2022 Connecting the Dots (CTD) conference at the University of Princeton USA and is currently under review for publication in the Springer Journal: Computing for Software and Big Science \cite{Lad_2023_gnn}. Sections \ref{gnn-algorithm-overview} to \ref{gnn-track-extration} present a breakdown of the GNN algorithm. Section \ref{gnn-application-toy-model} illustrates an application on a simple toy model.
-
+Once compatible hit-pairs from a particle collision event have been established, they can be used to build a graph network. This chapter presents a novel pattern recognition algorithm utilising GNN architectures to prune outlier connections in such a network, in order to reconstruct tracks. The application is focused on the Pixel detector, with the aim that the approach will serve as a sophisticated track seeding technique for Pixel hits and form preliminary track candidates. Such an approach could be efficient for saving vast computational resources if the GNN does not produce large proportions of fake tracks. The ultimate aim is to develop a realistic algorithm for fast track reconstruction that can be deployed in future high-luminosity phases of particle detector experiments. This research was presented at the 2022 Connecting the Dots (CTD) conference at the University of Princeton USA, as well as the dedicated GNN Google DeepMind seminar, held at UCL in 2023. At the time of writing the research was under review for publication in the Springer Journal: Computing for Software and Big Science \cite{Lad_2023_gnn}. Sections \ref{gnn-algorithm-overview} to \ref{gnn-track-extration} present a breakdown of the algorithm and Section \ref{gnn-application-toy-model} illustrates an application on a simple toy model.
 
 
 \section{Algorithm Overview}
@@ -280,4 +279,6 @@ Figure \ref{fig:example-application-2} shows another simulation of a simple trac
 
 
 
-%\section{Conclusions}
+\section{Conclusions}
+- conclusions, short summary, some analysis on MC
+- more analysis on the previous section?
