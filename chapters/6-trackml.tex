@@ -5,24 +5,20 @@
 
 %WIt allowed us to generate realistic data emulating a full Silicon LHC detector (see Fig 3), while providing us with the ground truth of particle trajectory membership. Thus, for each event we obtained the... and, as ground truth, the list of points associated to each track. There is a one to one relationship between the true 3D points and the reconstructed ones.
 
-\chapter{Implementation of the GNN Algorithm for the TrackML Model}
+\chapter{Implementation of the GNN Algorithm to the TrackML Model}
 \label{chapter-6}
 
-The following chapter focuses on the application of the GNN algorithm on the publicly available dataset designed for the Kaggle TrackML challenge (reference).
+The following chapter focuses on the implementation of the GNN algorithm for the publicly available dataset designed for the Kaggle TrackML challenge \cite{kaggle-trackml}. The TrackML detector emulates a full silicon LHC detector and as such, certain models of the GNN algorithm outlined in Chapter \ref{chapter-5}, are altered for the TrackML detector geometry.
 
-Application of the GNN algorithm to the TrackML detector geometry. Certain aspects of the algorithm outlined in chapter .. would need to change for this specific implementation.
-
-Sections ... to ... describe the implementation of the GNN algorithm and how the simple toy model described in .... was adapted in order to apply onto a more realistic detector setup. specific models used to build track state estimates. Section ... gives emphasis to the application of KFs within the framework, and specific implementation for the TrackML detector is presented. Section ... presents the results of the application of the GNN algorithm on the endcap region and Section ... discusses an outlook onto ....
-
-% This chapter focuses on the track finding algorithm development and its application on the publicly available dataset designed for the Kaggle TrackML challenge. The preliminary results related to track reconstruction efficiency and purity metrics are presented and discussed.
-
-%The main results we get from application of this algorithm, the track reconstruction efficiency, the purity metrics, computational performance. Comparison with other algorithms.
+Section \ref{chapter-6-data-prep} describes the structure of the TrackML data and how it was used to build a graph network. Sections \ref{constructing-track-states} and \ref{chapter-6-covariance-derivation} describe the construction of track state estimates. Section \ref{chapter-6-kl-threshold} presents the classifier constructed to determine the optimal KL threshold used within the GMR stage and Section \ref{chapter-6-extrapolation} presents alterations to the extrapolation models used within the Information Aggregation stage. Finally, Section \ref{gnn-kf-implementation} describes specific implementation of KFs. 
+ 
 
 
-% \section{Implementation}
+
 
 
 \section{Data Preparation}
+\label{chapter-6-data-prep}
 
 % Make sure the say that the connectiosn between edge pairs are built using the track inclination and a similar predictor method to chapter 4, the edges: spanning up to two layers apart! - REMEMBER edge connections can be 2 layers apart
 
@@ -93,6 +89,7 @@ X_{ij} = \begin{bmatrix} a \\ b \\ \tau \end{bmatrix}
 
 
 \section{Derivation of Edge State Covariance}
+\label{chapter-6-covariance-derivation}
 
 \subsection{Moli\`ere Theory of Multiple Scattering}
 
@@ -129,26 +126,30 @@ what are x and x0 here?
 \section{The Optimal KL Threshold}
 \label{chapter-6-kl-threshold}
 
-To determine the optimal pairwise $d_{KL}$ between track state estimates $X_{ij}$ for a given node, a SVM classifier was trained using pairwise $d_{KL}$ and $\sigma_{e}$ as input features. A MC simulation of $10,000$ particle collision events, each event with ten truth tracks, was used to build a training dataset. Loosely compatible edge connections were formed using a hit-pair predictor based on track inclination angle of neighbouring hits, similar to the graph network constructed in \ref{fig:heat-map}. The feature vector was comprised of $\sigma_{e}$ for a given node and pairwise $d_{KL}$ between its track states. The truth particle was extracted for each pairwise connection, where truth 1 corresponded to hits from both track states originating from the same truth particle, and truth 0 otherwise. The truth data is presented is Figure \ref{fig:KL-distance-truth}.
+To determine the optimal pairwise $d_{KL}$ between track state estimates $X_{ij}$ for a given node, a SVM classifier was trained using pairwise $d_{KL}$ and $\sigma_{e}$ as input features. A MC simulation of $10,000$ particle collision events, each event with ten truth tracks, was used to build a training dataset. Loosely compatible edge connections were formed using a hit-pair predictor based on track inclination angle of neighbouring hits, similar to the graph network constructed in \ref{fig:heat-map}. The feature vector was comprised of $\sigma_{e}$ for a given node and pairwise $d_{KL}$ between its track states. The truth particle was extracted for each pairwise connection, where truth 1 corresponded to hits from both track states originating from the same truth particle, and truth 0 otherwise. 
 
-A SVM was trained to discriminate between the two classes \cite{scikit-learn}, using a polynomial degree three kernel. SVM predictions were adjusted such that the TPR was tuned to 95\% in order to maintain a high purity. The SVM decision boundary was converted into a fast LUT using a similar methodology outlined in Section \ref{LUT-generation} and was directly used within the k-means clustering of the GMR stage. The predictions and corresponding decision boundary is shown in Figure \ref{fig:KL-distance-predictions}. If $d_{KL}$ $\leq$ the predicted threshold for a node with particle $\sigma_e$, then pairwise states were clustered together and merged into a single state $X^M$.
+%The truth data is presented is Figure \ref{fig:KL-distance-truth}.
+
+A SVM was trained to discriminate between the two classes \cite{scikit-learn}, using a polynomial degree three kernel. SVM predictions were adjusted such that the TPR was tuned to 95\% in order to maintain a high purity. The SVM decision boundary was converted into a fast LUT using a similar methodology outlined in Section \ref{LUT-generation} and was directly used within the k-means clustering of the GMR stage. If $d_{KL}$ $\leq$ the predicted threshold for a node with particle $\sigma_e$, then pairwise states were clustered together and merged into a single state $X^M$.
+
+% The predictions and corresponding decision boundary is shown in Figure \ref{fig:KL-distance-predictions}.
 
 Other classification algorithms were explored, however the SVM was the most appropriate to determine a decision boundary to best separate the classes.
 
-\begin{figure}[htbp!] 
-    \centering
-    \subfloat[Ground truth data from MC simulation]{%
-        \includegraphics[width=0.85\linewidth]{images/6-results/kl-truth.png}%
-        \label{fig:KL-distance-truth}%
-        }%
-    \hfill%
-    \subfloat[SVM predictions and decision boundary]{%
-        \includegraphics[width=0.85\linewidth]{images/6-results/kl-predictions.png}%
-        \label{fig:KL-distance-predictions}%
-        }%
-    \caption{........}
-    \label{fig:KL-distance}
-\end{figure}
+% \begin{figure}[htbp!] 
+%     \centering
+%     \subfloat[Ground truth data from MC simulation]{%
+%         \includegraphics[width=0.85\linewidth]{images/6-results/kl-truth.png}%
+%         \label{fig:KL-distance-truth}%
+%         }%
+%     \hfill%
+%     \subfloat[SVM predictions and decision boundary]{%
+%         \includegraphics[width=0.85\linewidth]{images/6-results/kl-predictions.png}%
+%         \label{fig:KL-distance-predictions}%
+%         }%
+%     \caption{........}
+%     \label{fig:KL-distance}
+% \end{figure}
 
 
 

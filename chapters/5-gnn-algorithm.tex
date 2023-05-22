@@ -230,25 +230,24 @@ F = \begin{bmatrix} 1 & dx \\ 0 & 1 \end{bmatrix}
 \begin{center}
 \begin{figure}[htbp]%
     \centering
-    \subfloat[\centering Simulation of seven truth tracks]{{\includegraphics[width=8cm]{images/5-gnn-algorithm/ground-truth.png} } \label{fig:ground-truth}}%
+    \subfloat[\centering Simulation of seven truth tracks]{{\includegraphics[width=7.7cm]{images/5-gnn-algorithm/ground-truth.png} } \label{fig:ground-truth}}%
     \hfill
     %\qquad
-    \subfloat[\centering Graph network plotted as a node-degree heat map]{{\includegraphics[width=11cm]{images/5-gnn-algorithm/heatmap-network.png} } \label{fig:heat-map}}%
+    \subfloat[\centering Graph network plotted as a node-degree heat map]{{\includegraphics[width=10.8cm]{images/5-gnn-algorithm/heatmap-network.png} } \label{fig:heat-map}}%
     \caption{a) Simple 2-dimensional simulation of seven truth tracks where each track contains ten hits; one hit per layer. Each colour represents a different track. b) Conversion of the simulated hits in a), to a graph network containing nodes and edges. Close proximity hits are merged into the same node where necessary and predicted edge connections are formed using a pair predictor. The heat map represents node degree, where ``hot'' nodes (white-yellow) contain many edge connections, whereas ``cold'' nodes (orange-red) contain fewer edge connections.}%
     \label{fig:setup}%
 \end{figure}
 \end{center}
 
 
-
-Figure \ref{fig:example-application-1} shows an example of the GNN algorithm applied to the simulated network in Figure \ref{fig:heat-map}. Figure \ref{fig:mc-example-1} displays the graph network where an initial CCA has been applied. Three smaller subgraphs have been identified as shown by the separate colours. The subsequent extracted track candidates from this network are shown in Figure \ref{fig:mc-example-2}, where seven distinct tracks can be observed. Outlier edge connections have been successfully identified and no longer visible. This particular simulation shows 100\% purity of track reconstruction with respect to MC truth, as all seven truth tracks have been successfully extracted within two stages. Nodes with $\sigma_e^2 > 0.8$ are not shown here, as clustering was not possible. This indicates that the GNN algorithm behaved as expected, resolving ambiguities in cold node regions during the first and second stages.
+Figure \ref{fig:example-application-1} shows an example of the GNN algorithm applied to the simulated network in Figure \ref{fig:heat-map}. Figure \ref{fig:mc-example-1} displays the graph network where an initial CCA has been applied. Three smaller subgraphs have been identified as shown by the separate colours. The subsequent extracted track candidates from this network are shown in Figure \ref{fig:mc-example-2}, where seven distinct tracks are observed. Outlier edge connections have been successfully identified. This particular simulation shows 100\% purity of track reconstruction with respect to MC truth, as all seven truth tracks were extracted within two stages. Nodes with $\sigma_e^2 > 0.8$ are not shown here, as clustering was not possible. This indicates that the GNN algorithm behaved as expected, first resolving ambiguities in cold node regions.
 
 Figure \ref{fig:example-application-2} shows another simulation of a simple track model with application of the GNN algorithm. The application of CCA yields two distinct subgraphs shown in Figure \ref{fig:mc-example-3}. The subsequent extracted track candidates are shown in Figure \ref{fig:mc-example-4}, where six distinct tracks can be observed. A precision of 65\% was achieved on identifying correct outlier connections with respect to the MC truth during stage 1. A fast convergence was achieved in extracting 6 out of 7 candidates after the first stage of the algorithm. Remaining networks were propagated to further stages, however no further track candidates were extracted. Similarly, nodes with $\sigma_e^2 > 0.8$ are not shown here, as clustering was not possible. This suggests that $\sigma_{e}$ is an important discriminating feature when clustering track state estimates. 
 
-From the example simulations, it was observed that clustering of states was not always possible in all hot node regions. As a result, the pattern recognition process was automatically initiated in regions where outlier connections were easily identifiable, i.e. cold nodes regions. This indicates that an intrinsic characteristic of the GNN algorithm is that neighbourhood complexity is inherently known by the network. 
+It was observed that clustering of states was not always possible in all hot node regions. As a result, the pattern recognition process was automatically initiated in regions where outlier connections were easily identifiable, i.e. cold nodes regions. This indicates that an intrinsic characteristic of the GNN algorithm is that neighbourhood complexity is known by the network. 
 
 \begin{center}
-\begin{figure}[htbp!]%
+\begin{figure}[htbp]%
     \centering
     \subfloat[\centering Simulated graph network. CCA used to separate the main network into three smaller subgraphs, indicated by each colour]{{\includegraphics[width=10.5cm]{images/5-gnn-algorithm/mc-example-1.png} } \label{fig:mc-example-1}}%
     \hfill
@@ -260,7 +259,7 @@ From the example simulations, it was observed that clustering of states was not 
 \end{center}
 
 \begin{center}
-\begin{figure}[htbp!]%
+\begin{figure}[htbp]%
     \centering
     \subfloat[\centering Simulated graph network post CCA]{{\includegraphics[width=9.2cm]{images/5-gnn-algorithm/mc-example-3.png} } \label{fig:mc-example-3}}%
     \hfill
@@ -270,6 +269,7 @@ From the example simulations, it was observed that clustering of states was not 
     \label{fig:example-application-2}%
 \end{figure}
 \end{center}
+
 
 \section{Conclusions}
 
