@@ -4,7 +4,7 @@
 
 \chapter{Graph Neural Network Pattern Recognition Algorithm}\label{chapter-5}
 
-Once compatible hit-pairs from a particle collision event have been established, they can be used to build a graph network. This chapter presents a novel pattern recognition algorithm utilising GNN architectures to prune outlier connections in such a network, in order to reconstruct tracks. The application is focused on the Pixel detector, with the aim that the approach will serve as a sophisticated track seeding technique for Pixel hits and form preliminary track candidates. Such an approach could be efficient for saving vast computational resources if the GNN does not produce large proportions of fake tracks. The ultimate aim is to develop a realistic algorithm for fast track reconstruction that can be deployed in future high-luminosity phases of particle detector experiments. This research was presented at the 2022 Connecting the Dots (CTD) conference at the University of Princeton USA, as well as the dedicated GNN Google DeepMind seminar, held at UCL in 2023. At the time of writing the research was under review for publication in the Springer Journal: Computing for Software and Big Science \cite{Lad_2023_gnn}. Sections \ref{gnn-algorithm-overview} to \ref{gnn-track-extration} present a breakdown of the algorithm and Section \ref{gnn-application-toy-model} illustrates an application on a simple toy model.
+Once compatible hit-pairs from a particle collision event have been established, they can be used to build a graph network. This chapter presents a novel pattern recognition algorithm to prune outlier connections in such a network in order to reconstruct tracks, by utilising GNN architectures. The application of the GNN is focused on the Pixel detector, with the aim that the approach will serve as a sophisticated track seeding technique for Pixel hits and form preliminary track candidates. Such an approach could be efficient for saving vast computational resources if the GNN does not produce large proportions of fake tracks. The ultimate aim is to develop a realistic algorithm for fast track reconstruction that can be deployed in future high-luminosity phases of particle detector experiments. This research was presented at the 2022 Connecting the Dots (CTD) conference at the University of Princeton USA, as well as the dedicated GNN Google DeepMind seminar, held at UCL in 2023. At the time of writing this work was under review for publication in the Springer Journal: Computing for Software and Big Science \cite{Lad_2023_gnn}. Sections \ref{gnn-algorithm-overview} to \ref{gnn-track-extration} present a breakdown of the GNN algorithm and Section \ref{gnn-application-toy-model} illustrates an application on a simple toy model.
 
 
 \section{Algorithm Overview}
@@ -184,15 +184,48 @@ In order to assess the quality of the track fit the p-value is computed from the
 \section{Application on a Simple MC Model}
 \label{gnn-application-toy-model}
 
-%Mention here that only a linear model was used in this instance, where the track state estimate comprised of a 2x1 vector, with measurement y and inverse track inclination tau. The extrapolation and hence KR update that was used here was therefore linear too and 2x2 - will have to show a different transition Jacobian matrix.
+A linear 2-dimensional model was used to simulate seven truth tracks in the $x$-$y$ plane, each with ten hits as shown in Figure \ref{fig:ground-truth}. Random Gaussian noise was added to the $y$-coordinate in order to simulate measurement error. The graph network was formed using a many-to-one mapping of hits-to-nodes, where hits in close proximity within each layer were merged into one node. The threshold for close proximity was determined by considering the distance distribution between hits located in the same layer. In order to build edge connections and reduce all possible combinatorics between node pairs, an edge-predictor method was devised. The predictor uses a simple calculation whereby the track inclination of neighbour nodes is calculated. If the inclination of a neighbour node spanning up to two layers apart is within a particular range, this edge is deemed compatible and a connection is established. 
 
-% This indicates, that $\sigma_{e}$ is also an important feature in used as a discriminating feature when clustering. 
+The node degree (the number of edges associated to each node) and $\sigma_e^2$ provide an indication of neighbourhood complexity. For example, nodes which have a high multiplicity of connections and regions of high node density, indicate areas with significant outliers to resolve. Nodes which have a low degree indicate areas where there are fewer ambiguities to resolve. This is illustrated by Figure \ref{fig:heat-map} showing a heat map labelled by node degree. High degree nodes are referred to as ``hot'' (white-yellow) and low degree nodes are referred to as ``cold'' (orange-red).
 
-% The excitation and inhibition rules of individual GNN nodes will be designed to facilitate the “simple-to-complex” approach for “hits-to-tracks” association, such that the network starts with relatively “easy” areas of an event (low hit density) and gradually progresses towards more complex areas (high hit density). 
+The network is initialised with track state estimates $X_{ij}$ given by Eq \eqref{eqn:track-state-estimate} and MC truth particle at each node. Each connection is modelled as a straight line, where $X_{ij}$ comprises of the $y$-measurement at node $i$, given by $m_i$, and the track inclination to its neighbour node $j$, given by $\tau_{ij} = (m_i - m_j) / (x_i - x_j)$. 
 
-A 2-dimensional simulation with seven tracks, each with ten hits was generated; see Figure \ref{fig:ground-truth}. The graph network was formed using a many-to-one mapping of hits-to-nodes, where close proximity hits were merged into one node. The threshold for close proximity hits was determined by considering the distance distribution between hits located in the same layer. In order to build edge connections in the graph network and reduce all possible combinatorics between node pairs, an edge-predictor method was devised. The predictor uses a simple calculation whereby the track inclination of neighbouring nodes is calculated. If the inclination of a neighbour spanning up to two layers apart is within a particular range, then this edge is compatible and a connection is established between the nodes. 
+\begin{equation}
+X_{ij} = \begin{bmatrix} m_i \\ \tau_{ij} \end{bmatrix}
+\label{eqn:track-state-estimate}
+\end{equation}
 
-In order to efficiently resolve ambiguities, a method was devised to automatically determine a suitable region for initiating the GNN pattern recognition algorithm. In order to achieve this, the node degree (the number of edges associated to each node), as well as the variance of edge orientation of a node's neighbour connections, $\sigma_e^2$, was considered. Figure \ref{fig:heat-map} shows a heat map labelled by node degree. Nodes that are white are referred to as ``hot'' nodes which have a high degree, whereas nodes that are orange-red are referred to as ``cold'' nodes, which have a low multiplicity of edge connections. The node degree is an indirect characteristic of how complex a local neighbourhood is and gives an indication of the best region to begin the GNN pattern recognition algorithm in order to easily identify outlier connections. Nodes with $\sigma_e^2 > 0.8$ were temporarily removed and the GNN algorithm was initially applied to the remaining network.
+
+The joint measurement covariance matrix, $S$ is stated in Eq. \eqref{eqn:track-state-estimate-2}, where $\sigma_0^{2}$ is the error due to the measurement in the $x$-$y$ plane and is initialised to 100$\mu m$. Negligible error is assumed in the $x$ measurement due to the low thickness of Pixel sensors. Matrix $G$ relates the measurements to the state vector $X_{ij}$ using a linear extrapolation, where $dx = x_i - x_j$. The state covariance $C_{ij}$ is derived using the standard linear algebra approach, where $C_{ij} = GSG^T$. 
+
+\begin{equation}
+S = \begin{bmatrix} \sigma_0^{2} & 0 \\ 0 & \sigma_0^{2} \end{bmatrix}  \quad G = \begin{bmatrix} 1 & 0 \\ dx^{-1} & -dx^{-1}  \end{bmatrix}
+\label{eqn:track-state-estimate-2}
+\end{equation}
+
+
+During GMR via clusterisation, $X^{M}$ and $C^{M}$ were computed using Eq \eqref{eqn:inverse-variance-weighting}. During the Information Aggregation stage, $X^M$ were projected into the subspace of measurements using the measurement vector $H = [1 \quad 0]$. The residual, $r_{ij}$, was then calculated between the projection, $HX^M$, and the measurement at each node using $r_{ij} = m_i - HX_{ij}^M$. The covariance of $r_{ij}$ is given by Eq. \eqref{eqn:covariance-of-residual}
+
+\begin{equation}
+\hat{C}_{ij} = H \widetilde{C}_{ij} H^{T} + \sigma_{0}^{2}
+\label{eqn:covariance-of-residual}
+\end{equation}
+
+where the process noise $Q$ in computing $\widetilde{C}_{ij}$ is defined as the zero matrix for simplicity. The corresponding Mahalanobis distance is given by Eq \eqref{eqn:mahalanobis-distance}.
+
+\begin{equation}
+\Delta \chi_{ij}^{2} = r_{ij}^{T} \hat{C}_{ij}^{-1} r_{ij}
+\label{eqn:mahalanobis-distance}
+\end{equation}
+
+If $\Delta \chi_{ij}^{2} < 1$, then $X^M$ is extrapolated to its neighbour node. The extrapolated state, $\widetilde{X}_{ij}$, is calculated using \eqref{eqn:extrapolation} defined as the linear extrapolation from node $j$ to node $i$, given by $m_i = m_j + \tau_j dx$ and $\tau_i = \tau_j$. Therefore, the derived Jacobian is given by Eq \eqref{eqn:mc-model-F}.
+
+\begin{equation}
+F = \begin{bmatrix} 1 & dx \\ 0 & 1 \end{bmatrix}
+\label{eqn:mc-model-F}
+\end{equation}
+
+
 
 \begin{center}
 \begin{figure}[htbp]%
@@ -201,84 +234,43 @@ In order to efficiently resolve ambiguities, a method was devised to automatical
     \hfill
     %\qquad
     \subfloat[\centering Graph network plotted as a node-degree heat map]{{\includegraphics[width=11cm]{images/5-gnn-algorithm/heatmap-network.png} } \label{fig:heat-map}}%
-    \caption{a) Simple 2-dimensional simulation of seven truth tracks where each track contains ten hits; one hit per layer. Each colour represents a different track. b)  Conversion of the simulated hits in a), to a graph network containing nodes and edges. Close proximity hits are merged into the same node where necessary and predicted edge connections are formed using a pair predictor. The heat map represents node degree, where ``hot'' nodes (white) contain many edge connections, whereas ``cold'' nodes (orange - red) contain fewer edge connections.}%
+    \caption{a) Simple 2-dimensional simulation of seven truth tracks where each track contains ten hits; one hit per layer. Each colour represents a different track. b) Conversion of the simulated hits in a), to a graph network containing nodes and edges. Close proximity hits are merged into the same node where necessary and predicted edge connections are formed using a pair predictor. The heat map represents node degree, where ``hot'' nodes (white-yellow) contain many edge connections, whereas ``cold'' nodes (orange-red) contain fewer edge connections.}%
     \label{fig:setup}%
 \end{figure}
 \end{center}
 
 
 
-\newpage
+Figure \ref{fig:example-application-1} shows an example of the GNN algorithm applied to the simulated network in Figure \ref{fig:heat-map}. Figure \ref{fig:mc-example-1} displays the graph network where an initial CCA has been applied. Three smaller subgraphs have been identified as shown by the separate colours. The subsequent extracted track candidates from this network are shown in Figure \ref{fig:mc-example-2}, where seven distinct tracks can be observed. Outlier edge connections have been successfully identified and no longer visible. This particular simulation shows 100\% purity of track reconstruction with respect to MC truth, as all seven truth tracks have been successfully extracted within two stages. Nodes with $\sigma_e^2 > 0.8$ are not shown here, as clustering was not possible. This indicates that the GNN algorithm behaved as expected, resolving ambiguities in cold node regions during the first and second stages.
 
-The network is initialised with track state estimates $X_{ij}$ and covariance matrices $C_{ij}$ between pairwise node connections, as well as assigning each node its MC truth particle. Each connection is modelled as a straight line, where $X_{ij}$ comprises of the $y$-measurement at node $i$, $m_i$ and the track inclination to its neighbour node $j$, given by $\tau_{ij} = (m_i - m_j) / (x_i - x_j)$. 
+Figure \ref{fig:example-application-2} shows another simulation of a simple track model with application of the GNN algorithm. The application of CCA yields two distinct subgraphs shown in Figure \ref{fig:mc-example-3}. The subsequent extracted track candidates are shown in Figure \ref{fig:mc-example-4}, where six distinct tracks can be observed. A precision of 65\% was achieved on identifying correct outlier connections with respect to the MC truth during stage 1. A fast convergence was achieved in extracting 6 out of 7 candidates after the first stage of the algorithm. Remaining networks were propagated to further stages, however no further track candidates were extracted. Similarly, nodes with $\sigma_e^2 > 0.8$ are not shown here, as clustering was not possible. This suggests that $\sigma_{e}$ is an important discriminating feature when clustering track state estimates. 
 
-\begin{equation}
-X_{ij} = \begin{bmatrix} m_i \\ \tau_{ij} \end{bmatrix}
-\label{eqn:track-state-estimate}
-\end{equation}
-
-The joint measurement covariance matrix, $S$ is stated in Eq. \eqref{eqn:track-state-estimate-2}, where $\sigma_0^{2}$ is the error due to the measurement in the $x$-$y$ plane and is initialised to 100$\mu m$. Negligible error is assumed in the $x$ measurement due to the low thickness of Pixel sensors. Matrix $G$ relates the measurements to the state vector $X_{ij}$ using a linear extrapolation where $dx = x_i - x_j$. The state covariance $C_{ij}$ is derived using the standard linear algebra approach, where $C_{ij} = GSG^T$. 
-
-\begin{equation}
-S = \begin{bmatrix} \sigma_0^{2} & 0 \\ 0 & \sigma_0^{2} \end{bmatrix}  \quad G = \begin{bmatrix} 1 & 0 \\ dx^{-1} & -dx^{-1}  \end{bmatrix}
-\label{eqn:track-state-estimate-2}
-\end{equation}
-
-%\textbf{TODO:Linear model extrapolation equations here}
-
-The GMR stage was executed in order to form a reduced state mixture where possible. During the Information Aggregation stage, merged track states, $X^M$, were projected into the subspace of measurements using the measurement vector $H = [1 \quad 0]$, and the residual $r_{ij}$ was calculated between the projection $HX^M$ and the measurement at each node using $r_{ij} = m_i - HX_{ij}^M$.
-
-%covariance of residual
-%corresponding chi-2 distance (mahalanobis)
-
-The extrapolated state is calculated using \eqref{eqn:extrapolation} and is defined by the linear extrapolation from node $j$ to node $i$, given by $m_i = m_j + \tau_j dx$ and $\tau_i = \tau_j$. Therefore, the derived Jacobian is given by Eq \eqref{eqn:mc-model-F}.
-
-\begin{equation}
-F = \begin{bmatrix} 1 & dx \\ 0 & 1 \end{bmatrix}
-\label{eqn:mc-model-F}
-\end{equation}
-
-The process noise $Q$ is defined as the zero matrix for simplicity.
-
-%add on the sigma error.
-
-Figure \ref{fig:example-application-1} shows an example of the GNN algorithm applied to the simulated network in Figure \ref{fig:heat-map}. Figure \ref{fig:mc-example-1} displays the graph network where nodes with $\sigma_e^2 > 0.8$ have been removed and an initial CCA has been applied. Three smaller subgraphs have been identified as shown by the separate colours. The extracted track candidates from this network are shown in Figure \ref{fig:mc-example-2}. Outlier edge connections have been successfully removed, as this particular simulation shows successful extraction of all seven truth tracks within two stages.
-
-
-Figure \ref{fig:example-application-2} shows another simulation of a simple track model with application of the GNN algorithm. Similarly, nodes with $\sigma_e^2 > 0.8$ have been removed and a CCA has been applied. Figure \ref{fig:mc-example-4} indicates the results of the network state after the GMR stage, where outlier edge connections have been identified and are shown in grey. A precision of 65\% was achieved on identifying correct outlier connections with respect to MC truth. A fast convergence was achieved in extracting 6 out of 7 candidates after the first stage of the algorithm and the remaining subgraphs were propagated to further stages. 
-
-
+From the example simulations, it was observed that clustering of states was not always possible in all hot node regions. As a result, the pattern recognition process was automatically initiated in regions where outlier connections were easily identifiable, i.e. cold nodes regions. This indicates that an intrinsic characteristic of the GNN algorithm is that neighbourhood complexity is inherently known by the network. 
 
 \begin{center}
-\begin{figure}[htbp]%
+\begin{figure}[htbp!]%
     \centering
-    \subfloat[\centering Simulated graph network. CCA used to separate the main network into three smaller subgraphs, indicated by each colour]{{\includegraphics[width=11cm]{images/5-gnn-algorithm/mc-example-1.png} } \label{fig:mc-example-1}}%
+    \subfloat[\centering Simulated graph network. CCA used to separate the main network into three smaller subgraphs, indicated by each colour]{{\includegraphics[width=10.5cm]{images/5-gnn-algorithm/mc-example-1.png} } \label{fig:mc-example-1}}%
     \hfill
     %\qquad
-    \subfloat[\centering Extracted track candidates at each stage of the GNN algorithm]{{\includegraphics[width=11.5cm]{images/5-gnn-algorithm/mc-example-2.png} } \label{fig:mc-example-2}}%
+    \subfloat[\centering Extracted track candidates at each stage of the GNN algorithm]{{\includegraphics[width=11cm]{images/5-gnn-algorithm/mc-example-2.png} } \label{fig:mc-example-2}}%
     \caption{Results of the GNN-based algorithm applied to a simple MC simulation a) shows the simulated graph network where nodes $\sigma_e^2 > 0.8$ are removed and a CCA is applied to split the graph network into three smaller subgraphs, where each colour indicates a different subgraph. b) Shows the extracted track candidates after the applied GMR and Information Aggregation stages, where seven separate tracks can be seen.}%
     \label{fig:example-application-1}%
 \end{figure}
 \end{center}
 
-
 \begin{center}
-\begin{figure}[!htbp]%
-    %\centerfloat
+\begin{figure}[htbp!]%
     \centering
-    \subfloat[\centering Simulated graph network post CCA]{{\includegraphics[width=0.51\textwidth]{images/5-gnn-algorithm/mc-example-3.png} } \label{fig:mc-example-3}}%
+    \subfloat[\centering Simulated graph network post CCA]{{\includegraphics[width=9.2cm]{images/5-gnn-algorithm/mc-example-3.png} } \label{fig:mc-example-3}}%
+    \hfill
     %\qquad
-    \subfloat[\centering Intermediate graph network post GMR]{{\includegraphics[width=0.5\textwidth]{images/5-gnn-algorithm/mc-example-4.png} } \label{fig:mc-example-4}}%
-    %\qquad
-    \vskip\baselineskip
-    \subfloat[\centering Extracted track candidates after stage 1 of the GNN algorithm]{{\includegraphics[width=0.8\textwidth]{images/5-gnn-algorithm/mc-example-5.png} } \label{fig:mc-example-5}}%
+    \subfloat[\centering Extracted track candidates after stage 1]{{\includegraphics[width=9.6cm]{images/5-gnn-algorithm/mc-example-5.png} } \label{fig:mc-example-4}}%
     \caption{Results of the GNN-based algorithm applied to a simple MC simulation a) shows the simulated graph network where nodes $\sigma_e^2 > 0.8$ are removed and a CCA is applied to split the graph network into two smaller subgraphs, where each colour indicates a different subgraph. b) shows the resulting network post GMR. The faded grey connections represents deactivated outlier edges. c) Shows six extracted track candidates after the applied GMR.}%
     \label{fig:example-application-2}%
 \end{figure}
 \end{center}
 
-
-
 \section{Conclusions}
-- conclusions, short summary, some analysis on MC
-- more analysis on the previous section?
+
+The proposed GNN algorithm is successful in iteratively identifying outlier edge connections and extracting track candidates for simple simulated particle collision events. GMR via clustering of state vectors proves to be a successful first step towards resolving incompatible connections in the network. The KF works well for both the extrapolation of state vectors to neighbour nodes in order to learn neighbourhood information and improve the precision in track state parameters, as well as for track fitting and extraction. The GNN algorithm automatically initiates the pattern recognition process in regions where outlier connections are easily identifiable. The network starts with low density regions and gradually progresses towards high density areas. This indicates that the GNN algorithm shows great promise for extraction of track candidates in more complex cases and realistic detector setups.
