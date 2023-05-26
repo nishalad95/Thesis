@@ -8,9 +8,9 @@
 \chapter{Implementation of the GNN Algorithm to the TrackML Model}
 \label{chapter-6}
 
-The following chapter focuses on the implementation of the GNN algorithm for the publicly available dataset designed for the Kaggle TrackML challenge \cite{kaggle-trackml}. The TrackML detector emulates a full silicon LHC detector and as such, certain models of the GNN algorithm outlined in Chapter \ref{chapter-5}, are altered for the TrackML detector geometry.
+The following chapter focuses on the implementation of the GNN algorithm for the publicly available dataset designed for the Kaggle TrackML challenge \cite{kaggle-trackml}. The TrackML detector emulates a full silicon LHC detector and as such, certain models of the GNN algorithm outlined in Chapter \ref{chapter-5}, are improved for the TrackML detector geometry.
 
-Section \ref{chapter-6-data-prep} describes the structure of the TrackML data and how it was used to build a graph network. Sections \ref{constructing-track-states} and \ref{chapter-6-covariance-derivation} describe the construction of track state estimates. Section \ref{chapter-6-kl-threshold} presents the classifier constructed to determine the optimal KL threshold used within the GMR stage and Section \ref{chapter-6-extrapolation} presents alterations to the extrapolation models used within the Information Aggregation stage. Finally, Section \ref{gnn-kf-implementation} describes specific implementation of KFs. 
+This chapter is organised as follows. Section \ref{chapter-6-data-prep} describes the structure of the TrackML data and how it was used to build a graph network. Sections \ref{constructing-track-states} and \ref{chapter-6-covariance-derivation} describe the construction of track state estimates. Section \ref{chapter-6-kl-threshold} presents the classifier constructed to determine the optimal KL threshold used within the GMR stage and Section \ref{chapter-6-extrapolation} presents alterations to the extrapolation models used within the Information Aggregation stage. Finally, Section \ref{gnn-kf-implementation} describes specific implementation of KFs. 
  
 
 
@@ -95,31 +95,55 @@ X_{ij} = \begin{bmatrix} a \\ b \\ \tau \end{bmatrix}
 
 \subsection{Moli\`ere Theory of Multiple Scattering}
 
-The contribution due to multiple scattering is given by Eq \eqref{eqn:moliere-equation}.
+A charged particle traversing a medium is deflected by many small-angle scatters. Most of this deflection is due to Coulomb scattering from nuclei, and hence the effect is multiple Coulomb scattering. However, for hadronic projectiles the strong interactions also contribute to multiple scattering. Therefore, the error in track direction will have a contribution from the observed error due to multiple scattering. The Coulomb scattering distribution is well represented by the theory of Moli\`ere, which is roughly Gaussian for small deflection angles. The contribution due to Moli\`ere multiple scattering is given by the simplified Highland correction formula \cite{moliere-theory-formula} in Eq \eqref{eqn:simplified-moliere-equation}.
+
+%The Moli\`ere multiple scattering is inversely proportional to particle full momentum and proportional to the square root of material thickness.
+
+% \begin{equation}
+%     \sigma_{ms}^{2} = \frac{13.6 \text{MeV}}{\beta c p} z \sqrt{\frac{x}{X_0}} \left[ 1 + 0.038ln \left( \frac{x}{X_0} \right) \right] 
+%     \label{eqn:moliere-equation}
+% \end{equation}
 
 \begin{equation}
-    \sigma_{ms}^{2} = \frac{13.6 \text{MeV}}{\beta c p} z \sqrt{\frac{x}{X_0}} \left[ 1 + 0.038ln \left( \frac{x}{X_0} \right) \right] 
-    \label{eqn:moliere-equation}
-\end{equation}
-
-where $p$, $\beta c$, and $z$ are the momentum, velocity, and charge number of the incident particle, and $x/X_0$ is the thickness of the scattering medium, measured in radiation lengths. As the logarithmic correction term is negligible, $\sigma_{ms}^{2}$ becomes
-
-\begin{equation}
-    \sigma_{ms}^{2} = \frac{13.6 \text{MeV}}{p} \sqrt{\frac{x}{X_0}}
+    \sigma_{ms}^{2} = \frac{13.6 \text{MeV}}{\beta c p} z \sqrt{\frac{x}{X_0}}
     \label{eqn:simplified-moliere-equation}
 \end{equation}
 
-where $\beta c$, and $z$ are set to 1. The full particle momentum $p$, can be derived using the track curvature $\kappa$ and inverse track inclination $\tau$, where $\kappa$ is a function of parabolic parameters. .... The magnetic field of the TrackML model is such that a particle with transverse momentum $p_\text{T}$ has a radius of trajectory $r = p_\text{T} / 0.3 $. ...what is 0.3 here?
+where $p$, $\beta c$, and $z$ are the momentum, velocity, and charge number of the incident particle, and $x/X_0$ is the thickness of the scattering medium, measured in radiation lengths. $\beta c$, and $z$ are set to 1. 
 
-what are x and x0 here? 
+\subsubsection{Derivation of Full Momentum}
+The full particle momentum $p$, can be derived using the track curvature $\kappa$, where $\kappa$ is a function of parabolic parameters $a$ and $b$, given by Eq \eqref{eqn:kappa}. 
+
+\begin{equation}
+\kappa = \frac{2a}{(1 + (2ax + b)^2)^{\frac{3}{2}}}
+\label{eqn:kappa}
+\end{equation}
+
+where $x$ is the $x$-coordinate of the point at which the curvature is calculated, and $\kappa$ is inversely proportional to the radius of the trajectory $r$, $\kappa = 1/r$.
+
+The magnetic field of the TrackML model is such that a particle with transverse momentum $p_\text{T}$ has a radius of trajectory $r = p_\text{T} / \text{B} $, where $p_\text{T}$ is measured in GeV/c and B is the magnetic field equal to 0.3T. 
+
+Full momentum is then ....
+
+Substituting in everything ...
+
+
+\subsubsection{Orientation of Detector Layers}
+
+If a particle crosses one of the TrackML detector layers at incident angle $\theta$, then the radiation length is $0.02 f(\theta)$, where 0.02 is the integrated $x/X_0$ for a typical silicon detector layer which is considered as a single thin scatter. $f(\theta)$ is determined by the orientation of the detector layer, depending upon the mutual orientation of the node-pair. For example, for a scattered node in the barrel, the intersected radiation length becomes $0.02 / sin(\theta)$ and for a scattered node in the endcap $0.02 / cos(\theta)$.
+
+
+\subsubsection{Contribution to Edge State Covariance}
+
+Barrel version of var ms and endcap version of var ms.
+
+contribution of error due to multiple-scattering only affects the track direction - which is reflected in parabolic parameter b, so that's why we only add this contribution to the corresponding b parameter in the matrix and the tau parameter (cov(1,1) and cov(2,2)).
 
 
 \begin{itemize}
-\item handling the error/effects due to multiple scattering for the barrel and endcap in slightly different ways
 \item how were the edge state covariances dervied and the sigma errors chosen
+
 \end{itemize}
-% moliere theory links:
-%https://gray.mgh.harvard.edu/attachments/article/337/Techniques%20of%20Proton%20Radiotherapy%20(06)%20Multiple%20Scattering.pdf
 
 
 
@@ -128,7 +152,7 @@ what are x and x0 here?
 \section{The Optimal KL Threshold}
 \label{chapter-6-kl-threshold}
 
-To determine the optimal pairwise $d_{KL}$ between track state estimates $X_{ij}$ for a given node, a SVM classifier was trained using pairwise $d_{KL}$ and $\sigma_{e}$ as input features. A MC simulation of $10,000$ particle collision events, each event with ten truth tracks, was used to build a training dataset. Loosely compatible edge connections were formed using a hit-pair predictor based on track inclination angle of neighbouring hits, similar to the graph network constructed in \ref{fig:heat-map}. The feature vector was comprised of $\sigma_{e}$ for a given node and pairwise $d_{KL}$ between its track states. The truth particle was extracted for each pairwise connection, where truth 1 corresponded to hits from both track states originating from the same truth particle, and truth 0 otherwise. 
+To determine the optimal pairwise $d_{KL}$ between track state estimates $X_{ij}$ for a given node, a SVM classifier was trained. Pairwise $d_{KL}$ and $\sigma_{e}^{2}$ for a given node are used as input features. A MC simulation of $10,000$ particle collision events, each event with ten truth tracks, was used to build a training dataset. Loosely compatible edge connections were formed using a hit-pair predictor based on track inclination angle of neighbouring hits, similar to the graph network constructed in \ref{fig:heat-map}. The feature vector was comprised of $\sigma_{e}$ for a given node and pairwise $d_{KL}$ between its track states. The truth particle was extracted for each pairwise connection, where truth 1 corresponded to hits from both track states originating from the same truth particle, and truth 0 otherwise. 
 
 %The truth data is presented is Figure \ref{fig:KL-distance-truth}.
 
