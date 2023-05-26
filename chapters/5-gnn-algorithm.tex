@@ -240,14 +240,14 @@ S = \begin{bmatrix} \sigma_0^{2} & 0 \\ 0 & \sigma_0^{2} \end{bmatrix}  \quad G 
 During GMR via clusterisation, $X^{M}$ and $C^{M}$ were computed using Eq \eqref{eqn:inverse-variance-weighting}. During the Information Aggregation stage, $X^M$ were projected into the subspace of measurements using the measurement vector $H = [1 \quad 0]$. The residual, $r_{ij}$, was then calculated between the projection, $HX^M$, and the measurement at each node using $r_{ij} = m_i - HX_{ij}^M$. The covariance of the residual, $V_{ij}$, is given by Eq. \eqref{eqn:covariance-of-residual}
 
 \begin{equation}
-{V}_{ij} = H {V}_{ij} H^{T} + \sigma_{0}^{2}
+{V}_{ij} = H \widetilde{C}_{ij} H^{T} + \sigma_{0}^{2}
 \label{eqn:covariance-of-residual}
 \end{equation}
 
 where the process noise $Q$ in computing $\widetilde{C}_{ij}$ is defined as the zero matrix for simplicity. The corresponding Mahalanobis distance is given by Eq \eqref{eqn:mahalanobis-distance}.
 
 \begin{equation}
-\Delta \chi_{ij}^{2} = r_{ij}^{T} \hat{C}_{ij}^{-1} r_{ij}
+\Delta \chi_{ij}^{2} = r_{ij}^{T} {V}_{ij}^{-1} r_{ij}
 \label{eqn:mahalanobis-distance}
 \end{equation}
 
@@ -266,7 +266,7 @@ Figure \ref{fig:example-application-2} shows another simulation of the MC toy tr
 
 It was observed that clustering of states was not always possible in all ``hot'' regions. As a result, the pattern recognition process was automatically initiated in regions where outlier connections were easily identifiable, i.e. ``cold'' regions. This indicates that an intrinsic characteristic of the GNN algorithm is that neighbourhood complexity is inferred by the network. 
 
-\begin{center}
+%\begin{center}
 \begin{figure}[htbp]%
     \centering
     \subfloat[\centering Simulated graph network post CCA]{{\includegraphics[width=10.7cm]{images/5-gnn-algorithm/mc-example-1.png} } \label{fig:mc-example-1}}%
@@ -276,9 +276,9 @@ It was observed that clustering of states was not always possible in all ``hot''
     \caption{Results of the GNN-based algorithm applied to a simple MC simulation. a) The simulated graph network where nodes with $\sigma_e^2 > 0.8$ are not plotted as clustering was not possible for these nodes. A CCA was applied to split the graph network into smaller subgraphs, where each colour indicates a different subgraph. b) The extracted track candidates after the applied GMR and Information Aggregation stages, where seven separate track candidates can be seen.}%
     \label{fig:example-application-1}%
 \end{figure}
-\end{center}
+%\end{center}
 
-\begin{center}
+%\begin{center}
 \begin{figure}[htbp]%
     \centering
     \subfloat[\centering Simulated graph network post CCA]{{\includegraphics[width=9.8cm]{images/5-gnn-algorithm/mc-example-3.png} } \label{fig:mc-example-3}}%
@@ -288,7 +288,7 @@ It was observed that clustering of states was not always possible in all ``hot''
     \caption{Results of the GNN-based algorithm applied to a simple MC simulation a) The simulated graph network where nodes with $\sigma_e^2 > 0.8$ are not plotted as clustering was not possible. A CCA was applied to split the graph network into smaller subgraphs, where each colour indicates a different subgraph. c) Six extracted track candidates after the GMR stage.}%
     \label{fig:example-application-2}%
 \end{figure}
-\end{center}
+%\end{center}
 
 
 \section{Conclusion}
