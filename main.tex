@@ -2,7 +2,6 @@
 \usepackage{amsmath, nccmath}
 \usepackage{subfiles}
 \usepackage[colorlinks]{hyperref}
-%\usepackage{units}
 \usepackage{graphicx}
 \usepackage{fancyhdr}
 \usepackage{booktabs}
@@ -29,33 +28,23 @@
 \usepackage{ragged2e}
 \usepackage{caption}
 \usepackage{subcaption}
-\usepackage[acronym,nomain,nonumberlist]{glossaries}
 \usepackage[english]{babel}
-\usepackage[acronym]{glossaries}
 \pagenumbering{roman}
 \newcommand{\sectionbreak}{\clearpage}
-%\makeglossaries
 \hypersetup{urlcolor=blue, linkcolor=blue, citecolor=blue}
 \geometry{margin=1.25in}
 \usepackage{fancyhdr}
 \DeclareUnicodeCharacter{2212}{-}
 \usepackage{xcolor}
+\usepackage[printonlyused,nohyperlinks]{acronym}
 
 
 
 %---------------------
-%	Line numbers!!
+%	Line numbers!! - can be removed at the end
 %---------------------
 \usepackage{lineno}
 \linenumbers
-
-
-
-%\titlespacing{\section}{0pt}{\parskip}{-\parskip}
-%\titlespacing{\subsection}{0pt}{\parskip}{-\parskip}
-%\titlespacing{\subsubsection}{0pt}{\parskip}{-\parskip}
-
-
 
 
 %-----------------------
@@ -66,11 +55,6 @@
 \newenvironment{Abstract}%
     {\begin{center}%
     \bfseries{\summaryname} \end{center}}%
-    
-% \newenvironment{Impact}%
-%     {\clearpage\thispagestyle{empty}\null\vfill\begin{center}%
-%     \bfseries Impact Statement\end{center}}%
-%     {\vfill\null}
 
 \newenvironment{Impact}%
     {\begin{center}%
@@ -200,9 +184,7 @@ Submitted in partial fulfillment of the \\
 \newpage
 \begin{acknowledgements}
 \doublespacing
-
-%Firstly I give thanks to my supervisors, Dr. Dmitry Emeliyanov and Prof. Nikos Konstantinidis for all their guidance and support they have offered over the course of this doctorate. Dmitry and Nikos have always been consistent with clear explanations and sound advice throughout the last four years. If not for the constant assistance from you both, I would not have achieved this. I express my gratitude to everyone I have worked with at the ATLAS experiment and at UCL, in particular Gabriel Facini and Mark Sutton. Finally, I am indebted to my friends and family, especially to my parents and fiancé Dr. Dhroov Thanki for their continued support and patience through this period of my life.
-
+\input{prelim/acknowledgements.tex}
 \end{acknowledgements}
 
 
@@ -212,14 +194,15 @@ Submitted in partial fulfillment of the \\
 \doublespacing
 \tableofcontents
 \onehalfspacing
-\glsaddall
+% \glsaddall
 
 
 
 %---------------------
 %	Acronyms
 %---------------------
-%\printglossary[type=\acronymtype,title=Acronyms]
+\input{prelim/acronyms.tex}
+%\printglossary[type=\acronymtype,title=List of Acronyms]
 %\printglossary[type=\acronymtype]
 
 
