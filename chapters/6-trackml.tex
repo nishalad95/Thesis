@@ -20,11 +20,11 @@ This chapter is organised as follows. Section \ref{chapter-6-data-prep} describe
 \section{Data Preparation}
 \label{chapter-6-data-prep}
 
-The TrackML dataset \cite{kaggle-trackml-data} comprises of multiple independent events, where each event contains simulated measurements (3D points) of particles generated in a collision between proton bunches at the LHC. The training dataset contains the recorded hits and the measured $x, y, z$ position of each corresponding hit in global coordinates. The event truth data contains each hit's ground truth counterpart, their association to particles and the initial parameters of those particles. Each hit's radius of trajectory, $r$, was computed using its respective $x$ and $y$ measurements.
+The TrackML dataset \cite{kaggle-trackml-data} comprises of multiple independent events, where each event contains simulated measurements (3D points) of particles generated in a collision between proton bunches at the LHC. The training dataset contains the recorded hits and the measured $x, y, z$ position of each corresponding hit in global coordinates. The event truth data contains each hit's ground truth counterpart, their association to particles and the initial parameters of those particles. Each hit's radius of trajectory, $r$, is computed using its respective $x$ and $y$ measurements.
 
-% TODO references here:
-Python scripts were provided by the Kaggle competition in order to convert the TrackML dataset from hits to graph nodes and edges [reference]. The graph network connections between edge pairs are built using a similar classifier as ... chapter 4 ... the track inclination angle and  ... where node pairs can span up to two layers apart.
+In order to read the TrackML data, Python scripts provided by the Kaggle competition organisers are used \cite{python-scripts-kaggle}. The TrackML data provide only hits such that graph nodes and edges must be created independently.
 
+The hits are converted into graph nodes and edge pairs were constructed using the \textit{FASTrack} algorithm used during the throughput phase of the TrackML Kaggle competition \cite{Amrouche2023}. The FASTrack algorithm is based on a similar hit-pair predictor methodology outlined in Chapter \ref{chapter-4}, whereby hit cluster shapes are used to predict the intervals of track inclination angles and save CPU time by avoiding hit combinations with parameters incompatible with the prediction. Graph edges are predicted and can span up to two layers apart.
 
 Due to the sheer volume of data generated during high-energy proton-proton collisions, it is impossible for any Trigger system to reconstruct all objects. There are many low momentum tracks that will produce hits and will begin to curve under the influence of the magnetic field. These types of tracks are not of interest for reconstruction within this study. As a result, there are certain kinematic requirements imposed. Constraints are embedded on the graph edge parameters, in order to select the tracks of interest with a particular $p_{\text{T}}$ from the very beginning \cite{Dmitry-fasttrack-addtest}, and construct the graph network. 
 
@@ -41,7 +41,7 @@ Track parameters in both the transverse $x$-$y$ plane and the $r$-$z$ plane are 
 \subsection{Parabolic Track Model}
 \label{parabolic-state}
 
-In the $x$-$y$ plane, charged particles experience the influence of the magnetic field and their trajectories follow a near-parabolic shape. For a given node A, a parabola is formed using the global origin O, node A and neighbour B, illustrated in Figure \ref{fig:gnn-parabolic-model}. The parabola is transformed into the local coordinate system of node A such that the new $x$-axis, $X_A$, is parallel to O - A. The parabolic parameters \{$a, b, c$\} are computed using Eqs \eqref{eqn:parabolic-equations}. The measurement vector $[m_O \quad m_A \quad m_C]$ is obtained in the coordinate system local to node A, assuming $m_O = 0$ and $m_A = 0$.
+In the $x$-$y$ plane, charged particles experience the influence of the magnetic field and their trajectories follow a near-parabolic shape. For a given node A, a parabola is formed using the global origin O, node A and neighbour B, illustrated in Figure \ref{fig:gnn-parabolic-model}. The parabola is transformed into the local coordinate system of node A such that the new $x$-axis, $X_A$, is parallel to O - A. The parabolic parameters \{$a, b, c$\} are computed using Eqs \eqref{eqn:parabolic-equations}, where $x_O$ and $x_B$ are the $x$-coordinates of global origin O and node B transformed into the local coordinate system of node A. The measurement vector $[m_O \quad m_A \quad m_B]$ is also obtained in the local coordinate system of node A, assuming $m_O = 0$ and $m_A = 0$.
 
 \begin{equation}
 \begin{aligned}
@@ -55,12 +55,12 @@ m_B = ax_{B}^{2} + bx_B + c
 \begin{figure}[htbp!] 
     \centering
     \subfloat[]{%
-        \includegraphics[width=0.41\textwidth]{images/5-gnn-algorithm/parabolic-state-model-1.png}%
+        \includegraphics[width=0.42\textwidth]{images/5-gnn-algorithm/parabolic-state-model-1.png}%
         \label{fig:gnn-parabolic-state-1}%
         }%
     \hfill%
     \subfloat[]{%
-        \includegraphics[width=0.55\textwidth]{images/5-gnn-algorithm/parabolic-state-model-2.png}%
+        \includegraphics[width=0.56\textwidth]{images/5-gnn-algorithm/parabolic-state-model-2.png}%
         \label{fig:gnn-parabolic-state-2}%
         }%
     \caption{Parabolic model illustration. a) Construction of parabolas O - A - B and O - A - C, where O is the global origin and A, B, C are graph nodes. b) Rotation of the parabola O - A - B into the local coordinate system of A.}
@@ -92,8 +92,68 @@ X_{ij} = \begin{bmatrix} a \\ b \\ \tau \end{bmatrix}
 
 
 
+
 \section{Derivation of Edge State Covariance}
 \label{chapter-6-covariance-derivation}
+
+In order to derive the edge state covariance of the track state estimate $X_{ij}$ given in Eq \eqref{eqn:joint-state-vector}, the covariance of the track state parameters in the $x$-$y$ and $r$-$z$ planes must be handled separately. 
+
+
+
+
+
+
+The joint measurement covariance matrix for nodes $i$ and $j$ in the $x$-$y$ plane, $S_{xy}$ is stated in Eq. \eqref{eqn:trackml-s-matrix-xy}
+
+\begin{equation}
+    S_{xy} = \begin{bmatrix} \sigma_O^{2} & 0 & 0 \\ 0 & \sigma_b^{2} & 0 \\ 0 & 0 & \sigma_c^{2} \end{bmatrix} 
+    \label{eqn:trackml-s-matrix-xy}
+\end{equation}
+
+where $\sigma_O^{2}$ is the error due to the measurement at the global origin using the parabolic model approximation outlined in Section \ref{parabolic-state}. $\sigma_b^{2}$ and $\sigma_c^{2}$ are the respective errors in parabolic parameters $b$ and $c$. The measurement error in the global origin $\sigma_O$ is initialised to 4.0mm due to the large error in the beamspot, whereas both $\sigma_b$ and $\sigma_c$ are initialised to 0.3mm due to the high precision in the Pixel detector. The measurement matrix, $H$, given by Eq \eqref{eqn:trackml-matrix-h-xy} relates the measurement vector $[m_O \quad m_A \quad m_C]$ in the $x$-$y$ plane, to the parabolic parameters $\{a, b, c \}$.
+
+\begin{equation}
+    H_{xy} = \begin{bmatrix} x_O^{2} & x_O & 1 \\ 0 & 0 & 1 \\ x_b^{2} & x_b & 1 \end{bmatrix} 
+    \label{eqn:trackml-matrix-h-xy}
+\end{equation}
+
+
+The state covariance, $C_{xy}$, for the $x$-$y$ plane is derived using the standard linear algebra approach, where $C_{xy} = H_{xy}S_{xy}X_{xy}^T$.
+
+
+The joint measurement covariance matrix for nodes $i$ and $j$ in the $r$-$z$ plane, $S_{rz}$ is stated in Eq. \eqref{eqn:trackml-s-matrix-rz}
+
+\begin{equation}
+    S_{rz} = \begin{bmatrix} \sigma_{zi}^{2} & 0 & 0 & 0 \\ 
+                             0 & \sigma_{zj}^{2} & 0 & 0 \\ 
+                             0 & 0 & \sigma_{ri}^{2} & 0 \\
+                             0 & 0 & 0 & \sigma_{rj}^{2}
+                            \end{bmatrix} 
+    \label{eqn:trackml-s-matrix-rz}
+\end{equation}
+
+
+where .... 
+
+
+The error in the track inclination $\tau$ is computed using ...
+
+The transition Jacobian, $G_{rz}$, relates the measurements in the $r$-$z$ plane to parameter $\tau$ and is given by Eq \eqref{trackml-g-rz}.
+
+\begin{equation}
+    G_{rz} = \begin{bmatrix} 
+            (r_i - r_j)^{-1} &
+            -(r_i - r_j)^{-1} & 
+            \frac{-(z_i - z_j)}{(r_i - r_j)^2} & 
+            \frac{z_i - z_j}{(r_i - r_j)^2}
+            \end{bmatrix} 
+    \label{trackml-g-rz}
+\end{equation}
+
+The corresponding error in track inclination $\tau$ is given by $\sigma_{\tau} = G_{rz} S_{rz} G_{rz}^{T}$.
+
+
+
 
 \subsection{Moli\`ere Theory of Multiple Scattering}
 
