@@ -35,22 +35,37 @@ Due to the sheer volume of data generated during high-energy proton-proton colli
 \section{Construction of Track State Estimates}
 \label{constructing-track-states}
 
-Track parameters in both the transverse $x$-$y$ plane and the $r$-$z$ plane are considered in order to construct track state estimates, $X_{ij}$.
+In order to construct track state estimates, $X_{ij}$, for each connection between node $i$ and its neighbour $j$, track parameters in both the transverse $x$-$y$ plane and the $r$-$z$ plane are considered.
 
 
 \subsection{Parabolic Track Model}
 \label{parabolic-state}
 
-In the $x$-$y$ plane, charged particles experience the influence of the magnetic field and their trajectories follow a near-parabolic shape. For a given node A, a parabola is formed using the global origin O, node A and neighbour B, illustrated in Figure \ref{fig:gnn-parabolic-model}. The parabola is transformed into the local coordinate system of node A such that the new $x$-axis, $X_A$, is parallel to O - A. The parabolic parameters \{$a, b, c$\} are computed using Eqs \eqref{eqn:parabolic-equations}, where $x_O$ and $x_B$ are the $x$-coordinates of global origin O and node B transformed into the local coordinate system of node A. The measurement vector $[m_O \quad m_A \quad m_B]$ is also obtained in the local coordinate system of node A, assuming $m_O = 0$ and $m_A = 0$.
+In the $x$-$y$ plane, charged particles experience the influence of the magnetic field and their trajectories follow a near-parabolic shape. As illustrated in Figure \ref{fig:gnn-parabolic-model}, a parabola is formed using the global origin O, node A and neighbour node B. The parabola is transformed into the local coordinate system of node A such that the new $x$-axis, $X_A$, is parallel to O - A and the new $y$-axis, $Y_A$, is perpendicular to this. Using the general expression of a parabola, the vector of measurements in the $X_A$-$Y_A$ plane $ \hat{m} = [m_O \quad m_A \quad m_B]^{T}$ can be expressed in terms of parabolic parameters $\hat{p} = [a \quad b \quad c]^{T}$ using Eq \eqref{eqn:parabolic-equations}, 
 
 \begin{equation}
-\begin{aligned}
-m_O = ax_{O}^{2} + bx_O + c \\
-m_A = c \\
-m_B = ax_{B}^{2} + bx_B + c
-\end{aligned}
-\label{eqn:parabolic-equations}
+    \hat{m} = H_{xy} \hat{p} 
+    \label{eqn:parabolic-equations}
 \end{equation}
+
+where $m_O$, $m_A$ and $m_B$ are the respective measurements of the origin, O, node A and node B, transformed into the local coordinate system of node A, and $\{a, b, c\}$ are the parabolic parameters. Measurements $m_O = 0$ and $m_A = 0$, as illustrated in Figure \ref{fig:gnn-parabolic-model}. The measurement matrix, $H_{xy}$, relates the measurement vector $\hat{m}$, to the parabolic parameters $\hat{p}$ and is given by Eq \eqref{eqn:trackml-matrix-h-xy}.
+
+\begin{equation}
+    H_{xy} = \begin{bmatrix} x_O^{2} & x_O & 1 \\ 0 & 0 & 1 \\ x_b^{2} & x_b & 1 \end{bmatrix} 
+    \label{eqn:trackml-matrix-h-xy}
+\end{equation}
+
+where $x_O$ and $x_B$ are the respective $x$-coordinates of global origin O and node B transformed into the $X_A$ axis.
+
+
+% \begin{equation}
+% \begin{aligned}
+% m_O = ax_{O}^{2} + bx_O + c \\
+% m_A = c \\
+% m_B = ax_{B}^{2} + bx_B + c
+% \end{aligned}
+% \label{eqn:parabolic-equations}
+% \end{equation}
 
 \begin{figure}[htbp!] 
     \centering
@@ -71,7 +86,7 @@ m_B = ax_{B}^{2} + bx_B + c
 \subsection{Linear Track Model}
 \label{linear-state}
 
-The $r$-$z$ plane is parallel to the direction of travel of the beamline, where tracks follow a linear model. The inverse track inclination between a node and its neighbour, $\tau$, is used and is given by Eq \eqref{eqn:tau-parameter}, where $z_A$, $r_A$ refer to measurements of the node and $z_B$, $r_B$ refer to measurements of its neighbour. $r$ is the square root of the sum in quadrature of the $x$ and $y$ measurements.
+The $r$-$z$ plane is parallel to the direction of travel of the beamline, where tracks follow a linear model. The inverse track inclination between a node and its neighbour, $\tau$, is used and is given by Eq \eqref{eqn:tau-parameter}, where $z_A$, $r_A$ refer to measurements of the node and $z_B$, $r_B$ refer to measurements of its neighbour. The radius, $r$, is the square root of the sum in quadrature of the global $x$ and $y$ measurements.
 
 \begin{equation}
 \tau = \frac{z_A - z_B}{r_A - r_B}
@@ -80,7 +95,7 @@ The $r$-$z$ plane is parallel to the direction of travel of the beamline, where 
 
 \subsection{Track State Estimate}
 
-Parabolic parameters $\{a, b\}$ derived using Eqs \eqref{eqn:parabolic-equations} using measurements in the $x$-$y$ plane, as well as inverse track inclination $\tau$ given in Eq \eqref{eqn:tau-parameter} using parameters in the $r$-$z$ plane, provide an indication of track orientation. For node $i$ and its neighbour $j$, the track state estimate, $X_{ij}$, is given by Eq \eqref{eqn:joint-state-vector}.
+Parabolic parameters $\{a, b\}$ derived using Eqs \eqref{eqn:parabolic-equations} and \eqref{eqn:trackml-matrix-h-xy}, as well as inverse track inclination $\tau$ given in Eq \eqref{eqn:tau-parameter}, provide an indication of track orientation. For node $i$ and its neighbour $j$, the track state estimate, $X_{ij}$, is given by Eq \eqref{eqn:joint-state-vector}.
 
 \begin{equation}
 X_{ij} = \begin{bmatrix} a \\ b \\ \tau \end{bmatrix}
@@ -96,29 +111,19 @@ X_{ij} = \begin{bmatrix} a \\ b \\ \tau \end{bmatrix}
 \section{Derivation of Edge State Covariance}
 \label{chapter-6-covariance-derivation}
 
-In order to derive the edge state covariance of the track state estimate $X_{ij}$ given in Eq \eqref{eqn:joint-state-vector}, the covariance of the track state parameters in the $x$-$y$ and $r$-$z$ planes must be handled separately. 
-
-
-
-
-
-
-The joint measurement covariance matrix for nodes $i$ and $j$ in the $x$-$y$ plane, $S_{xy}$ is stated in Eq. \eqref{eqn:trackml-s-matrix-xy}
+In order to derive the edge state covariance of the track state estimate $X_{ij}$ given in Eq \eqref{eqn:joint-state-vector}, the covariance of the track state parameters in the $x$-$y$ and $r$-$z$ planes must be handled separately. The joint measurement covariance matrix for nodes $i$ and $j$ in the $x$-$y$, $S_{xy}$ is stated in Eq. \eqref{eqn:trackml-s-matrix-xy}
 
 \begin{equation}
     S_{xy} = \begin{bmatrix} \sigma_O^{2} & 0 & 0 \\ 0 & \sigma_b^{2} & 0 \\ 0 & 0 & \sigma_c^{2} \end{bmatrix} 
     \label{eqn:trackml-s-matrix-xy}
 \end{equation}
 
-where $\sigma_O^{2}$ is the error due to the measurement at the global origin using the parabolic model approximation outlined in Section \ref{parabolic-state}. $\sigma_b^{2}$ and $\sigma_c^{2}$ are the respective errors in parabolic parameters $b$ and $c$. The measurement error in the global origin $\sigma_O$ is initialised to 4.0mm due to the large error in the beamspot, whereas both $\sigma_b$ and $\sigma_c$ are initialised to 0.3mm due to the high precision in the Pixel detector. The measurement matrix, $H$, given by Eq \eqref{eqn:trackml-matrix-h-xy} relates the measurement vector $[m_O \quad m_A \quad m_C]$ in the $x$-$y$ plane, to the parabolic parameters $\{a, b, c \}$.
+where $\sigma_O^{2}$ is the error due to the measurement at the global origin using the parabolic model approximation outlined in Section \ref{parabolic-state}. $\sigma_b^{2}$ and $\sigma_c^{2}$ are the respective errors in parabolic parameters $b$ and $c$. The measurement error in the global origin $\sigma_O$ is initialised to 4.0mm due to the large error in the beamspot, whereas both $\sigma_b$ and $\sigma_c$ are initialised to 0.3mm due to the high precision in the Pixel detector. The covariance of the vector of parabolic parameters $\hat{p}$, is given by $C_{xy}$ in Eq \eqref{eqn:c-xy}
 
 \begin{equation}
-    H_{xy} = \begin{bmatrix} x_O^{2} & x_O & 1 \\ 0 & 0 & 1 \\ x_b^{2} & x_b & 1 \end{bmatrix} 
-    \label{eqn:trackml-matrix-h-xy}
+    C_{xy} = H_{xy}^{-1}S_{xy}{H_{xy}^{-1}}^{T}
+    \label{eqn:c-xy}
 \end{equation}
-
-
-The state covariance, $C_{xy}$, for the $x$-$y$ plane is derived using the standard linear algebra approach, where $C_{xy} = H_{xy}S_{xy}X_{xy}^T$.
 
 
 The joint measurement covariance matrix for nodes $i$ and $j$ in the $r$-$z$ plane, $S_{rz}$ is stated in Eq. \eqref{eqn:trackml-s-matrix-rz}
