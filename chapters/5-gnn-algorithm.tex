@@ -202,7 +202,7 @@ A linear 2-dimensional model was used to simulate seven truth tracks in the $x$-
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.6\textwidth]{images/5-gnn-algorithm/ground-truth.png}
+    \includegraphics[width=0.55\textwidth]{images/5-gnn-algorithm/ground-truth.png}
     \caption{Simple simulation of seven truth tracks.}
     \label{fig:ground-truth}%
 \end{figure}
@@ -215,7 +215,7 @@ The node degree (the number of edges associated to each node) and the empirical 
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.8\textwidth]{images/5-gnn-algorithm/heatmap-network.png}
+    \includegraphics[width=0.85\textwidth]{images/5-gnn-algorithm/heatmap-network.png}
     \caption{Graph network plotted as a node-degree heat map. Conversion of the simulated hits in Figure \ref{fig:ground-truth} to a graph network containing nodes and edges. Close proximity hits are merged into the same node where necessary and predicted edge connections are formed using a pair predictor. The heat map represents node degree, where ``hot'' nodes (white-yellow) contain many edge connections, whereas ``cold'' nodes (orange-red) contain fewer edge connections.}
     \label{fig:heat-map}%
 \end{figure}
@@ -259,12 +259,14 @@ F = \begin{bmatrix} 1 & dx \\ 0 & 1 \end{bmatrix}
 \end{equation}
 
 
+Eq \eqref{eqn:mc-model-F} is also used as the transition Jacobian in the KF for track fitting, with the process noise $Q = 0$ for simplicity.
 
-Figure \ref{fig:example-application-1} shows an example of the GNN algorithm applied to the simulated network in Figure \ref{fig:heat-map}. Figure \ref{fig:mc-example-1} displays the graph network where an initial CCA has been applied. Three smaller subgraphs have been identified as shown by the separate colours. Nodes with $\sigma_e^2 > 0.8$ are not shown here, as clustering was not possible. The subsequent extracted track candidates from this network are shown in Figure \ref{fig:mc-example-2}, where seven distinct tracks are observed. Outlier edge connections have been successfully identified. This particular simulation shows 100\% efficiency of track reconstruction with respect to MC truth, as all seven truth tracks were extracted within two stages. This indicates that the GNN algorithm behaved as expected, first resolving ambiguities in ``cold'' regions.
+Figure \ref{fig:example-application-1} shows an example of the GNN algorithm applied to the simulated network in Figure \ref{fig:heat-map}. Figure \ref{fig:mc-example-1} displays the graph network where an initial CCA has been applied. Three smaller subgraphs have been identified as shown by separate colours. Nodes with $\sigma_e^2 > 0.8$ are not shown as clustering was not possible. The subsequent extracted track candidates are shown in Figure \ref{fig:mc-example-2}, where seven distinct tracks are observed and outlier edge connections have been successfully identified. This simulation shows 100\% efficiency of track reconstruction with respect to MC truth, as all seven truth tracks were extracted in two stages. 
 
-Figure \ref{fig:example-application-2} shows another simulation of the MC toy track model with application of the GNN algorithm. The application of CCA yields two distinct subgraphs shown in Figure \ref{fig:mc-example-3}. The subsequent extracted track candidates are shown in Figure \ref{fig:mc-example-4}, where six distinct tracks can be observed. A precision of 65\% was achieved on identifying correct outlier connections with respect to the MC truth during stage 1. A fast convergence was achieved in extracting 6 out of 7 candidates after the first stage of the algorithm. Remaining networks were propagated to further stages, however no further track candidates were extracted. Similarly, nodes with $\sigma_e^2 > 0.8$ are not shown here, as clustering was not possible. This suggests that $\sigma_{e}^{2}$ is an important discriminating feature when clustering track state estimates. 
+Figure \ref{fig:example-application-2} shows another simulation of the MC toy track model with application of the GNN algorithm. The application of CCA yields two distinct subgraphs shown in Figure \ref{fig:mc-example-3} by two separate colours. The subsequent extracted track candidates are shown in Figure \ref{fig:mc-example-4}, where six distinct tracks can be observed. A precision of 65\% was achieved on identifying correct outlier connections with respect to the MC truth during stage 1. A fast convergence was achieved in extracting six out of seven track candidates after the first stage of the algorithm. Remaining networks were propagated to further stages, however no further track candidates were extracted. Similarly, nodes with $\sigma_e^2 > 0.8$ are not shown here, as clustering was not possible. This suggests that $\sigma_{e}^{2}$ is an important discriminating feature when clustering track state estimates. 
 
-It was observed that clustering of states was not always possible in all ``hot'' regions. As a result, the pattern recognition process was automatically initiated in regions where outlier connections were easily identifiable, i.e. ``cold'' regions. This indicates that an intrinsic characteristic of the GNN algorithm is that neighbourhood complexity is inferred by the network. 
+It was observed that clustering of states was not always possible in all ``hot'' regions. As a result, the pattern recognition process was automatically initiated in regions where outlier connections were easily identifiable, i.e. ``cold'' regions. This indicates that the GNN algorithm behaves as expected. 
+
 
 %\begin{center}
 \begin{figure}[htbp]%
@@ -293,4 +295,4 @@ It was observed that clustering of states was not always possible in all ``hot''
 
 \section{Conclusion}
 
-The proposed GNN algorithm is successful in iteratively identifying outlier edge connections and extracting track candidates for simple simulated particle collision events. GMR via clustering of state vectors proves to be a successful first step towards resolving incompatible connections in the network. The KF works well for both the extrapolation of state vectors to neighbour nodes, as well as for track extraction and track fitting. This ensures neighbourhood information, can be aggregated in order to improve the precision in track state parameters. The GNN algorithm automatically initiates the pattern recognition process in regions where outlier connections are easily identifiable. The network starts with low density regions and gradually progresses towards high density areas. This indicates that the GNN algorithm shows great promise for extraction of track candidates in more complex cases and realistic detector setups.
+The proposed GNN algorithm is successful in iteratively identifying outlier edge connections and extracting track candidates for simple simulated particle collision events. GMR via clustering of state vectors proves to be a successful first step towards resolving incompatible connections in the network. The KF works well for both the extrapolation of state vectors to neighbour nodes, as well as for track extraction and track fitting. This ensures neighbourhood information, can be aggregated in order to improve the precision in track state parameters. An intrinsic characteristic of the GNN algorithm is that neighbourhood complexity is inferred by the network. This is observed as the GNN algorithm automatically initiates the pattern recognition process in regions where outlier connections are easily identifiable. The network starts with low density regions and gradually progresses towards high density areas. This indicates that the GNN algorithm behaves as expected, first resolving ambiguities in ``cold'' regions and shows great promise for extraction of track candidates in more complex cases and realistic detector setups.

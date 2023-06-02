@@ -229,7 +229,7 @@ where $p_\text{T}$ is the transverse momentum of the particle and $\theta$ is th
     \label{eqn:transverse-momentum}
 \end{equation}
 
-where $p_\text{T}$ is measured in GeV/c, $B$ is the magnetic field strength of the TrackML model, $q$ is the charge of the particle set to 1 and $r$ is the radius of particle's trajectory. The radius $r$ is inversely proportional to the track curvature $\kappa$, given by Eq \eqref{eqn:kappa}, 
+where $p_\text{T}$ is measured in GeV/c, $B$ is the magnetic field strength of the TrackML model, $q$ is the charge of the particle set to 1 and $r$ is the radius which is inversely proportional to the track curvature $\kappa$, given by Eq \eqref{eqn:kappa}, 
 
 \begin{equation}
 \kappa = \frac{2a}{(1 + (2ax + b)^2)^{\frac{3}{2}}}
@@ -243,7 +243,7 @@ p = B / \kappa \sin(\theta)
 \label{eqn:full-momentum-derived}
 \end{equation}
 
-where $B$ is set to 0.3T, to model the magnetic field strength of the TrackML detector.
+where $B$ = 0.3T, to model the magnetic field strength of the TrackML detector.
 
 \subsubsection{Orientation of Detector Layers}
 
@@ -329,6 +329,8 @@ Other classification algorithms were explored, however the SVM was the most appr
 \section{Extrapolation Models}
 \label{chapter-6-extrapolation}
 
+
+
 \subsection{Parabolic Extrapolation Model}
 \begin{itemize}
     \item Information propagation via Message Passing Mechanism
@@ -344,6 +346,16 @@ Mention here that both the linear and parabolic models were used in this instanc
 \subsection{Linear Extrapolation Model}
 
 
+
+
+
+
+
+
+
+
+
+
 \section{Implementation of Kalman Filters}
 \label{gnn-kf-implementation}
 
@@ -351,11 +363,99 @@ Mention here that both the linear and parabolic models were used in this instanc
 Mention about the OU process noise, for correlated noise etc, 
 2 different KFs here - 1 for rz linear extrapolation and 1 for xy
 
+
+
+
+
+
+
 \subsection{KF for Track Fitting}
-2 different KFs here - 1 for rz track fit and 1 for xy track fit
 
-%\begin{itemize}
-%\item emphasis on the use of KFs both in information aggregation stage and in track extraction, both are implemented in different ways, is a useful and unique part to this algorithm
-%\item OU process noise
-%\end{itemize}
+The KF track fit is applied simultaneously in both the $x$-$y$ and $r$-$z$ planes, in order to assess the quality of the fit using two different models.
 
+\subsubsection{KF Implementation for Track Fit in x-y plane}
+% OU process 
+
+The KF for track extraction in the $x$-$y$ plane must take into account the influence of the magnetic field. The magnetic field creates a systematic effect on the track and a constant drift in the azimuthal angle from the $x$-axis $\phi$, as the track bends in a particular direction depending on the charge of the particle. Statistically, such a situation can be described as a correlated noise, which affects track direction and can often be modelled by the Ornstein-Uhlenbeck (OU) process \cite{OU}. The result is one which can be substituted into the KF as a sophisticated process noise, making the KF track fit three-dimensional. The state transition Jacobian $F_{xy}$ is derived using the OU model \cite{OU} and is given by \eqref{eqn:state-transition-jacobian-ou},
+
+\begin{equation}
+\quad F_{xy} = \begin{bmatrix} 1 & dx & g_1 \\ 0 & 1 & f_1 \\ 0 & 0 & e_1 \end{bmatrix} 
+\label{eqn:state-transition-jacobian-ou}
+\end{equation}
+
+where $dx$ is the difference in $x$ position of sequential nodes $i$ and $j$ processed in the the KF, $dx = x_i - x_j$, and $e_1$, $f_1$ and $g_1$ are given by the following equations. 
+
+\begin{equation}
+e_1 = e^{- \alpha \lvert dx \rvert}
+\label{eqn:e1}
+\end{equation}
+
+\begin{equation}
+f_1 = \frac{1 - e_1}{\alpha}
+\label{eqn:f1}
+\end{equation}
+
+\begin{equation}
+g_1 = \frac{\lvert dx \rvert - f_1}{\alpha}
+\label{eqn:g1}
+\end{equation}
+
+The parameter $\alpha$ determines the stability of the rate of change of the track azimuthal angle $\phi$ and is initialised to 0.1. If $\alpha \rightarrow \infty$ the track model becomes a straight line, however if $\alpha \rightarrow 0$, the model becomes a parabola.
+
+The process noise $Q_{xy}$ is derived using the OU model \cite{OU}, given by Eq \eqref{eqn:process-noise-q}, 
+ 
+
+\begin{equation}
+\quad Q_{xy} = \begin{bmatrix} (dx)^{2} (\sigma_{ms}^{2} + \frac{(dx)^{2} \sigma_{ou}^{2}}{4}) & Q_{01} & Q_{02} \\  Q_{01} & \sigma_{ms}^2 + (dx)^{2} \sigma_{ou}^{2} & Q_{12} \\ Q_{02} & Q_{12} & \sigma_{ou}^{2} \end{bmatrix} 
+\label{eqn:process-noise-q}
+\end{equation}
+
+where $Q_{01}$, $Q_{02}$ and $Q_{12}$ are given by the following equations.
+
+\begin{equation}
+Q_{01} = dx( \sigma_{ms}^2 + Q_{02} )
+\label{eqn:q01}
+\end{equation}
+
+\begin{equation}
+Q_{02} = \frac{1}{2} (dx)^2 \sigma_{ou}^{2}
+\label{eqn:q02}
+\end{equation}
+
+\begin{equation}
+Q_{12} = dx \sigma_{ou}^{2}
+\label{eqn:q12}
+\end{equation}
+
+The process noise $Q_{xy}$ is implemented with the addition of a non-zero stochastic noise $\sigma_{ou}$, as well as the non-zero $\sigma_{ms}$ due to the multiple scattering. This represents the correlated noise and models the track curvature caused by the presence of the magnetic field. The stochastic noise, $\sigma_{ou}$, is initialised to $10^{-5}$ and $\sigma_{ms}$ is derived using Eq \eqref{eqn:computed-multiple-scattering}.
+
+
+
+
+
+\subsubsection{KF Implementation for Track Fit in r-z plane}
+% linear KF model
+
+The KF for track extraction in the $r$-$z$ plane uses a linear transition Jacobian, $F_{rz}$, given by Eq \eqref{eqn:state-transition-jacobian-linear-kf-rz}
+
+\begin{equation}
+\quad F_{rz} = \begin{bmatrix} 1 & dz \\ 0 & 1 \end{bmatrix} 
+\label{eqn:state-transition-jacobian-linear-kf-rz}
+\end{equation}
+
+where $dz$ is the difference in $z$ position of sequential nodes $i$ and $j$ processed in the the KF, $dz = z_i - z_j$. As the magnetic field only influences the transverse $x$-$y$ plane, the process noise matrix $Q_{rz}$ is reduced to the contribution due to multiple scattering only, given in Eq \eqref{eqn:process-noise-kf-track-fit-rz}
+
+\begin{equation}
+Q_{rz} = \sigma_{ms}^{2}
+\label{eqn:process-noise-kf-track-fit-rz}
+\end{equation}
+
+where $\sigma_{ms}^{2}$ is derived using Eq \eqref{eqn:computed-multiple-scattering}.
+
+
+
+
+
+\subsubsection{Track Extraction}
+
+Once the KF track fits are complete in both planes, the corresponding chi2 distance is calculated for each track segment (node-pair), the resulting chi2 statistic is calculated and the degrees of freedom (no. of measurements - no. of track params) is calculated. The p-value representing the track fit for the entire track is then calculated using the degrees of freedom and chi2 statistic. if p larger than 0.01 then track is extracted.
