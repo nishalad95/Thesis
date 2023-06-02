@@ -5,7 +5,7 @@
 
 %WIt allowed us to generate realistic data emulating a full Silicon LHC detector (see Fig 3), while providing us with the ground truth of particle trajectory membership. Thus, for each event we obtained the... and, as ground truth, the list of points associated to each track. There is a one to one relationship between the true 3D points and the reconstructed ones.
 
-\chapter{Implementation of the GNN Algorithm to the TrackML Model}
+\chapter{Implementation of the GNN Algorithm for the TrackML Model}
 \label{chapter-6}
 
 The following chapter focuses on the implementation of the GNN pattern recognition algorithm to the publicly available dataset designed for the Kaggle TrackML challenge \cite{kaggle-trackml}. The TrackML detector emulates a full silicon LHC detector and as such, certain models of the GNN algorithm outlined in Chapter \ref{chapter-5}, are improved for the TrackML detector geometry.
@@ -146,7 +146,7 @@ where $\sigma_O$, $\sigma_A$ and $\sigma_B$ are the respective errors due to the
 
 \subsection{Variance in Inverse Track Inclination}
 
-The joint measurement covariance matrix, $S_{rz}$, for node $i$ and neighbour node $j$ in the $r$-$z$ plane is stated in Eq \eqref{eqn:trackml-s-matrix-rz}
+The joint measurement covariance matrix, $S_{rz}$, for node $i$ and neighbour node $j$ in the $r$-$z$ plane is stated in Eq \eqref{eqn:trackml-s-matrix-rz}, where $\{ \sigma_{zi}, \sigma_{zj} \}$ are the measurement errors along the $z$-axis and $\{ \sigma_{ri}, \sigma_{rj} \}$ are the measurement errors in $r$, for the respective $i$ and $j$ nodes. 
 
 \begin{equation}
     S_{rz} = \begin{bmatrix} \sigma_{zi}^{2} & 0 & 0 & 0 \\ 
@@ -158,7 +158,17 @@ The joint measurement covariance matrix, $S_{rz}$, for node $i$ and neighbour no
 \end{equation}
 
 
-where $\{ \sigma_{zi}, \sigma_{zj} \}$ are the measurement errors along the $z$-axis and $\{ \sigma_{ri}, \sigma_{rj} \}$ are the measurement errors in $r$, for the respective $i$ and $j$ nodes. The error in the track inclination $\tau$ is computed using the standard error propagation and linear algebra approach. The transition Jacobian, $J_{rz}$, relates the measurements in the $r$-$z$ plane to the inverse track inclination $\tau$ and is given by Eq \eqref{trackml-g-rz}.
+The magnitude of the error in the $r$-$z$ plane is dependent on the detector layer where the graph node is situated. For example, for a barrel located node the error in the $z$-axis will be greater than the error in the $r$-axis due to the orientation of the barrel layer, and vice versa applies for the endcap. Therefore, for a node located in the Pixel barrel $\sigma_r = 0.4$mm and $\sigma_z = 0.6$mm. For a node located in the Pixel endcap $\sigma_r = 0.6$mm and $\sigma_z = 0.4$mm
+
+The error in the track inclination $\tau$ is computed using the standard error propagation and linear algebra approach. The transition Jacobian, $J_{rz}$, relates the measurements in the $r$-$z$ plane to the inverse track inclination $\tau$ and is given by Eq \eqref{trackml-g-rz}.
+
+% this applies to either node i or node j
+% sigma0r = 0.4 --> error in r for barrel located node
+% sigma0r = 0.6 --> error in r for endcap located node
+
+% sigma0z = 0.6 --> error in z for barrel located node
+% sigma0z = 0.4 --> error in z for endcap located node
+
 
 \begin{equation}
     J_{rz} = \begin{bmatrix} 
@@ -208,7 +218,7 @@ where $p$, $\beta c$, and $z$ are the full momentum, velocity, and charge number
 The full particle momentum, $p$, is given by Eq \eqref{eqn:full-momentum}
 
 \begin{equation}
-    p = p_\text{T} / sin(\theta)
+    p = p_\text{T} / \sin(\theta)
     \label{eqn:full-momentum}
 \end{equation}
 
@@ -219,7 +229,7 @@ where $p_\text{T}$ is the transverse momentum of the particle and $\theta$ is th
     \label{eqn:transverse-momentum}
 \end{equation}
 
-where $p_\text{T}$ is measured in GeV/c, B is the magnetic field of the TrackML model set to 0.3T, $q$ is the charge of the particle set to 1 and $r$ is the radius of particle's trajectory. The radius $r$ is inversely proportional to the track curvature $\kappa$, given by Eq \eqref{eqn:kappa}, 
+where $p_\text{T}$ is measured in GeV/c, $B$ is the magnetic field strength of the TrackML model, $q$ is the charge of the particle set to 1 and $r$ is the radius of particle's trajectory. The radius $r$ is inversely proportional to the track curvature $\kappa$, given by Eq \eqref{eqn:kappa}, 
 
 \begin{equation}
 \kappa = \frac{2a}{(1 + (2ax + b)^2)^{\frac{3}{2}}}
@@ -229,27 +239,35 @@ where $p_\text{T}$ is measured in GeV/c, B is the magnetic field of the TrackML 
 where $\kappa$ is a function of parabolic parameters $a$ and $b$, and $x$ is the $x$-coordinate of the point at which the curvature is calculated. Therefore, the full momentum $p$ is hence given by Eq \eqref{eqn:full-momentum-derived} using the knowledge that $\kappa = 1/r$.
 
 \begin{equation}
-p = B / \kappa sin(\theta)
+p = B / \kappa \sin(\theta)
 \label{eqn:full-momentum-derived}
 \end{equation}
 
+where $B$ is set to 0.3T, to model the magnetic field strength of the TrackML detector.
 
 \subsubsection{Orientation of Detector Layers}
 
-If a particle crosses one of the TrackML detector layers at incident angle $\theta$, then the radiation length is $0.02 f(\theta)$, where 0.02 is the integrated $x/X_0$ for a typical silicon detector layer which is considered as a single thin scatter. $f(\theta)$ is determined by the orientation of the detector layer, depending upon the mutual orientation of the node-pair. For example, for a scattered node in the barrel, the intersected radiation length becomes $0.02 / sin(\theta)$ and for a scattered node in the endcap $0.02 / cos(\theta)$.
+If a particle crosses one of the TrackML detector layers at incident angle $\theta$, then the radiation length, $x/X_0$ is given by Eq \eqref{eqn:radiation-length}
+
+\begin{equation}
+x/X_0 = 0.02 f(\theta)
+\label{eqn:radiation-length}
+\end{equation}
+
+where 0.02 is the integrated $x/X_0$ for a typical silicon detector layer which is considered as a single thin scatter. The function $f(\theta)$ is determined by the orientation of the detector layer, depending upon the mutual orientation of the node-pair. For example, for a scattered node in the Pixel barrel layer, $f(\theta) = 1 / \sin(\theta)$ and for a scattered node in the Pixel endcap layer, $f(\theta) = 1 / \cos(\theta)$.
 
 
-\subsubsection{Contribution to Edge State Covariance}
-
-Barrel version of var ms and endcap version of var ms.
-
-contribution of error due to multiple-scattering only affects the track direction - which is reflected in parabolic parameter b, so that's why we only add this contribution to the corresponding b parameter in the matrix and the tau parameter (cov(1,1) and cov(2,2)).
 
 
-\begin{itemize}
-\item how were the edge state covariances dervied and the sigma errors chosen
+\subsubsection{Variance of Multiple Scattering}
 
-\end{itemize}
+The final form of the observed contribution of error due to multiple scattering is hence given by Eq \eqref{eqn:computed-multiple-scattering}.
+
+\begin{equation}
+    \sigma_{ms}^{2} = \frac{13.6 \text{MeV}}{B} \cdot 0.02 f(\theta) \cdot \kappa \sin(\theta)
+    \label{eqn:computed-multiple-scattering}
+\end{equation}
+
 
 
 \subsection{Combined Edge State Covariance}
