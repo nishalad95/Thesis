@@ -62,21 +62,21 @@ In the $x$-$y$ plane, charged particles experience the influence of the magnetic
 Using the quadratic equation of a parabola, the vector of measurements in the local coordinate system of node A, $ \hat{m} = [m_O \quad m_A \quad m_B]^{T}$ can be expressed in terms of the unknown parabolic coefficients $\hat{p} = [a \quad b \quad c]^{T}$ using Eq \eqref{eqn:parabolic-equations}, 
 
 \begin{equation}
-    \hat{m} = H_{xy} \hat{p} 
+    \hat{m} = H \hat{p} 
     \label{eqn:parabolic-equations}
 \end{equation}
 
-where $m_O$, $m_A$ and $m_B$ are the respective measurements of the global origin O, node A and node B, transformed into the local coordinate system of node A, and $\{a, b, c\}$ are the parabolic coefficients. Measurements $m_O = 0$ and $m_A = 0$, as illustrated in Figure \ref{fig:gnn-parabolic-state-2}. The measurement matrix, $H_{xy}$, relates the measurement vector $\hat{m}$, to the vector of parabolic parameters $\hat{p}$ and is given by Eq \eqref{eqn:trackml-matrix-h-xy},
+where $m_O$, $m_A$ and $m_B$ are the respective measurements of the global origin O, node A and node B, transformed into the local coordinate system of node A, and $\{a, b, c\}$ are the parabolic coefficients. Measurements $m_O = 0$ and $m_A = 0$, as illustrated in Figure \ref{fig:gnn-parabolic-state-2}. The measurement matrix, $H$, relates the measurement vector $\hat{m}$, to the vector of parabolic parameters $\hat{p}$ and is given by Eq \eqref{eqn:trackml-matrix-h-xy},
 
 \begin{equation}
-    H_{xy} = \begin{bmatrix} x_O^{2} & x_O & 1 \\ 0 & 0 & 1 \\ x_B^{2} & x_B & 1 \end{bmatrix} 
+    H = \begin{bmatrix} x_O^{2} & x_O & 1 \\ 0 & 0 & 1 \\ x_B^{2} & x_B & 1 \end{bmatrix} 
     \label{eqn:trackml-matrix-h-xy}
 \end{equation}
 
 where $x_O$ and $x_B$ are the $x$-coordinates of global origin O and node B in the local coordinate system of node A. The parabolic parameters are derived using Eq \eqref{eqn:derive-p}.
 
 \begin{equation}
-    \hat{p} = H_{xy}^{-1} \hat{m} 
+    \hat{p} = H^{-1} \hat{m} 
     \label{eqn:derive-p}
 \end{equation}
 
@@ -135,7 +135,7 @@ The joint measurement covariance matrix, $S_{xy}$, for a parabola constructed in
 where $\sigma_O$, $\sigma_A$ and $\sigma_B$ are the respective errors due to the measurements at the global origin O, node A and node B, using the parabolic model approximation outlined in Section \ref{parabolic-state}. The measurement error in the global origin $\sigma_O$ is initialised to 4.0mm due to the large error in the beamspot, whereas $\sigma_A$ and $\sigma_B$ are initialised to 0.3mm due to the high precision of the Pixel detector. Hence, the covariance of the vector of parabolic parameters $\hat{p}$, is given by $C_{xy}$ in Eq \eqref{eqn:c-xy}
 
 \begin{equation}
-    C_{xy} = H_{xy}^{-1}S_{xy}{H_{xy}^{-1}}^{T}
+    C_{xy} = H^{-1}S_{xy}{H^{-1}}^{T}
     \label{eqn:c-xy}
 \end{equation}
 
@@ -160,7 +160,7 @@ The joint measurement covariance matrix, $S_{rz}$, for node $i$ and neighbour no
 
 The magnitude of the error in the $r$-$z$ plane is dependent on the detector layer where the graph node is situated. For example, for a barrel located node the error in the $z$-axis will be greater than the error in the $r$-axis due to the orientation of the barrel layer, and vice versa applies for the endcap. Therefore, for a node located in the Pixel barrel $\sigma_r = 0.4$mm and $\sigma_z = 0.6$mm. For a node located in the Pixel endcap $\sigma_r = 0.6$mm and $\sigma_z = 0.4$mm
 
-The error in the track inclination $\tau$ is computed using the standard error propagation and linear algebra approach. The transition Jacobian, $J_{rz}$, relates the measurements in the $r$-$z$ plane to the inverse track inclination $\tau$ and is given by Eq \eqref{trackml-g-rz}.
+The error in the track inclination $\tau$ is computed using the standard error propagation and linear algebra approach. The transition Jacobian, $J$, relates the measurements in the $r$-$z$ plane to the inverse track inclination $\tau$ and is given by Eq \eqref{trackml-g-rz}.
 
 % this applies to either node i or node j
 % sigma0r = 0.4 --> error in r for barrel located node
@@ -171,7 +171,7 @@ The error in the track inclination $\tau$ is computed using the standard error p
 
 
 \begin{equation}
-    J_{rz} = \begin{bmatrix} 
+    J = \begin{bmatrix} 
             (r_i - r_j)^{-1} &
             -(r_i - r_j)^{-1} & 
             \frac{-(z_i - z_j)}{(r_i - r_j)^2} & 
@@ -183,7 +183,7 @@ The error in the track inclination $\tau$ is computed using the standard error p
 The corresponding error in track inclination $\tau$ is given by Eq \eqref{eqn:error-in-tau}
 
 \begin{equation}
-    \sigma_{\tau} = J_{rz} S_{rz} J_{rz}^{T}
+    \sigma_{\tau} = J S_{rz} J^{T}
     \label{eqn:error-in-tau}
 \end{equation}
 
@@ -292,7 +292,7 @@ Components of $X_{ij}$, that represent the error in track direction must have a 
 
 
 
-\section{The Optimal KL Threshold}
+\section{Learning the Optimal KL Threshold}
 \label{chapter-6-kl-threshold}
 
 During stage 1 of the GNN algorithm, GMR via k-means clustering is used to reduce the Gaussian mixture of states present at each node. In order to establish if track state estimates, $X_{ij}$, can be grouped into a cluster, the KL divergence, $d_{KL}$, is used as a threshold distance as it is a measure of the statistical distance between two Gaussian probability distributions \cite{KL, FRUHWIRTH19971}.
@@ -359,9 +359,20 @@ Mention here that both the linear and parabolic models were used in this instanc
 \section{Implementation of Kalman Filters}
 \label{gnn-kf-implementation}
 
+
 \subsection{KF for Extrapolation}
+\label{kf-for-extrp-chapter-6}
+
+The KF used for state extrapolation considers only a track segment (node-pair) during the predict and update stages of the filter.
 Mention about the OU process noise, for correlated noise etc, 
-2 different KFs here - 1 for rz linear extrapolation and 1 for xy
+
+
+
+\subsubsection{KF Implementation for State Extrapolation in x-y plane}
+
+\subsubsection{KF Implementation for State Extrapolation in r-z plane}
+
+
 
 
 
@@ -371,10 +382,10 @@ Mention about the OU process noise, for correlated noise etc,
 
 \subsection{KF for Track Fitting}
 
-The KF track fit is applied simultaneously in both the $x$-$y$ and $r$-$z$ planes, in order to assess the quality of the fit using two different models.
+The KF track fit is applied simultaneously in both the $x$-$y$ and $r$-$z$ planes, in order to assess the quality of the fit using both models. In comparison to the KF used for state extrapolation (Section \ref{kf-for-extrp-chapter-6}), the KF for track fitting considers the entire chain of track segments making up a track candidate. Therefore, there will be a non-zero process noise, $Q$, present in both $x$-$y$ and $r$-$z$ planes.
 
 \subsubsection{KF Implementation for Track Fit in x-y plane}
-% OU process 
+% OU process, with non-zero process noise Q matrix (following OU noise)
 
 The KF for track extraction in the $x$-$y$ plane must take into account the influence of the magnetic field. The magnetic field creates a systematic effect on the track and a constant drift in the azimuthal angle from the $x$-axis $\phi$, as the track bends in a particular direction depending on the charge of the particle. Statistically, such a situation can be described as a correlated noise, which affects track direction and can often be modelled by the Ornstein-Uhlenbeck (OU) process \cite{OU}. The result is one which can be substituted into the KF as a sophisticated process noise, making the KF track fit three-dimensional. The state transition Jacobian $F_{xy}$ is derived using the OU model \cite{OU} and is given by \eqref{eqn:state-transition-jacobian-ou},
 
@@ -434,7 +445,7 @@ The process noise $Q_{xy}$ is implemented with the addition of a non-zero stocha
 
 
 \subsubsection{KF Implementation for Track Fit in r-z plane}
-% linear KF model
+% linear KF model, with non-zero process noise Q, following multiple scattering only
 
 The KF for track extraction in the $r$-$z$ plane uses a linear transition Jacobian, $F_{rz}$, given by Eq \eqref{eqn:state-transition-jacobian-linear-kf-rz}
 
@@ -456,6 +467,6 @@ where $\sigma_{ms}^{2}$ is derived using Eq \eqref{eqn:computed-multiple-scatter
 
 
 
-\subsubsection{Track Extraction}
+% \subsubsection{Track Extraction}
 
-Once the KF track fits are complete in both planes, the corresponding chi2 distance is calculated for each track segment (node-pair), the resulting chi2 statistic is calculated and the degrees of freedom (no. of measurements - no. of track params) is calculated. The p-value representing the track fit for the entire track is then calculated using the degrees of freedom and chi2 statistic. if p larger than 0.01 then track is extracted.
+% As the two KF track fits are simultaneously executed in the $x$-$y$ and $r$-$z$ planes, the corresponding Mahalanobis distances are calculated for each sequential node-pair. The $\chi^2$-statistic is calculated by summing all individual Mahalanobis distances for each track candidate and the corresponding degrees of freedom, $d_f$ is also computed. The p-value corresponding to the track fit is then calculated using the $d_f$ and the $\chi^2$-statistic. If $p > 0.01$ then track is considered a good track candidate and hence extracted from the main graph network.
