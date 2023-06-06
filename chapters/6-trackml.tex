@@ -295,32 +295,32 @@ Components of $X_{ij}$, that represent the error in track direction must have a 
 \section{Learning the Optimal KL Threshold}
 \label{chapter-6-kl-threshold}
 
-During stage 1 of the GNN algorithm, GMR via k-means clustering is used to reduce the Gaussian mixture of states present at each node. In order to establish if track state estimates, $X_{ij}$, can be grouped into a cluster, the KL divergence, $d_{KL}$, is used as a threshold distance as it is a measure of the statistical distance between two Gaussian probability distributions \cite{KL, FRUHWIRTH19971}.
+During stage 1 of the GNN algorithm, GMR via k-means clustering is used to reduce the Gaussian mixture of states, $g_i(X)$, at each node $i$. In order to establish if track state estimates, $X_{ij}$, can be grouped into a cluster, the KL divergence, $d_{KL}$, is used as a threshold distance as it is a measure of the statistical distance between two Gaussian probability distributions \cite{KL, FRUHWIRTH19971}.
 
-To determine the optimal pairwise $d_{KL}$ between $X_{ij}$ for a given node, a SVM classifier was trained. Pairwise $d_{KL}$ and $\sigma_{e}^{2}$ for a given node are used as input features. A MC simulation of $10,000$ particle collision events, each event with ten truth tracks, was used to build a training dataset. Loosely compatible edge connections were formed using a hit-pair predictor based on track inclination angle of neighbouring hits, similar to the graph network constructed in \ref{fig:heat-map}. The feature vector was comprised of $\sigma_{e}$ for a given node and pairwise $d_{KL}$ between its track states. The truth particle was extracted for each pairwise connection, where truth 1 corresponded to hits from both track states originating from the same truth particle, and truth 0 otherwise. 
+To determine the optimal pairwise $d_{KL}$ between $X_{ij}$ for a given node, a SVM classifier was trained. Pairwise $d_{KL}$ and the empirical variance of edge orientation, $\sigma_{e}^{2}$, for a given node are used as input features. Figure \ref{fig:KL-distance-truth} shows the ground truth data of these input features from $10,000$ MC simulated particle collision events, each event with ten truth tracks. Loosely compatible edge connections were formed using a hit-pair predictor based on track inclination angle of neighbouring hits, similar to the graph network constructed in \ref{fig:heat-map}. The feature vector was comprised of $\sigma_{e}$ for a given node and pairwise $d_{KL}$ between its track states. The truth particle was extracted for each pairwise connection. For a given pair of edge connections with a common node, truth 1 corresponds to all nodes originate from the same truth particle, and truth 0 corresponds to otherwise. 
 
 %The truth data is presented is Figure \ref{fig:KL-distance-truth}.
 
-A SVM was trained to discriminate between the two classes \cite{scikit-learn}, using a polynomial degree three kernel. SVM predictions were adjusted such that the TPR was tuned to 95\% in order to maintain a high purity. The SVM decision boundary was converted into a fast LUT using a similar methodology outlined in Section \ref{LUT-generation} and was directly used within the k-means clustering of the GMR stage. If $d_{KL}$ $\leq$ the predicted threshold for a node with particle $\sigma_e$, then pairwise states were clustered together and merged into a single state $X^M$.
+A SVM was trained to discriminate between the two classes \cite{scikit-learn}, using a polynomial degree three kernel. SVM predictions are shown in Figure \ref{fig:KL-distance-predictions} and were adjusted such that the TPR was tuned to 95\% in order to maintain a high purity. The SVM decision boundary was converted into a fast LUT using a similar methodology outlined in Section \ref{LUT-generation} and was directly used within the k-means clustering of the GMR stage. If $d_{KL}$ $\leq$ the predicted threshold for a node with particle $\sigma_e$, then pairwise states were clustered together and merged into a single state $X^M$.
 
 % The predictions and corresponding decision boundary is shown in Figure \ref{fig:KL-distance-predictions}.
 
 Other classification algorithms were explored, however the SVM was the most appropriate to determine a decision boundary to best separate the classes.
 
-% \begin{figure}[htbp!] 
-%     \centering
-%     \subfloat[Ground truth data from MC simulation]{%
-%         \includegraphics[width=0.85\linewidth]{images/6-results/kl-truth.png}%
-%         \label{fig:KL-distance-truth}%
-%         }%
-%     \hfill%
-%     \subfloat[SVM predictions and decision boundary]{%
-%         \includegraphics[width=0.85\linewidth]{images/6-results/kl-predictions.png}%
-%         \label{fig:KL-distance-predictions}%
-%         }%
-%     \caption{........}
-%     \label{fig:KL-distance}
-% \end{figure}
+\begin{figure}[htbp!] 
+    \centering
+    \subfloat[Ground Truth Data from MC Simulation]{%
+        \includegraphics[width=0.82\linewidth]{images/7-results/kl-truth.png}%
+        \label{fig:KL-distance-truth}%
+        }%
+    \hfill%
+    \subfloat[SVM Predictions and Decision Boundary (dotted line)]{%
+        \includegraphics[width=0.82\linewidth]{images/7-results/kl-predictions.png}%
+        \label{fig:KL-distance-predictions}%
+        }%
+    \caption{SVM classifier training and predictions used to determine the optimal Kullback-Leibler threshold distance, $d_{KL}$, between pairwise track states $X_{ij}$, for a given node with a variance of edge orientation $\sigma_e$. The dotted line in b) represents the threshold value of 0.40 when adjusting SVM predictions in order to yield a TPR of 95\%. For a given pair of edge connections with a common node, truth 1 corresponds to all nodes originate from the same truth particle, and truth 0 corresponds to otherwise.}
+    \label{fig:KL-distance}
+\end{figure}
 
 
 
@@ -332,11 +332,23 @@ Other classification algorithms were explored, however the SVM was the most appr
 
 
 \subsection{Parabolic Extrapolation Model}
+
+\begin{equation}
+\quad F_{xy} = \begin{bmatrix} 
+        \frac{\partial a_c}{\partial a} & \frac{\partial a_c}{\partial b} & \frac{\partial a_c}{\partial c} \\ 
+        
+        \frac{\partial b_c}{\partial a} & \frac{\partial b_c}{\partial b} & \frac{\partial b_c}{\partial c} \\
+        
+        \frac{\partial c_c}{\partial a} & \frac{\partial c_c}{\partial b} & \frac{\partial c_c}{\partial c} \\
+        \end{bmatrix} 
+\label{eqn:transition-jacobian-F-kf-extrapolation-xy}
+\end{equation}
+
+
+
+
 \begin{itemize}
-    \item Information propagation via Message Passing Mechanism
-    \item Extrapolation and Validation
     \item Linear and Parabolic model - 2 different extrapolations for xy componenets of state vector and rz componenet, illustrations here
-    \item Kalman Filter Update, OU process for correlated noise
 \end{itemize}
 
 Mention here that both the linear and parabolic models were used in this instance, where the track state estimate comprised of a 3x1 vector, a, b, tau. The extrapolation and KF update will be different here, different transition Jacobian matrix. Also mention about tuning the chi2 distance thresholds during extrapolation
@@ -360,7 +372,7 @@ Mention here that both the linear and parabolic models were used in this instanc
 \label{gnn-kf-implementation}
 
 
-\subsection{KF for Extrapolation}
+\subsection{KF for State Extrapolation}
 \label{kf-for-extrp-chapter-6}
 
 The KF used for state extrapolation considers only a track segment (node-pair) during the predict and update stages of the filter.
@@ -369,6 +381,26 @@ Mention about the OU process noise, for correlated noise etc,
 
 
 \subsubsection{KF Implementation for State Extrapolation in x-y plane}
+
+
+Transition Jacobian F is derived using the rotation of a parabola into the local coordinate system of the node to extrapolate to.
+
+The process noise matrix Q
+
+\begin{equation}
+\quad Q_{xy} = \begin{bmatrix} 
+                0 & 0 & 0 \\ 
+                0 & \sigma_{ms}^2 & 0 \\
+                0 & 0 & 0 \end{bmatrix} 
+\label{eqn:process-noise-Q-extrapolation-xy}
+\end{equation}
+
+
+
+
+
+
+
 
 \subsubsection{KF Implementation for State Extrapolation in r-z plane}
 
@@ -387,7 +419,28 @@ The KF track fit is applied simultaneously in both the $x$-$y$ and $r$-$z$ plane
 \subsubsection{KF Implementation for Track Fit in x-y plane}
 % OU process, with non-zero process noise Q matrix (following OU noise)
 
-The KF for track extraction in the $x$-$y$ plane must take into account the influence of the magnetic field. The magnetic field creates a systematic effect on the track and a constant drift in the azimuthal angle from the $x$-axis $\phi$, as the track bends in a particular direction depending on the charge of the particle. Statistically, such a situation can be described as a correlated noise, which affects track direction and can often be modelled by the Ornstein-Uhlenbeck (OU) process \cite{OU}. The result is one which can be substituted into the KF as a sophisticated process noise, making the KF track fit three-dimensional. The state transition Jacobian $F_{xy}$ is derived using the OU model \cite{OU} and is given by \eqref{eqn:state-transition-jacobian-ou},
+The KF for track extraction in the $x$-$y$ plane must take into account the influence of the magnetic field. The magnetic field creates a systematic effect on the track and a constant drift in the azimuthal angle from the $x$-axis $\phi$, as the track bends in a particular direction depending on the charge of the particle. Statistically, such a situation can be described as a correlated noise, which affects track direction and can often be modelled by the Ornstein-Uhlenbeck (OU) process \cite{OU}. The result is one which can be substituted into the KF as a sophisticated process noise, making the KF track fit three-dimensional. 
+
+For a set of $n$ nodes representing a track candidate, the sequential $y$-measurements are $\{y_0, y_1, ..., y_{(n-1)} \}$, where $y_0$ is the $y$-measurement of the node with the smallest radius and $y_{(n-1)}$ is the $y$-measurement of the node with the largest radius. The KF is initialised with the following three-dimensional filter state estimate, $x_{xy}$, given by Eq \eqref{eqn:kf-track-fit-initialised-state-xy}.
+
+
+\begin{equation}
+\quad x_{xy} = \begin{bmatrix} y_{(n-1)} \\ 0 \\ 0 \end{bmatrix} 
+\label{eqn:kf-track-fit-initialised-state-xy}
+\end{equation}
+
+and the covariance matrix, $P_{rz}$, given by Eq \eqref{eqn:kf-track-fit-initialised-cov-xy}
+
+\begin{equation}
+\quad P_{xy} = \begin{bmatrix} \sigma_{xy}^2 & 0 & 0 
+                                    \\ 0 & 1 & 0 
+                                    \\ 0 & 0 & 1 \end{bmatrix} 
+\label{eqn:kf-track-fit-initialised-cov-xy}
+\end{equation}
+
+
+
+The state transition Jacobian $F_{xy}$ is derived using the OU model \cite{OU} and is given by \eqref{eqn:state-transition-jacobian-ou},
 
 \begin{equation}
 \quad F_{xy} = \begin{bmatrix} 1 & dx & g_1 \\ 0 & 1 & f_1 \\ 0 & 0 & e_1 \end{bmatrix} 
@@ -447,14 +500,28 @@ The process noise $Q_{xy}$ is implemented with the addition of a non-zero stocha
 \subsubsection{KF Implementation for Track Fit in r-z plane}
 % linear KF model, with non-zero process noise Q, following multiple scattering only
 
-The KF for track extraction in the $r$-$z$ plane uses a linear transition Jacobian, $F_{rz}$, given by Eq \eqref{eqn:state-transition-jacobian-linear-kf-rz}
+The KF for track extraction in the $r$-$z$ plane uses a linear model. For a set of $n$ nodes representing a track candidate, the sequential $z$-measurements are $\{z_0, z_1, ..., z_{(n-1)} \}$, where $z_0$ is the $z$-measurement of the node with the smallest radius and $z_{(n-1)}$ is the $z$-measurement of the node with the largest radius. The KF is initialised with the following two-dimensional filter state estimate, $x_{rz}$, given by Eq \eqref{eqn:kf-track-fit-initialised-state-rz}.
+
+\begin{equation}
+\quad x_{rz} = \begin{bmatrix} z_{(n-1)} \\ 0 \end{bmatrix} 
+\label{eqn:kf-track-fit-initialised-state-rz}
+\end{equation}
+
+and the covariance matrix, $P_{rz}$, given by Eq \eqref{eqn:kf-track-fit-initialised-cov-rz}
+
+\begin{equation}
+\quad P_{rz} = \begin{bmatrix} 1 & \sigma_{rz}^2 \\ 0 & 1 \end{bmatrix} 
+\label{eqn:kf-track-fit-initialised-cov-rz}
+\end{equation}
+
+where $\sigma_{rz}^2$ is the measurement error in the $r$-$z$ plane and is initialised to 0.4mm. The transition Jacobian, $F_{rz}$, is given by Eq \eqref{eqn:state-transition-jacobian-linear-kf-rz}
 
 \begin{equation}
 \quad F_{rz} = \begin{bmatrix} 1 & dz \\ 0 & 1 \end{bmatrix} 
 \label{eqn:state-transition-jacobian-linear-kf-rz}
 \end{equation}
 
-where $dz$ is the difference in $z$ position of sequential nodes $i$ and $j$ processed in the the KF, $dz = z_i - z_j$. As the magnetic field only influences the transverse $x$-$y$ plane, the process noise matrix $Q_{rz}$ is reduced to the contribution due to multiple scattering only, given in Eq \eqref{eqn:process-noise-kf-track-fit-rz}
+where $dz$ is the difference in $z$ position of sequential nodes $i$ and $j$ processed in the KF, $dz = z_i - z_j$. As the magnetic field only influences the transverse $x$-$y$ plane, the process noise matrix $Q_{rz}$ is reduced to the contribution due to multiple scattering only, given in Eq \eqref{eqn:process-noise-kf-track-fit-rz}
 
 \begin{equation}
 Q_{rz} = \sigma_{ms}^{2}

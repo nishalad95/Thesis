@@ -5,70 +5,199 @@
 \chapter{Application to the TrackML Model, Results and Discussion}
 \label{chapter-7}
 
-This chapter focuses on the application of the GNN algorithm to the Pixel endcap and Pixel barrel regions of the TrackML detector. This chapter is organised as follows. Section \ref{chapter-7-endcap-results} presents the results of the GNN algorithm applied to the Pixel endcap region of the TrackML detector. The performance of the algorithm is evaluated and track reconstruction efficiency metrics are discussed. Section \ref{chapter-7-outlook} presents an outlook to the future of this research. Preliminary results and challenges faced upon applying the GNN algorithm onto the entire Pixel detector of the TrackML geometry, including the Pixel barrel region. Potential software optimisations and other approaches explored are also discussed, in order to showcase several improvements that would be necessary for the GNN algorithm to be implemented for track reconstruction within particle detectors.
+This chapter focuses on the application of the GNN algorithm to the Pixel endcap and Pixel barrel regions of the TrackML detector. This chapter is organised as follows. Section \ref{chapter-7-endcap-results} presents the results of the GNN algorithm applied to the Pixel endcap region of the TrackML detector. The performance of the algorithm is evaluated and track reconstruction efficiency metrics are discussed. Section \ref{chapter-7-outlook} presents an outlook to the future of this research. Preliminary results and challenges faced when applying the GNN algorithm onto the entire Pixel detector of the TrackML geometry, including the Pixel barrel region, are presented. Potential software optimisations and other approaches explored are also discussed, leaning towards several improvements that would be necessary to implement within the GNN algorithm for track reconstruction within particle detectors.
 
 
-%  The preliminary results related to track reconstruction efficiency and purity metrics are presented and discussed.
-%The main results we get from application of this algorithm, the track reconstruction efficiency, the purity metrics, computational performance. Comparison with other algorithms.
 
 
 
 \section{Pixel Endcap Results}
 \label{chapter-7-endcap-results}
 
-% number of nodes, number of edges etc etc
+The GNN algorithm is first applied to volume 7 of the TrackML detector model, by isolating the left Pixel endcap. The geometry in the endcap consists of parallel silicon layers and therefore allowing ease in reconstruction. An example of a TrackML event shown in the left Pixel endcap only can be seen in Figure \ref{fig:trackml-results-endcap-nodes-sim}.
 
-% \begin{figure}[htbp]
-%     \centering
-%     \includegraphics[width=0.9\textwidth]{images/7-results/trackml-endcap-nodes.png}
-%     \caption{...}
-%     \label{fig:trackml-results-endcap-nodes-sim}%
-% \end{figure}
-
-\begin{figure}[htbp]%
+\begin{figure}[htbp!] 
     \centering
-    \subfloat[\centering ...]{{\includegraphics[width=11.5cm]{images/7-results/trackml-endcap-nodes-xy.png} } \label{fig:endcap-trackml-sim-xy}}%
-    \hfill
-    %\qquad
-    \subfloat[\centering ...]{{\includegraphics[width=11.5cm]{images/7-results/trackml-endcap-nodes-rz.png} } \label{fig:endcap-trackml-sim-rz}}%
-    \caption{....}%
-    \label{fig:trackml-results-endcap-nodes-sim}%
+    \subfloat[$x$-$y$ plane view]{%
+        \includegraphics[width=0.51\linewidth]{images/7-results/trackml-endcap-nodes-xy.png}%
+        \label{fig:endcap-trackml-sim-xy}%
+        }%
+    \hfill%
+    \subfloat[$r$-$z$ plane view]{%
+        \includegraphics[width=0.49\linewidth]{images/7-results/trackml-endcap-nodes-rz.png}%
+        \label{fig:endcap-trackml-sim-rz}%
+        }%
+    \caption{Event simulation of the TrackML detector isolating volume 7.}
+    \label{fig:trackml-results-endcap-nodes-sim}
 \end{figure}
-
-
-
-\begin{figure}[htbp]%
-    \centering
-    \subfloat[\centering ...]{{\includegraphics[width=11.5cm]{images/7-results/trackml-endcap-extracted-xy.png} } \label{fig:endcap-trackml-extracted-xy}}%
-    \hfill
-    %\qquad
-    \subfloat[\centering ...]{{\includegraphics[width=11.5cm]{images/7-results/trackml-endcap-extracted-rz.png} } \label{fig:endcap-trackml-extracted-rz}}%
-    \caption{....}%
-    \label{fig:trackml-results-endcap-extracted}%
-\end{figure}
-
-
-\begin{figure}[htbp]%
-    \centering
-    \subfloat[\centering ...]{{\includegraphics[width=11.5cm]{images/7-results/trackml-endcap-extracted-xy-v2.png} } \label{fig:endcap-trackml-extracted-xy-v2}}%
-    \hfill
-    %\qquad
-    \subfloat[\centering ...]{{\includegraphics[width=14cm]{images/7-results/trackml-endcap-extracted-rz-v2.png} } \label{fig:endcap-trackml-extracted-rz-v3}}%
-    \caption{....}%
-    \label{fig:trackml-results-endcap-extracted-v2}%
-\end{figure}
-
-
-
-
-
-% TODO: one more example of the endcap on its own, but this time with more than 1 stage of the algorithm shown
-
-% TODO: in the performance evaluation section --> need an average of results over many events executed
 
 
 
 \subsection{Performance Evaluation}
+
+The graph network is constructed using 9835 nodes located in volume 7 from a simulated TrackML event and 18,184 predicted edges using the FASTrack algorithm \cite{Dmitry-fasttrack-addtest}, as described in Section \ref{chapter-6-data-prep}. Track state estimates, $X_{ij}$, and edge state covariances, $C_{ij}$, are constructed using the model as described in Section \ref{constructing-track-states}. Figure \ref{fig:trackml-results-endcap-extracted} illustrates the extracted track candidates post Stage 1 of application of the GNN algorithm to volume 7 of the TrackML detector. During this first stage, 960 track candidates were successfully extracted. A further 265 track candidates were successfully extracted during Stage 2 of the GNN algorithm, as shown in Figure \ref{fig:trackml-results-endcap-extracted-v2}. This equates to XXXXX of MC truth tracks extracted during Stage 1 and a further XXXXX extracted during Stage 2.
+
+\begin{figure}[htbp]%
+    \centering
+    \subfloat[\centering $x$-$y$ plane view]{{\includegraphics[width=11.5cm]{images/7-results/trackml-endcap-extracted-xy.png} } \label{fig:endcap-trackml-extracted-xy}}%
+    \hfill
+    %\qquad
+    \subfloat[\centering $r$-$z$ plane view]{{\includegraphics[width=11.5cm]{images/7-results/trackml-endcap-extracted-rz.png} } \label{fig:endcap-trackml-extracted-rz}}%
+    \caption{Extracted track candidates post Stage 1 of the GNN algorithm applied to volume 7 of a simulated TrackML detector event, shown from the view of the a) $x$-$y$ plane and b) $r$-$z$ plane. }%
+    \label{fig:trackml-results-endcap-extracted}%
+\end{figure}
+
+\begin{figure}[htbp]%
+    \centering
+    \subfloat[\centering $x$-$y$ plane view]{{\includegraphics[width=11.5cm]{images/7-results/trackml-endcap-extracted-xy-v2.png} } \label{fig:endcap-trackml-extracted-xy-v2}}%
+    \hfill
+    %\qquad
+    \subfloat[\centering $r$-$z$ plane view]{{\includegraphics[width=14cm]{images/7-results/trackml-endcap-extracted-rz-v2.png} } \label{fig:endcap-trackml-extracted-rz-v3}}%
+    \caption{Extracted track candidates post Stage 1 and 2 of the GNN algorithm applied to the left Pixel endcap (volume 7) of a simulated event of the TrackML detector model, shown from the view of the a) $x$-$y$ plane and b) $r$-$z$ plane.}%
+    \label{fig:trackml-results-endcap-extracted-v2}%
+\end{figure}
+
+It is clear to see from Figures \ref{fig:endcap-trackml-extracted-xy} and \ref{fig:endcap-trackml-extracted-xy-v2} that track candidates are extracted uniformly within the endcap across all $ 0^{\circ} \leq \phi \leq 360^{\circ}$.
+
+% beginning: 9835 nodes
+% post stage 1: 3165 nodes
+% post stsge 2: 2123 nodes
+The proportion of nodes removed from the main graph network during Stage 1 and Stage 2 were 68\% and 11\% respectively.
+
+% the metrics on the outliers succesffully  detected at each stage, precision/recall
+% precision 85% and recall was 90%
+% confusion matrix
+
+
+% confusion matrices - endcap stage 1
+% Statistics for this iteration:
+% Total number of nodes:  9835
+% Total number of edges:  18184
+% Total number of nodes with updated states:  9835
+% Total number of nodes with a new merged state:  1029
+% numerator: 1237 denominator: 1453
+% Percentage of correct outliers detected: 85.13420509291122
+% PRINTING ALGORITHM METRICS:
+% true positive number:  1237  false positive number:  216
+% true negative number:  2069  false negative number:  136
+% Precision: 0.8513420509291122  Recall:  0.9009468317552805
+% Normalised confusion matrix
+% TPR:  0.9009468317552805  FNR:  0.09905316824471959 
+% FPR:  0.09452954048140044  TNR:  0.9054704595185996
+\begin{figure}[htbp]%
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+                colormap={greenyellow}{color=(white) rgb255=(76,153,0)},
+                xlabel=Predicted Class,
+                xlabel style={yshift=-15pt},
+                ylabel=True Class,
+                ylabel style={yshift=20pt},
+                xticklabels={1, 0}, % changed
+                xtick={0,...,1}, % changed
+                xtick style={draw=none},
+                yticklabels={1, 0}, % changed
+                ytick={0,...,1}, % changed
+                ytick style={draw=none},
+                enlargelimits=false,
+                colorbar,
+                xticklabel style={rotate=0},
+                nodes near coords={\pgfmathprintnumber\pgfplotspointmeta},
+                nodes near coords style={yshift=-7pt},
+            ]
+            \addplot[
+                matrix plot,
+                mesh/cols=2, % changed
+                point meta=explicit,draw=gray
+            ] table [meta=C] {
+                x y C
+                0 0 0.90
+                1 0 0.10     
+                0 1 0.09
+                1 1 0.91
+            };
+        \end{axis}
+    \end{tikzpicture}
+    \caption{TODO...Stage 1 confusion matrix for the endcap only}
+    \label{fig:confusion-matrix-endcap-stage-1}
+\end{figure}
+
+% confusion matrices - endcap stage 1
+% PRINTING ALGORITHM METRICS:
+% true positive number:  591  false positive number:  920
+% true negative number:  575  false negative number:  162
+% Precision: 0.39113170086035737  Recall:  0.7848605577689243
+% Normalised confusion matrix
+% TPR:  0.7848605577689243  FNR:  0.2151394422310757 
+% FPR:  0.6153846153846154  TNR:  0.38461538461538464
+\begin{figure}[htbp]%
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+                colormap={greenyellow}{color=(white) rgb255=(76,153,0)},
+                xlabel=Predicted Class,
+                xlabel style={yshift=-15pt},
+                ylabel=True Class,
+                ylabel style={yshift=20pt},
+                xticklabels={1, 0}, % changed
+                xtick={0,...,1}, % changed
+                xtick style={draw=none},
+                yticklabels={1, 0}, % changed
+                ytick={0,...,1}, % changed
+                ytick style={draw=none},
+                enlargelimits=false,
+                colorbar,
+                xticklabel style={rotate=0},
+                nodes near coords={\pgfmathprintnumber\pgfplotspointmeta},
+                nodes near coords style={yshift=-7pt},
+            ]
+            \addplot[
+                matrix plot,
+                mesh/cols=2, % changed
+                point meta=explicit,draw=gray
+            ] table [meta=C] {
+                x y C
+                0 0 0.81
+                1 0 0.42     
+                0 1 0.19
+                1 1 0.58
+            };
+        \end{axis}
+    \end{tikzpicture}
+    \caption{TODO...Stage 2 confusion matrix for the endcap only}
+    \label{fig:confusion-matrix-endcap-stage-2}
+\end{figure}
+
+
+
+
+
+
+
+
+% TODO: in the performance evaluation section --> need an average of results over many events executed
+
+
+% track purity, particle purity, track reconstruction efficiency
+% TODO: mention here that the parabolic track state model was used and the joint track state was used, and mention the section here
+
+
+
+
+\subsubsection{Efficiency Metrics}
+%particle purity, track purity, need to present the average over many events here
+
+The track reconstruction efficiency, $\epsilon$ is the ratio of successfully reconstructed reference tracks, $n_R$ to the total number of reference tracks, $N_R$, in a given volume of interest. 
+
+\begin{equation}
+    \epsilon = \frac{n_R}{N_R}
+    \label{eqn:reoncstruction-eff}
+\end{equation}
+
+The track reconstruction efficiency obtained was 92.7\% for fully contained tracks within volume 7 of the TrackML Pixel detector, with $p_{T} \geq$ 1GeV. 
+
+%Particles with four or more hits contained within volume 7 are considered and only proposed tracks with four or more hits are considered. Each track is matched with the ground truth majority particle sharing with it the greatest hit number $N_{truth}$. The ratio of $N_{truth}$ to the number of hits $N_{hits}$ for the reconstructed track defines the track purity, whilst the ratio of this to the number of hits of the underlying particle defines the particle purity. Both the track purity and particle purity must be $>$ 50\%. This criteria coincides with the definition of an accepted track candidate stated in the TrackML competition \cite{trackml}. The resulting average track purity and particle purity for all extracted candidates is 99\%, see Figure \ref{fig:purity}. The purity distributions indicate that the application of the OU process works well for the given $p_{T}$ range.
+
 
 \begin{figure}[htbp]
     \centering
@@ -78,26 +207,36 @@ This chapter focuses on the application of the GNN algorithm to the Pixel endcap
 \end{figure}
 
 
-% track purity, particle purity, track reconstruction efficiency
-% TODO: mention here that the parabolic track state model was used and the joint track state was used, and mention the section here
-
-%nips-2018-competation
-%Data.
-%We used the fast (10s per event) and accurate simulation engine ACTS4 [6] to generate the challenge data. It allowed us to generate realistic data emulating a full Silicon LHC detector (see Fig 3), while providing us with the ground truth of particle trajectory membership. Thus, for each event we obtained the “detected” 3D points coordinates (and additional features), and, as ground truth, the list of points associated to each track. There is a one to one relationship between the true 3D points and the reconstructed ones.
-
-%\begin{itemize}
-%    \item Application on TrackML model, endcap volume only, metrics, performance eval etc, track reconstruction efficiency, track purity and particle purity, comparison with TrackML solutions
-%    \item Track reconstruction efficiency, track purity, particle purity
-%    \item Performance Evaluation
-%    \item execution time?
-%\end{itemize}
-
-% need to present the average over many events here
 
 
+\subsubsection{Execution Times}
 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/7-results/execution-time-endcap-1.png}
+    \caption{...}
+    \label{fig:execution-time-endcap-1}%
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/7-results/execution-time-endcap-2.png}
+    \caption{...}
+    \label{fig:execution-time-endcap-2}%
+\end{figure}
+
+
+
+
+\subsubsection{Advantages of the KF Application}
 % Importance of KF application:
-%An important aspect of the application of the KF here is that reconstruction of curved tracks is possible using a low-dimensionality model. By assuming a slow change in track direction, a special dynamic model for the KF is constructed using the OU process, which implicitly takes into account the track curvature without extending the track state with additional parameters.
+Successfull use of the KF for both extrapolation and track extraction ...
+
+An important result of the application of the KF ... is that reconstruction of curved tracks is possible using a low-dimensionality model. By assuming a slow change in track direction, a special dynamic model for the KF is constructed using the OU process. The OU process implicitly takes into account the track curvature without extending the track state to contain additional parameters.
+
+
+
+
 
 
 
@@ -226,7 +365,7 @@ This chapter focuses on the application of the GNN algorithm to the Pixel endcap
 
 
 
-
+\subsubsection{Remaining Network Post Track Extraction}
 
 
 
@@ -238,11 +377,19 @@ This chapter focuses on the application of the GNN algorithm to the Pixel endcap
 \end{figure}
 
 
+\subsubsection{Improvement in KF for Extrapolation in r-z plane}
+
+- 4 different scenarios, barrel to barrel, endcap to barrel etc etc for the r-z plane
+
+
+
+
+
 
 
 \subsection{Software Optimisations}
 
-
+% improvements to implementation - numpy matrices for everything, potential GPU accelerated calculations, improvements to the graph network initialisation stage
 
 
 
@@ -251,9 +398,13 @@ This chapter focuses on the application of the GNN algorithm to the Pixel endcap
 \subsection{Other Approaches}
 \subsubsection{Community Detection}
 
-%If a subgraph does not meet the criteria to qualify as a good track candidate, a \textit{Community Detection} algorithm \cite{community} is applied in order to further partition the set of nodes. Community Detection is a generalisation of CCA and works by using a distance metric, typically modularity, in order to label nodes as \textit{closely connected}. Modularity is a benefit function that measures the strength of a particular division of a network using the number of edges. A popular modularity maximisation approach is the Louvain method \cite{python_louvain}, which iteratively optimises local communities until global modularity can no longer be improved. An example illustration of a network partition via Community Detection is shown in Figure \ref{fig:community-detection}. Any subgraphs with zero extracted candidates through this procedure are propagated to further stages for additional processing.
+If a subgraph does not meet the criteria to qualify as a good track candidate, a technique known as \textit{Community Detection} \cite{community} is applied in order to further partition the set of nodes. Community Detection is a generalisation of CCA and works by using a distance metric, typically modularity, in order to label nodes as \textit{closely connected}. Modularity is a benefit function that measures the strength of a particular division of a network using the number of edges and edge weights. A popular modularity maximisation approach is the Louvain method \cite{python_louvain}, which iteratively optimises local communities until global modularity can no longer be improved. An example illustration of a network partition via Community Detection using modularity is shown in Figure \ref{fig:community-detection}. 
 
-%Community Detection: divides nodes into various clusters based on edge structure. It learns from edge weights, and distance and graph objects similarly. 
+However, as it doesn't work every time ... this wasn't used ... needs further refining.
+
+
+%Any subgraphs with zero extracted candidates through this procedure are propagated to further stages for additional processing.
+
 
 \begin{figure}[htbp]
    \centering
@@ -262,10 +413,8 @@ This chapter focuses on the application of the GNN algorithm to the Pixel endcap
    \label{fig:community-detection}%
 \end{figure}
 
-%\begin{itemize}
-%    \item extension to barrel, analysis of results, performance  evaluation, challenges and outlook
-%    \item Optimisation - GPU acceleration and numpy implementation etc
-%\end{itemize}
+
+
 
 
 \section{Conclusion}
@@ -273,3 +422,5 @@ This chapter focuses on the application of the GNN algorithm to the Pixel endcap
 % Utilizing message passing to iteratively learn neighbourhood information aids in the pruning of outlier edges within complex regions.
 
 % This key feature of the GNN-based algorithm suggests that the excitation and inhibition rules of individual GNN nodes are designed in such a way to facilitate the “simple-to-complex” approach for “nodes-to-tracks” association. 
+
+% The approach developed here is a novel method using a GNN-based framework for track finding, unlike the traditional approach whereby Multi-Layered Perceptrons are trained to directly classify nodes and edges. By utilising various machine learning techniques, the graph network is allowed to learn local track parameters on its own by iteratively resolving ambiguities and discover track candidates. The main stages of the algorithm comprise of a Gaussian Mixture Reduction stage and neighbourhood information aggregation stage. The use of Kalman filters for both information aggregation and track extraction embedded into the network is a novel approach and has shown to successfully extract track candidates compatible with the particle motion model. The algorithm yields promising results on both a simple MC toy model and TrackML model for the endcap region. A preliminary result of $>$ 90\% track reconstruction efficiency is achieved for fully contained tracks within the endcap volume and with $p_{T} >$ 1GeV. It is promising to see that this methodology provides a high performance on a small dataset, however the algorithm is still within the early stages of its development. An evaluation on the Pixel barrel of the TrackML dataset is a work in progress, as well as within denser hit environments in order to sufficiently assess the quality of the algorithm. 

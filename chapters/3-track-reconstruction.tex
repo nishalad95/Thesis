@@ -102,7 +102,21 @@ The structure of the TrackML detector is shown in Section \ref{trackml-structure
 
 \subsection{TrackML Detector Structure}
 \label{trackml-structure}
-The structure of the detector adopts a generic tracker design that takes key concepts from the existing proposals from ATLAS and CMS detectors. Many modern particle detectors include extensive silicon tracking systems arranged in thin layers of silicon sensors. The TrackML detector is very similar in structure to that of modern detectors and current ATLAS detector known as the ITk \cite{inner-detector-TDR}. It uses a cylinder-like geometry in the central regions and a disk-like geometry in the forward regions. The full detector geometry of the TrackML detector is shown in Figure \ref{fig:trackml-detector-image}. The detector is split into three separate sub-detectors that differ in spatial resolution and passive material. The innermost sub-detector is a Pixel detector with a spatial resolution of 50 $\mu$m $\times$ 50 $\mu$m and further out two different strip detectors with short 80 $\mu$m × 1200 $\mu$m and long strips 0.12 mm $\times$ 10.8 mm are placed. Each detector includes realistic module geometries with placement and overlap chosen to yield a hermetic coverage up to $\lvert \eta \rvert$ = 3. The TrackML detector is also organized into groups of layers, called \textit{volumes}, which are identified by a volume id. The Pixel detector is represented by volumes 7, 8 and 9.
+The structure of the detector adopts a generic tracker design that takes key concepts from the existing proposals from ATLAS and CMS detectors. Many modern particle detectors include extensive silicon tracking systems arranged in thin layers of silicon sensors. The TrackML detector is very similar in structure to that of modern detectors and current ATLAS detector known as the ITk \cite{inner-detector-TDR}. It uses a cylinder-like geometry in the central regions and a disk-like geometry in the forward regions. The full TrackML detector geometry is shown in Figure \ref{fig:trackml-detector-image}. 
+
+
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=\textwidth]{images/3-track-reconstruction/trackml-detector.png}
+  \caption{
+    Detector layout for the virtual TrackML detector. On the left the three major sub-detectors, pixel, short strips, and long strips, are shown separately. On the right, a schematic of the full layout and its coverage along the radial and longitudinal dimensions as well as in the $ \lvert \eta \rvert$ direction is shown. The different colors represent the different sub-detectors while the marked numbers are the internal volume and layer identifiers.
+  }
+  \label{fig:trackml-detector-image}
+\end{figure}
+
+
+
+The detector is split into three separate sub-detectors that differ in spatial resolution and passive material. The innermost sub-detector is a Pixel detector with a spatial resolution of 50 $\mu$m $\times$ 50 $\mu$m and further out two different strip detectors with short 80 $\mu$m × 1200 $\mu$m and long strips 0.12 mm $\times$ 10.8 mm are placed. Each detector includes realistic module geometries with placement and overlap chosen to yield a hermetic coverage up to $\lvert \eta \rvert$ = 3. The particle beams collide on the $z$-axis around z = 0. This is the center of collision and also the center of the detector. The TrackML detector is also organized into groups of layers, called \textit{volumes}, which are identified by a volume number. The Pixel detector is represented by volumes 7, 8 and 9.
 
 %ITK: There is no reason to believe the more complex geometry would lead to radically different algorithms
 
@@ -116,15 +130,6 @@ The structure of the detector adopts a generic tracker design that takes key con
 %https://arxiv.org/pdf/1904.06778.pdf
 % ------------------------------
 
-
-\begin{figure}[!htbp]
-  \centering
-  \includegraphics[width=\textwidth]{images/3-track-reconstruction/trackml-detector.png}
-  \caption{
-    Detector layout for the virtual TrackML detector. On the left the three major sub-detectors, pixel, short strips, and long strips, are shown separately. On the right, a schematic of the full layout and its coverage along the radial and longitudinal dimensions as well as in the $ \lvert \eta \rvert$ direction is shown. The different colors represent the different sub-detectors while the marked numbers are the internal volume and layer identifiers.
-  }
-  \label{fig:trackml-detector-image}
-\end{figure}
 
 \subsection{Event Simulation}
 \label{trackml-simulation}
