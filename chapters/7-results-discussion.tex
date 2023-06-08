@@ -251,6 +251,10 @@ The initialization of the graph network adopts the majority of the execution tim
 An important feature of the application of the KF is that reconstruction of curved tracks is possible using a low-dimensionality model. By assuming a slow change in track direction, a special dynamic model for the KF is constructed using the OU process. The OU process implicitly takes into account the track curvature, without the need to extend the track state to contain additional parameters.
 
 
+TODO: 
+This ensures that the KF for track extraction considers the entire chain of individual track segments, each modelled as a straight line, and the track curvature modelled by the OU process.
+
+
 
 
 

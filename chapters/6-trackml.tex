@@ -46,12 +46,12 @@ In the $x$-$y$ plane, charged particles experience the influence of the magnetic
 \begin{figure}[htbp!] 
     \centering
     \subfloat[]{%
-        \includegraphics[width=0.42\textwidth]{images/5-gnn-algorithm/parabolic-state-model-1.png}%
+        \includegraphics[width=0.42\textwidth]{images/6-trackml/parabolic-state-model-1.png}%
         \label{fig:gnn-parabolic-state-1}%
         }%
     \hfill%
     \subfloat[]{%
-        \includegraphics[width=0.56\textwidth]{images/5-gnn-algorithm/parabolic-state-model-2.png}%
+        \includegraphics[width=0.56\textwidth]{images/6-trackml/parabolic-state-model-2.png}%
         \label{fig:gnn-parabolic-state-2}%
         }%
     \caption{Parabolic model illustration. a) Construction of example parabolas O - A - B and O - A - C, where O is the global origin and A, B, C are graph nodes. b) Rotation of parabola O - A - B into the local coordinate system of A.}
@@ -310,12 +310,12 @@ Other classification algorithms were explored, however the SVM was the most appr
 \begin{figure}[htbp!] 
     \centering
     \subfloat[Ground Truth Data from MC Simulation]{%
-        \includegraphics[width=0.82\linewidth]{images/7-results/kl-truth.png}%
+        \includegraphics[width=0.82\linewidth]{images/6-trackml/kl-truth.png}%
         \label{fig:KL-distance-truth}%
         }%
     \hfill%
     \subfloat[SVM Predictions and Decision Boundary (dotted line)]{%
-        \includegraphics[width=0.82\linewidth]{images/7-results/kl-predictions.png}%
+        \includegraphics[width=0.82\linewidth]{images/6-trackml/kl-predictions.png}%
         \label{fig:KL-distance-predictions}%
         }%
     \caption{SVM classifier training and predictions used to determine the optimal Kullback-Leibler threshold distance, $d_{KL}$, between pairwise track states $X_{ij}$, for a given node with a variance of edge orientation $\sigma_e$. The dotted line in b) represents the threshold value of 0.40 when adjusting SVM predictions in order to yield a TPR of 95\%. For a given pair of edge connections with a common node, truth 1 corresponds to all nodes originate from the same truth particle, and truth 0 corresponds to otherwise.}
@@ -334,8 +334,54 @@ Other classification algorithms were explored, however the SVM was the most appr
 
 \subsection{Parabolic Extrapolation Model}
 
+The extrapolation used in the $x$-$y$ plane is given by a parabolic model illustrated by Figure \ref{fig:trackml-parabolic-extrapolation-model-xy}.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/6-trackml/extrapolation-model-xy-trackml.png}
+    \caption{Illustration of the parabolic extrapolation model used from starting node A and its local coordinate system $(x_A, y_A)$, to target node C in its local coordinate system $(x_C, y_C)$. The angle of rotation between node A and node C is given by $\phi_{AC}$.}
+    \label{fig:trackml-parabolic-extrapolation-model-xy}%
+\end{figure}
+
+We begin with a parabola at node A with known parameters $\{a, b, c\}$ represented in parametric form given by Eqs \eqref{eqn:parabolic-equations-parametric}.
+
+%We could begin with, the coordinate system at the starting node we have 3 parameters a, b, c, then we have a target node C, with its own coordinate system and it is also described by a parabola, so we force this description
+
 \begin{equation}
-\quad F_{xy} = \begin{bmatrix} 
+\begin{aligned}
+y(s) = as^{2} + bs + c \\
+x(s) = s
+\end{aligned}
+\label{eqn:parabolic-equations-parametric}
+\end{equation}
+
+
+\begin{equation}
+    \begin{bmatrix}
+    x_C \\ y_C
+    \end{bmatrix}
+    =
+    \begin{bmatrix}
+    \cos(\phi_{AC}) & \sin(\phi_{AC}) \\
+    - \sin(\phi_{AC}) & \cos(\phi_{AC})
+    \end{bmatrix}
+    \begin{bmatrix}
+    x(s) \\ y(s)
+    \end{bmatrix}
+    +
+    \begin{bmatrix}
+    x_A \\ y_A
+    \end{bmatrix}
+\label{eqn:rotation-parabolic-linear-algebra}
+\end{equation}
+
+
+
+
+
+
+\begin{equation}
+F_{xy} = \begin{bmatrix} 
         \frac{\partial a_c}{\partial a} & \frac{\partial a_c}{\partial b} & \frac{\partial a_c}{\partial c} \\ 
         
         \frac{\partial b_c}{\partial a} & \frac{\partial b_c}{\partial b} & \frac{\partial b_c}{\partial c} \\
@@ -346,13 +392,9 @@ Other classification algorithms were explored, however the SVM was the most appr
 \end{equation}
 
 
-Mention here that both the linear and parabolic models were used in this instance, where the track state estimate comprised of a 3x1 vector, a, b, tau. The extrapolation and KF update will be different here, different transition Jacobian matrix. Also mention about tuning the chi2 distance thresholds during extrapolation
+Mention here that both the linear and parabolic models were used in this instance, where the track state estimate comprised of a 3x1 vector, a, b, tau. Also mention about tuning the chi2 distance thresholds during extrapolation
 
-%The matrix $\widetilde{C}_{ij}$ includes the addition of the process noise $Q$ modelled by the Ornstein-Uhlenbeck (OU) process \cite{OU} which encompasses all material effects. See Section \ref{kf} for further details. The full derivation of $F$ and $Q$ are shown in Appendix \ref{appendix:Appendix-A}
-
-The KF used for state extrapolation considers only a track segment (node-pair) during the predict and update stages of the filter.
-Mention about the OU process noise, for correlated noise etc, 
-
+%The matrix $\widetilde{C}_{ij}$ includes the addition of the process noise $Q$ modelled by the Ornstein-Uhlenbeck (OU) process \cite{OU} which encompasses all material effects. 
 
 
 
@@ -361,6 +403,8 @@ Mention about the OU process noise, for correlated noise etc,
 
 
 \subsection{KF for State Extrapolation}
+
+The KF used for state extrapolation considers only a track segment (node-pair).
 
 Transition Jacobian F is derived using the rotation of a parabola into the local coordinate system of the node to extrapolate to.
 
@@ -383,21 +427,21 @@ The process noise matrix Q
 
 
 \subsection{KF for Track Extraction}
-% OU process, with non-zero process noise Q matrix (following OU noise)
-
 %The KF track fit is applied simultaneously in both the $x$-$y$ and $r$-$z$ planes, in order to assess the quality of the fit using both models. In comparison to the KF used for state extrapolation (Section \ref{kf-for-extrp-chapter-6}), the KF for track fitting considers the entire chain of track segments making up a track candidate. Therefore, there will be a non-zero process noise, $Q$, present in both $x$-$y$ and $r$-$z$ planes.
 
-The KF for track extraction in the $x$-$y$ plane must take into account the influence of the magnetic field. As the track bends in a particular direction, dependent on the charge of the particle, the magnetic field creates a systematic effect on the track direction and hence a near-constant drift in the azimuthal angle from the $x$-axis, $\phi$. Statistically, such a situation can be described as a correlated noise which affects the track direction and can be modelled by the Ornstein-Uhlenbeck (OU) process \cite{OU}. Using the OU process, the track direction evolves stochastically according to a deterministic drift parameter, $\alpha$, and stochastic noise, $\sigma_{ou}$. The result is one which can be substituted into the KF as a sophisticated process noise, making the KF track fit three-dimensional. 
+The KF works in a rotated coordinate system, whereby the first track segment in the chain of segments representing a track candidate is rotated to be parallel to the global $x$-axis. This rotated coordinate system is denoted by $(x', y')$, not to be confused with the global coordinate system $(x, y)$. The new $x$-axis, $x'$, is parallel to the first track segment and the new $y$-axis, $y'$, describes the track deviation from the straight line.
 
-For a set of $n$ nodes representing a track candidate, the sequential set of measurements are $\{m_0, m_1, ..., m_{(n-1)} \}$, where $m_{(n-1)}$ is the measurement of the node with the largest radius. The KF is initialised with the following three-dimensional filter state estimate, $\hat{x}_{xy}$, given by Eq \eqref{eqn:kf-track-fit-initialised-state-xy}.
+The KF in the $(x', y')$ plane must take into account the influence of the magnetic field. As the track bends in a particular direction, dependent on the charge of the particle, the magnetic field creates a systematic effect on the track direction and hence a near-constant drift in the azimuthal angle from the $x$-axis, $\phi$. Statistically, such a situation can be described as a correlated noise which affects the track direction and can be modelled by the Ornstein-Uhlenbeck (OU) process \cite{OU}. Using the OU process, the track direction evolves stochastically according to a deterministic drift parameter, $\alpha$, and stochastic noise, $\sigma_{ou}$. The result is one which can be substituted into the KF as a sophisticated process noise, making the KF track fit three-dimensional.
+
+For a set of $n$ nodes representing a track candidate, the sequential set of measurements are $\{m'_0, m'_1, ..., m'_{(n-1)} \}$, where $m'_{(n-1)}$ is the measurement of the node with the largest radius. The KF is initialised with the following three-dimensional filter state estimate, $\hat{x}'_{xy}$, given by Eq \eqref{eqn:kf-track-fit-initialised-state-xy}.
 
 
 \begin{equation}
-\hat{x}_{xy} = \begin{bmatrix} m_{(n-1)} \\ \tau_{xy} \\ w_{ou} \end{bmatrix} 
+\hat{x}'_{xy} = \begin{bmatrix} m'_{(n-1)} \\ \tau'_{xy} \\ w_{ou} \end{bmatrix} 
 \label{eqn:kf-track-fit-initialised-state-xy}
 \end{equation}
 
-where the measurement $m_{(n-1)}$ is known, $\tau_{xy}$ is the track inclination in the $x$-$y$ plane initialized to zero and $w_{ou}$ is the integrated OU parameter, also initialized to zero. The filter covariance matrix covariance matrix, $P_{rz}$, is initialized using Eq \eqref{eqn:kf-track-fit-initialised-cov-xy}
+where the measurement $m'_{(n-1)}$ is known, $\tau'_{xy}$ is the track inclination in the $(x', y')$ coordinate system initialized to zero and $w_{ou}$ is the integrated OU parameter, also initialized to zero. The filter covariance matrix, $P_{xy}$, is initialized using Eq \eqref{eqn:kf-track-fit-initialised-cov-xy}
 
 \begin{equation}
 P_{xy} = \begin{bmatrix} \sigma_{xy}^2 & 0 & 0 
@@ -406,17 +450,17 @@ P_{xy} = \begin{bmatrix} \sigma_{xy}^2 & 0 & 0
 \label{eqn:kf-track-fit-initialised-cov-xy}
 \end{equation}
 
-where $\sigma_{\tau_{xy}}^2$ is the variance in the track inclination, $\tau_{xy}$, and is initialized to 1, and $\sigma_{w_{ou}}^2$ is the variance in the integrated OU parameter, $w_{ou}(t)$, initialized to 1. The state transition Jacobian $F_{xy}$ is derived by integration of the OU motion model \cite{OU} and is given by \eqref{eqn:state-transition-jacobian-ou},
+where $\sigma_{\tau_{xy}}^2$ is the variance in the track inclination, $\tau_{xy}$, and is initialized to 1, and $\sigma_{w_{ou}}^2$ is the variance in the integrated OU parameter, $w_{ou}$, initialized to 1. The state transition Jacobian $F_{xy}$ is derived by integration of the OU motion model \cite{OU} and is given by \eqref{eqn:state-transition-jacobian-ou},
 
 \begin{equation}
-F_{xy} = \begin{bmatrix} 1 & dx & g_1 \\ 0 & 1 & f_1 \\ 0 & 0 & e_1 \end{bmatrix} 
+F_{xy} = \begin{bmatrix} 1 & dx' & g_1 \\ 0 & 1 & f_1 \\ 0 & 0 & e_1 \end{bmatrix} 
 \label{eqn:state-transition-jacobian-ou}
 \end{equation}
 
-where $dx$ is the difference in $x$ position of sequential nodes $i$ and $j$ processed in the the KF, $dx = x_i - x_j$, and $e_1$, $f_1$ and $g_1$ are given by the following equations. 
+where $dx'$ is the difference in $x'$ position of sequential nodes $i$ and $j$ processed in the the KF, $dx' = x'_i - x'_j$, and $e_1$, $f_1$ and $g_1$ are given by the following equations. 
 
 \begin{equation}
-e_1 = e^{- \alpha \lvert dx \rvert}
+e_1 = e^{- \alpha \lvert dx' \rvert}
 \label{eqn:e1}
 \end{equation}
 
@@ -426,31 +470,31 @@ f_1 = \frac{1 - e_1}{\alpha}
 \end{equation}
 
 \begin{equation}
-g_1 = \frac{\lvert dx \rvert - f_1}{\alpha}
+g_1 = \frac{\lvert dx' \rvert - f_1}{\alpha}
 \label{eqn:g1}
 \end{equation}
 
 The inverse of the deterministic drift parameter, $\alpha^{-1}$, is proportional to the rate of change of the track azimuthal angle, $\phi$, and is initialised to 0.1. If $\alpha \rightarrow \infty$ the track model becomes a straight line, however if $\alpha \rightarrow 0$, the model becomes a parabola. The process noise, $Q_{xy}$, is derived using the OU motion model \cite{OU} and is given by Eq \eqref{eqn:process-noise-q}, 
  
 \begin{equation}
-Q_{xy} = \begin{bmatrix} (dx)^{2} (\sigma_{ms}^{2} + \frac{(dx)^{2} \sigma_{ou}^{2}}{4}) & Q_{01} & Q_{02} \\  Q_{01} & \sigma_{ms}^2 + (dx)^{2} \sigma_{ou}^{2} & Q_{12} \\ Q_{02} & Q_{12} & \sigma_{ou}^{2} \end{bmatrix} 
+Q_{xy} = \begin{bmatrix} (dx')^{2} (\sigma_{ms}^{2} + \frac{(dx')^{2} \sigma_{ou}^{2}}{4}) & Q_{01} & Q_{02} \\  Q_{01} & \sigma_{ms}^2 + (dx')^{2} \sigma_{ou}^{2} & Q_{12} \\ Q_{02} & Q_{12} & \sigma_{ou}^{2} \end{bmatrix} 
 \label{eqn:process-noise-q}
 \end{equation}
 
 where $Q_{01}$, $Q_{02}$ and $Q_{12}$ are given by the following equations.
 
 \begin{equation}
-Q_{01} = dx( \sigma_{ms}^2 + Q_{02} )
+Q_{01} = dx'( \sigma_{ms}^2 + Q_{02} )
 \label{eqn:q01}
 \end{equation}
 
 \begin{equation}
-Q_{02} = \frac{1}{2} (dx)^2 \sigma_{ou}^{2}
+Q_{02} = \frac{1}{2} (dx')^2 \sigma_{ou}^{2}
 \label{eqn:q02}
 \end{equation}
 
 \begin{equation}
-Q_{12} = dx \sigma_{ou}^{2}
+Q_{12} = dx' \sigma_{ou}^{2}
 \label{eqn:q12}
 \end{equation}
 
