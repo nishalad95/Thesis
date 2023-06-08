@@ -326,10 +326,11 @@ Other classification algorithms were explored, however the SVM was the most appr
 
 
 
-\section{Extrapolation Models}
-\label{chapter-6-extrapolation}
 
 
+
+
+\section{Extrapolation and Track Extraction in x-y Plane}
 
 \subsection{Parabolic Extrapolation Model}
 
@@ -345,43 +346,21 @@ Other classification algorithms were explored, however the SVM was the most appr
 \end{equation}
 
 
-
-
-\begin{itemize}
-    \item Linear and Parabolic model - 2 different extrapolations for xy componenets of state vector and rz componenet, illustrations here
-\end{itemize}
-
 Mention here that both the linear and parabolic models were used in this instance, where the track state estimate comprised of a 3x1 vector, a, b, tau. The extrapolation and KF update will be different here, different transition Jacobian matrix. Also mention about tuning the chi2 distance thresholds during extrapolation
 
 %The matrix $\widetilde{C}_{ij}$ includes the addition of the process noise $Q$ modelled by the Ornstein-Uhlenbeck (OU) process \cite{OU} which encompasses all material effects. See Section \ref{kf} for further details. The full derivation of $F$ and $Q$ are shown in Appendix \ref{appendix:Appendix-A}
-
-\subsection{Linear Extrapolation Model}
-
-
-
-
-
-
-
-
-
-
-
-
-\section{Implementation of Kalman Filters}
-\label{gnn-kf-implementation}
-
-
-\subsection{KF for State Extrapolation}
-\label{kf-for-extrp-chapter-6}
 
 The KF used for state extrapolation considers only a track segment (node-pair) during the predict and update stages of the filter.
 Mention about the OU process noise, for correlated noise etc, 
 
 
 
-\subsubsection{KF Implementation for State Extrapolation in x-y plane}
 
+
+
+
+
+\subsection{KF for State Extrapolation}
 
 Transition Jacobian F is derived using the rotation of a parabola into the local coordinate system of the node to extrapolate to.
 
@@ -402,48 +381,35 @@ The process noise matrix Q
 
 
 
-\subsubsection{KF Implementation for State Extrapolation in r-z plane}
 
-
-
-
-
-
-
-
-
-\subsection{KF for Track Fitting}
-
-The KF track fit is applied simultaneously in both the $x$-$y$ and $r$-$z$ planes, in order to assess the quality of the fit using both models. In comparison to the KF used for state extrapolation (Section \ref{kf-for-extrp-chapter-6}), the KF for track fitting considers the entire chain of track segments making up a track candidate. Therefore, there will be a non-zero process noise, $Q$, present in both $x$-$y$ and $r$-$z$ planes.
-
-\subsubsection{KF Implementation for Track Fit in x-y plane}
+\subsection{KF for Track Extraction}
 % OU process, with non-zero process noise Q matrix (following OU noise)
 
-The KF for track extraction in the $x$-$y$ plane must take into account the influence of the magnetic field. The magnetic field creates a systematic effect on the track and a constant drift in the azimuthal angle from the $x$-axis $\phi$, as the track bends in a particular direction depending on the charge of the particle. Statistically, such a situation can be described as a correlated noise, which affects track direction and can often be modelled by the Ornstein-Uhlenbeck (OU) process \cite{OU}. The result is one which can be substituted into the KF as a sophisticated process noise, making the KF track fit three-dimensional. 
+%The KF track fit is applied simultaneously in both the $x$-$y$ and $r$-$z$ planes, in order to assess the quality of the fit using both models. In comparison to the KF used for state extrapolation (Section \ref{kf-for-extrp-chapter-6}), the KF for track fitting considers the entire chain of track segments making up a track candidate. Therefore, there will be a non-zero process noise, $Q$, present in both $x$-$y$ and $r$-$z$ planes.
 
-For a set of $n$ nodes representing a track candidate, the sequential $y$-measurements are $\{y_0, y_1, ..., y_{(n-1)} \}$, where $y_0$ is the $y$-measurement of the node with the smallest radius and $y_{(n-1)}$ is the $y$-measurement of the node with the largest radius. The KF is initialised with the following three-dimensional filter state estimate, $x_{xy}$, given by Eq \eqref{eqn:kf-track-fit-initialised-state-xy}.
+The KF for track extraction in the $x$-$y$ plane must take into account the influence of the magnetic field. As the track bends in a particular direction, dependent on the charge of the particle, the magnetic field creates a systematic effect on the track direction and hence a near-constant drift in the azimuthal angle from the $x$-axis, $\phi$. Statistically, such a situation can be described as a correlated noise which affects the track direction and can be modelled by the Ornstein-Uhlenbeck (OU) process \cite{OU}. Using the OU process, the track direction evolves stochastically according to a deterministic drift parameter, $\alpha$, and stochastic noise, $\sigma_{ou}$. The result is one which can be substituted into the KF as a sophisticated process noise, making the KF track fit three-dimensional. 
+
+For a set of $n$ nodes representing a track candidate, the sequential set of measurements are $\{m_0, m_1, ..., m_{(n-1)} \}$, where $m_{(n-1)}$ is the measurement of the node with the largest radius. The KF is initialised with the following three-dimensional filter state estimate, $\hat{x}_{xy}$, given by Eq \eqref{eqn:kf-track-fit-initialised-state-xy}.
 
 
 \begin{equation}
-\quad x_{xy} = \begin{bmatrix} y_{(n-1)} \\ 0 \\ 0 \end{bmatrix} 
+\hat{x}_{xy} = \begin{bmatrix} m_{(n-1)} \\ \tau_{xy} \\ w_{ou} \end{bmatrix} 
 \label{eqn:kf-track-fit-initialised-state-xy}
 \end{equation}
 
-and the covariance matrix, $P_{rz}$, given by Eq \eqref{eqn:kf-track-fit-initialised-cov-xy}
+where the measurement $m_{(n-1)}$ is known, $\tau_{xy}$ is the track inclination in the $x$-$y$ plane initialized to zero and $w_{ou}$ is the integrated OU parameter, also initialized to zero. The filter covariance matrix covariance matrix, $P_{rz}$, is initialized using Eq \eqref{eqn:kf-track-fit-initialised-cov-xy}
 
 \begin{equation}
-\quad P_{xy} = \begin{bmatrix} \sigma_{xy}^2 & 0 & 0 
-                                    \\ 0 & 1 & 0 
-                                    \\ 0 & 0 & 1 \end{bmatrix} 
+P_{xy} = \begin{bmatrix} \sigma_{xy}^2 & 0 & 0 
+                            \\ 0 & \sigma_{\tau_{xy}}^2 & 0 
+                            \\ 0 & 0 & \sigma_{w_{ou}}^2 \end{bmatrix} 
 \label{eqn:kf-track-fit-initialised-cov-xy}
 \end{equation}
 
-
-
-The state transition Jacobian $F_{xy}$ is derived using the OU model \cite{OU} and is given by \eqref{eqn:state-transition-jacobian-ou},
+where $\sigma_{\tau_{xy}}^2$ is the variance in the track inclination, $\tau_{xy}$, and is initialized to 1, and $\sigma_{w_{ou}}^2$ is the variance in the integrated OU parameter, $w_{ou}(t)$, initialized to 1. The state transition Jacobian $F_{xy}$ is derived by integration of the OU motion model \cite{OU} and is given by \eqref{eqn:state-transition-jacobian-ou},
 
 \begin{equation}
-\quad F_{xy} = \begin{bmatrix} 1 & dx & g_1 \\ 0 & 1 & f_1 \\ 0 & 0 & e_1 \end{bmatrix} 
+F_{xy} = \begin{bmatrix} 1 & dx & g_1 \\ 0 & 1 & f_1 \\ 0 & 0 & e_1 \end{bmatrix} 
 \label{eqn:state-transition-jacobian-ou}
 \end{equation}
 
@@ -464,13 +430,10 @@ g_1 = \frac{\lvert dx \rvert - f_1}{\alpha}
 \label{eqn:g1}
 \end{equation}
 
-The parameter $\alpha$ determines the stability of the rate of change of the track azimuthal angle $\phi$ and is initialised to 0.1. If $\alpha \rightarrow \infty$ the track model becomes a straight line, however if $\alpha \rightarrow 0$, the model becomes a parabola.
-
-The process noise $Q_{xy}$ is derived using the OU model \cite{OU}, given by Eq \eqref{eqn:process-noise-q}, 
+The inverse of the deterministic drift parameter, $\alpha^{-1}$, is proportional to the rate of change of the track azimuthal angle, $\phi$, and is initialised to 0.1. If $\alpha \rightarrow \infty$ the track model becomes a straight line, however if $\alpha \rightarrow 0$, the model becomes a parabola. The process noise, $Q_{xy}$, is derived using the OU motion model \cite{OU} and is given by Eq \eqref{eqn:process-noise-q}, 
  
-
 \begin{equation}
-\quad Q_{xy} = \begin{bmatrix} (dx)^{2} (\sigma_{ms}^{2} + \frac{(dx)^{2} \sigma_{ou}^{2}}{4}) & Q_{01} & Q_{02} \\  Q_{01} & \sigma_{ms}^2 + (dx)^{2} \sigma_{ou}^{2} & Q_{12} \\ Q_{02} & Q_{12} & \sigma_{ou}^{2} \end{bmatrix} 
+Q_{xy} = \begin{bmatrix} (dx)^{2} (\sigma_{ms}^{2} + \frac{(dx)^{2} \sigma_{ou}^{2}}{4}) & Q_{01} & Q_{02} \\  Q_{01} & \sigma_{ms}^2 + (dx)^{2} \sigma_{ou}^{2} & Q_{12} \\ Q_{02} & Q_{12} & \sigma_{ou}^{2} \end{bmatrix} 
 \label{eqn:process-noise-q}
 \end{equation}
 
@@ -491,13 +454,32 @@ Q_{12} = dx \sigma_{ou}^{2}
 \label{eqn:q12}
 \end{equation}
 
-The process noise $Q_{xy}$ is implemented with the addition of a non-zero stochastic noise $\sigma_{ou}$, as well as the non-zero $\sigma_{ms}$ due to the multiple scattering. This represents the correlated noise and models the track curvature caused by the presence of the magnetic field. The stochastic noise, $\sigma_{ou}$, is initialised to $10^{-5}$ and $\sigma_{ms}$ is derived using Eq \eqref{eqn:computed-multiple-scattering}.
+The process noise, $Q_{xy}$, is implemented with the addition of a non-zero stochastic noise, $\sigma_{ou}$, as well as the non-zero error due to the multiple scattering, $\sigma_{ms}$. This represents the correlated noise and models the track curvature caused by the presence of the magnetic field. The stochastic noise, $\sigma_{ou}$, is initialised to $10^{-5}$ and $\sigma_{ms}$ is derived using Eq \eqref{eqn:computed-multiple-scattering}. The measurement error in the KF, is attributed to the error due to the measurement of the $x$-$y$ plane and is initialised to $\sigma_{xy}^{2} = 300\mu$m.
 
 
 
 
 
-\subsubsection{KF Implementation for Track Fit in r-z plane}
+
+
+
+
+
+
+
+
+
+
+
+\section{Extrapolation and Track Extraction for r-z Plane}
+
+\subsection{Linear Extrapolation Model}
+
+\subsection{KF for State Extrapolation}
+
+
+
+\subsection{KF for Track Extraction}
 % linear KF model, with non-zero process noise Q, following multiple scattering only
 
 The KF for track extraction in the $r$-$z$ plane uses a linear model. For a set of $n$ nodes representing a track candidate, the sequential $z$-measurements are $\{z_0, z_1, ..., z_{(n-1)} \}$, where $z_0$ is the $z$-measurement of the node with the smallest radius and $z_{(n-1)}$ is the $z$-measurement of the node with the largest radius. The KF is initialised with the following two-dimensional filter state estimate, $x_{rz}$, given by Eq \eqref{eqn:kf-track-fit-initialised-state-rz}.

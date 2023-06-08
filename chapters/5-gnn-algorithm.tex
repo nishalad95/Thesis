@@ -239,7 +239,7 @@ X_{ij} = \begin{bmatrix} m_i \\ \tau_{ij} \end{bmatrix}
 \end{equation}
 
 
-The joint measurement covariance matrix, $S$, is stated in Eq. \eqref{eqn:track-state-estimate-2}, where $\sigma_0^{2}$ is initialised to 100$\mu m$. Negligible error is assumed in the $x$-measurement due to the low thickness of Pixel sensors. The state covariance, $C_{ij}$, is derived using the standard linear algebra approach, where $C_{ij} = GSG^T$, where matrix $G$ relates the measurements to the state vector, $X_{ij}$, using a linear extrapolation, where $dx = x_i - x_j$.  
+The joint measurement covariance matrix, $S$, is stated in Eq. \eqref{eqn:track-state-estimate-2}, where $\sigma_0^{2}$ is initialised to 100$\mu$m. Negligible error is assumed in the $x$-measurement due to the low thickness of Pixel sensors. The state covariance, $C_{ij}$, is derived using the standard linear algebra approach, where $C_{ij} = GSG^T$, where matrix $G$ relates the measurements to the state vector, $X_{ij}$, using a linear extrapolation, where $dx = x_i - x_j$.  
 
 \begin{equation}
 S = \begin{bmatrix} \sigma_0^{2} & 0 \\ 0 & \sigma_0^{2} \end{bmatrix}  \quad G = \begin{bmatrix} 1 & 0 \\ dx^{-1} & -dx^{-1}  \end{bmatrix}
