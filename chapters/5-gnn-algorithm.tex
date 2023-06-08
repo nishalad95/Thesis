@@ -39,11 +39,11 @@ The graph network is implemented using the Python library \texttt{NetworkX} \cit
 
 Each pairwise connection between node $i$ and neighbour node $j$ forms a Gaussian state, $X_{ij}$, representing the local track parameter estimate. Each edge has an associated prior probability $p_{ij}$ and edge weight $w_{ij}$. The prior probability of nodes $i$ and $j$ belonging to the same track is determined, assuming a track can produce at most one hit per detector layer. $w_{ij}$ is a mixture weight for the compatibility of the Gaussian state transmitted from node $i$ to neighbour node $j$, and represents the strength of the connection. The weights $w_{ij}$ are initialised uniformly and are dependent on the number of neighbours local to a node. The parameters $w_{ij}$ and $p_{ij}$ are updated as the network evolves. Note that, $w_{ij}$ are not to be confused with the traditional weights associated to features within neural networks. 
 
-For a given node $i$ and neighbour nodes $j$, a Gaussian mixture $g_i(X)$ is formed from weighted components, $\phi_{ij}$. A general form of $g_i(X)$ is given by Eq \eqref{eqn:gaussian-mixture},
+For a given node $i$ and neighbour nodes $j$, a Gaussian mixture $g_i(X)$ is formed from weighted components, $\Phi_{ij}$. A general form of $g_i(X)$ is given by Eq \eqref{eqn:gaussian-mixture},
 
 
 \begin{equation}
-g_i(X) = \sum_{j} w_{ij}\phi_{ij}(X, X_{ij}, C_{ij})
+g_i(X) = \sum_{j} w_{ij}\Phi_{ij}(X, X_{ij}, C_{ij})
 \label{eqn:gaussian-mixture}
 \end{equation}
 
@@ -132,7 +132,7 @@ Once state information has been propagated to neighbours, the parameter estimati
 For compatible incoming states where $\Delta \chi^{2}_{ij} \leq d_{\chi^{2}}$, the KF update is applied in order to compute the extrapolated track state estimate, $\tilde{X}_{ij}$, and the corresponding extrapolated covariance matrix, $\widetilde{C}_{ij}$. The KF is implemented via the Python library \texttt{Filterpy} \cite{filterpy}. $\tilde{X}_{ij}$ and $\widetilde{C}_{ij}$ are given by Eqs. \eqref{eqn:extrapolation},
 
 \begin{equation}
-\tilde{X}_{ij} = F_{ij} X_{ij}^{M}, \qquad \tilde{C}_{ij} = F_{ij} \biggl( \sum C_{ij}^{M} + Q \biggl) F^{T}_{ij}
+\tilde{X}_{ij} = F_{ij} X_{ij}^{M}, \qquad \tilde{C}_{ij} = F_{ij} \biggl( \sum C_{ij}^{M} + Q_{ij} \biggl) F^{T}_{ij}
 \label{eqn:extrapolation}
 \end{equation}
 
@@ -167,7 +167,7 @@ The denominator $\sum_{k}w_{ik}\beta_{ik}$ is the summation of the product of we
 The Gaussian mixture $g_i(X)$ at each node is then composed of updated components, given by Eq \eqref{eqn:updated-gaussian-mixture}.
 
 \begin{equation}
-g_i(X) = \sum_{j} \widetilde{w}_{ij}\phi_{ij}(X, \widetilde{X}_{ij}, \widetilde{C}_{ij})
+g_i(X) = \sum_{j} \widetilde{w}_{ij}\Phi_{ij}(X, \widetilde{X}_{ij}, \widetilde{C}_{ij})
 \label{eqn:updated-gaussian-mixture}
 \end{equation}
 
@@ -187,7 +187,7 @@ Initially, the graph network must be split into smaller components, taking into 
 
 The criteria that a subgraph must possess in order to be considered for track extraction are as follows. Subgraphs must contain a minimum number of four nodes within the volume of interest. There must exist only one node per detector layer, so that there are no are intersecting tracks or holes within the track candidate. 
 
-If the above criteria are met, a KF is then applied in order to perform a final track fit. As opposed to applying the KF on one track segment between two nodes, similar to the method used in Section \ref{chapter-5-kf-extrapolation} for state extrapolation, the KF for track fitting must consider the whole chain of track segments. Here, the filter iteratively predicts and updates track state parameters as it receives $X_{ij}$ and $C_{ij}$ from each subsequent node in the subgraph.
+If the above criteria are met, a KF is then applied in order to perform a final track fit. As opposed to applying the KF on one track segment between two nodes, similar to the method used in Section \ref{chapter-5-kf-extrapolation} for state extrapolation, the KF for track fitting considers the whole chain of track segments. Here, the filter iteratively predicts and updates track state parameters as it receives measurements from each subsequent node in the subgraph.
 
 In order to assess the quality of the track fit the p-value is computed from the $\chi^2$ statistic. The p-value obtained must be greater than 0.01. Subgraphs that fulfill all conditions are defined as good track candidates and are extracted from the network, such that their corresponding nodes and edges are removed. Subgraphs that do not meet the above criteria for track extraction, remain in the graph network for further processing.
 
@@ -203,23 +203,33 @@ A linear 2-dimensional model was used to simulate seven truth tracks in the $x$-
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.55\textwidth]{images/5-gnn-algorithm/ground-truth.png}
-    \caption{Simple simulation of seven truth tracks.}
+    \caption{Simulation of seven truth tracks.}
     \label{fig:ground-truth}%
 \end{figure}
 
+Random Gaussian noise was added to the $y$-coordinate in order to simulate measurement error. The track position measurements, $m$, are given by Eq \eqref{eqn:mc-toy-measurement-model}
 
-Random Gaussian noise was added to the $y$-coordinate in order to simulate measurement error. The graph network was formed using a many-to-one mapping of hits-to-nodes, where hits in close proximity within each layer were merged into one node. The threshold for the merging was determined by considering the distance distribution between hits located in the same layer. In order to build edge connections and reduce all possible combinatorics between node pairs, an edge-predictor method was devised. The predictor uses a simple calculation whereby the track inclination of neighbour nodes is calculated. If the inclination of a neighbour node spanning up to two layers apart is within a particular range, this edge is deemed compatible and a connection is established. 
+\begin{equation}
+m = y + \sigma_0 \eta
+\label{eqn:mc-toy-measurement-model}
+\end{equation}
 
-The node degree (the number of edges associated to each node) and the empirical variance of edge orientation in its neighbour connections $\sigma_{e}^{2}$ provide indications of neighbourhood complexity. For example, nodes which have a high multiplicity of connections and regions of high node density, indicate areas with significant outliers to resolve. Nodes which have a low degree indicate areas where there are fewer ambiguities to resolve. This feature is illustrated by Figure \ref{fig:heat-map}, which shows a heat map labelled by node degree. High degree nodes are referred to as ``hot'' (white-yellow) and low degree nodes are referred to as ``cold'' (orange-red).
+where $y$ is the unobserved track positions, $\sigma_0$ is the standard deviation in the measurement of the $x$-$y$ plane and is initialised to $\sqrt{100} \mu $m, and $\eta$ is a Gaussian random variable with zero mean and variance of one.
+
+The graph network was formed using a many-to-one mapping of hits-to-nodes, where hits in close proximity within each layer were merged into one node. The threshold for the merging was determined using the distance distribution between hits located in the same layer. To build edge connections and reduce all possible combinatorics between node pairs, an edge-predictor method was devised. The predictor uses the track inclination of neighbour nodes. If the inclination of a neighbour node spanning up to two layers apart is within a particular range, this edge is deemed compatible and a connection is established. 
+
+The node degree (the number of edges associated to each node) and the empirical variance of edge orientation in its neighbour connections, $\sigma_{e}^{2}$, provide indications of neighbourhood complexity. For example, nodes which have a high multiplicity of connections indicate areas where there are significant outliers to resolve, and vice versa for nodes with low degree. This feature is illustrated by Figure \ref{fig:heat-map}, which shows a heat map labelled by node degree. High degree nodes are referred to as ``hot'' (white-yellow) and low degree nodes are referred to as ``cold'' (orange-red).
 
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.85\textwidth]{images/5-gnn-algorithm/heatmap-network.png}
-    \caption{Graph network plotted as a node-degree heat map. Conversion of the simulated hits in Figure \ref{fig:ground-truth} to a graph network containing nodes and edges. Close proximity hits are merged into the same node where necessary and predicted edge connections are formed using a pair predictor. The heat map represents node degree, where ``hot'' nodes (white-yellow) contain many edge connections, whereas ``cold'' nodes (orange-red) contain fewer edge connections.}
+    \caption{Conversion of simulated hits in Figure \ref{fig:ground-truth} to a graph network, plotted as a node-degree heat map using the model in Eq \eqref{eqn:mc-toy-measurement-model}. Edge connections are formed using a pair predictor. The heat map represents node degree, where ``hot'' nodes (white-yellow) contain many edge connections, whereas ``cold'' nodes (orange-red) contain fewer edge connections.}
     \label{fig:heat-map}%
 \end{figure}
 
+
+\subsubsection{Graph Network Initialization}
 
 The network is initialised with track state estimates $X_{ij}$, given by Eq \eqref{eqn:track-state-estimate} and MC truth particle at each node. Each connection is modelled as a straight line, where $X_{ij}$ comprises of the $y$-measurement at node $i$, given by $m_i$, and the track inclination to its neighbour node $j$, given by $\tau_{ij} = (m_i - m_j) / (x_i - x_j)$, so that
 
@@ -229,7 +239,7 @@ X_{ij} = \begin{bmatrix} m_i \\ \tau_{ij} \end{bmatrix}
 \end{equation}
 
 
-The joint measurement covariance matrix, $S$, is stated in Eq. \eqref{eqn:track-state-estimate-2}, where $\sigma_0^{2}$ is the error due to the measurement in the $x$-$y$ plane and is initialised to 100$\mu m$. Negligible error is assumed in the $x$ measurement due to the low thickness of Pixel sensors. The state covariance $C_{ij}$ is derived using the standard linear algebra approach, where $C_{ij} = GSG^T$, where matrix $G$ relates the measurements to the state vector $X_{ij}$ using a linear extrapolation, where $dx = x_i - x_j$.  
+The joint measurement covariance matrix, $S$, is stated in Eq. \eqref{eqn:track-state-estimate-2}, where $\sigma_0^{2}$ is initialised to 100$\mu m$. Negligible error is assumed in the $x$-measurement due to the low thickness of Pixel sensors. The state covariance, $C_{ij}$, is derived using the standard linear algebra approach, where $C_{ij} = GSG^T$, where matrix $G$ relates the measurements to the state vector, $X_{ij}$, using a linear extrapolation, where $dx = x_i - x_j$.  
 
 \begin{equation}
 S = \begin{bmatrix} \sigma_0^{2} & 0 \\ 0 & \sigma_0^{2} \end{bmatrix}  \quad G = \begin{bmatrix} 1 & 0 \\ dx^{-1} & -dx^{-1}  \end{bmatrix}
@@ -237,21 +247,32 @@ S = \begin{bmatrix} \sigma_0^{2} & 0 \\ 0 & \sigma_0^{2} \end{bmatrix}  \quad G 
 \end{equation}
 
 
-During GMR via clusterisation, $X^{M}$ and $C^{M}$ were computed using Eq \eqref{eqn:inverse-variance-weighting}. During the Information Aggregation stage, $X^M$ were projected into the subspace of measurements using the measurement vector $H = [1 \quad 0]$. The residual, $r_{ij}$, was then calculated between the projection, $HX^M$, and the measurement at each node using $r_{ij} = m_i - HX_{ij}^M$. The covariance of the residual, $V_{ij}$, is given by Eq. \eqref{eqn:covariance-of-residual}
+\subsubsection{Implementation of Track State Extrapolation}
+
+During Stage 1: GMR, $X^{M}$ and $C^{M}$ are computed using Eq \eqref{eqn:inverse-variance-weighting}. During Stage 2: Information Aggregation, $X^M$ is projected into the subspace of measurements using the measurement vector $H = [1 \quad 0]$. The residual, $r_{ij}$, between the projection, $HX^M$, and the measurement at each node is calculated using Eq \eqref{eqn:residual}
+
+\begin{equation}
+r_{ij} = m_i - HX_{ij}^M
+\label{eqn:residual}
+\end{equation}
+
+The covariance of the residual, $V_{ij}$, is given by Eq. \eqref{eqn:covariance-of-residual}
 
 \begin{equation}
 {V}_{ij} = H \widetilde{C}_{ij} H^{T} + \sigma_{0}^{2}
 \label{eqn:covariance-of-residual}
 \end{equation}
 
-where the process noise $Q$ in computing $\widetilde{C}_{ij}$ is defined as the zero matrix for simplicity. The corresponding Mahalanobis distance is given by Eq \eqref{eqn:mahalanobis-distance}.
+where the extrapolated covariance, $\widetilde{C}_{ij}$, is calculated using Eq \eqref{eqn:extrapolation} with process noise, $Q$, defined as the zero matrix. The corresponding Mahalanobis distance is given by Eq \eqref{eqn:mahalanobis-distance}.
 
 \begin{equation}
 \Delta \chi_{ij}^{2} = r_{ij}^{T} {V}_{ij}^{-1} r_{ij}
 \label{eqn:mahalanobis-distance}
 \end{equation}
 
-If $\Delta \chi_{ij}^{2} < 1$, then $X^M$ is extrapolated to its neighbour node. The extrapolated state, $\widetilde{X}_{ij}$, is calculated using \eqref{eqn:extrapolation} defined as the linear extrapolation from node $j$ to node $i$, given by $m_i = m_j + \tau_j dx$ and $\tau_i = \tau_j$. Therefore, the derived Jacobian is given by Eq \eqref{eqn:mc-model-F}.
+If $\Delta \chi_{ij}^{2} < 1$, then $X^M$ is extrapolated to its neighbour node using the KF update. The extrapolated state, $\widetilde{X}_{ij}$, is calculated by the KF using \eqref{eqn:extrapolation} defined as the linear extrapolation from node $j$ to node $i$. This is described by $m_i = m_j + \tau_j dx$ and $\tau_i = \tau_j$. Therefore, the derived Jacobian used by the KF is given by Eq \eqref{eqn:mc-model-F}.
+
+% Jacobian F is derived by differentation of m_i and t_i equations with respect to initial parameters m_j and t_j
 
 \begin{equation}
 F = \begin{bmatrix} 1 & dx \\ 0 & 1 \end{bmatrix}
@@ -259,7 +280,28 @@ F = \begin{bmatrix} 1 & dx \\ 0 & 1 \end{bmatrix}
 \end{equation}
 
 
-Eq \eqref{eqn:mc-model-F} is also used as the transition Jacobian in the KF for track fitting, with the process noise $Q = 0$ for simplicity.
+
+\subsubsection{Implementation of KF for Track Extraction}
+
+For a set of $n$ nodes representing a track candidate, the sequential set of measurements are $\{m_0, m_1, ..., m_{(n-1)} \}$, where $m_{(n-1)}$ is the measurement of the node with the largest radius. The KF for track extraction is initialised with the following two-dimensional filter state estimate, $\hat{x}$, given by Eq \eqref{eqn:kf-toy-model-x-init}.
+
+\begin{equation}
+\hat{x} = \begin{bmatrix} m_{(n-1)} \\ \tau_{(n-1)} \end{bmatrix}
+\label{eqn:kf-toy-model-x-init}
+\end{equation}
+
+where the track position measurement, $m_{(n-1)}$, is known and the track inclination, $\tau_{(n-1)}$, is initialized to zero. The filter covariance matrix, $P$, is initialised using Eq \eqref{eqn:mc-model-P-init-covariance}
+
+\begin{equation}
+P = \begin{bmatrix} \sigma_0^{2} & 0 \\ 0 & \sigma_{\tau}^2 \end{bmatrix}
+\label{eqn:mc-model-P-init-covariance}
+\end{equation}
+
+where $\sigma_{\tau}^2$ is the variance in the track inclination, $\tau$, and is initialized to $10^3$. The measurement error in the KF, is attributed to the error due to the measurement of the $x$-$y$ plane and is initialised to $\sigma_{0}^{2} = 100\mu$m. The transition Jacobian in the KF also uses a linear model and is given by Eq \eqref{eqn:mc-model-F}. The process noise matrix is set to $Q = 0$.
+
+
+
+\subsubsection{Results}
 
 Figure \ref{fig:example-application-1} shows an example of the GNN algorithm applied to the simulated network in Figure \ref{fig:heat-map}. Figure \ref{fig:mc-example-1} displays the graph network where an initial CCA has been applied. Three smaller subgraphs have been identified as shown by separate colours. Nodes with $\sigma_e^2 > 0.8$ are not shown as clustering was not possible. The subsequent extracted track candidates are shown in Figure \ref{fig:mc-example-2}, where seven distinct tracks are observed and outlier edge connections have been successfully identified. This simulation shows 100\% efficiency of track reconstruction with respect to MC truth, as all seven truth tracks were extracted in two stages. 
 
