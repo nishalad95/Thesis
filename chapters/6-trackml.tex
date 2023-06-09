@@ -334,70 +334,62 @@ Other classification algorithms were explored, however the SVM was the most appr
 
 \subsection{Parabolic Extrapolation Model}
 
-The extrapolation used in the $x$-$y$ plane is given by a parabolic model illustrated by Figure \ref{fig:trackml-parabolic-extrapolation-model-xy}.
+The transverse $x$-$y$ plane uses a parabolic extrapolation model. We begin with a parabola connecting the global origin O to node A, in the local coordinate system of node A given by axis $(X_A, Y_A)$, illustrated by Figure \ref{fig:trackml-parabolic-extrapolation-model-xy}.
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.7\textwidth]{images/6-trackml/extrapolation-model-xy-trackml.png}
-    \caption{Illustration of the parabolic extrapolation model used from starting node A and its local coordinate system $(x_A, y_A)$, to target node C in its local coordinate system $(x_C, y_C)$. The angle of rotation between node A and node C is given by $\phi_{AC}$.}
+    \includegraphics[width=0.7\textwidth]{images/6-trackml/extrapolation-model-xy-trackml-2.png}
+    \caption{Illustration of the parabolic extrapolation model used from starting node A and to target node C. The angle of rotation between node A and node C is given by $\phi_{AC}$. The parabola (red) connects the global origin O to node A.}
     \label{fig:trackml-parabolic-extrapolation-model-xy}%
 \end{figure}
 
-We begin with a parabola at node A with known parameters $\{a, b, c\}$ represented in parametric form given by Eqs \eqref{eqn:parabolic-equations-parametric}.
-
-%We could begin with, the coordinate system at the starting node we have 3 parameters a, b, c, then we have a target node C, with its own coordinate system and it is also described by a parabola, so we force this description
+The parabola has known parameters, $\{a, b, c\}$, derived during previous stages of the algorithm and can be represented in parametric form local to node A, given by Eqs \eqref{eqn:parabolic-equations-parametric}.
 
 \begin{equation}
 \begin{aligned}
-y(s) = as^{2} + bs + c \\
-x(s) = s
+y_A(u) = au^{2} + bu + c \\
+x_A(u) = u
 \end{aligned}
 \label{eqn:parabolic-equations-parametric}
 \end{equation}
 
+The target node of state extrapolation is node C, which has its own local coordinate system given by axis $(X_C, Y_C)$, and is also described by a parabola. In parametric form, the parabola at node C is given by Eqs \eqref{eqn:parabolic-equations-parametric-nodeC}.
 
 \begin{equation}
-    \begin{bmatrix}
-    x_C \\ y_C
-    \end{bmatrix}
-    =
-    \begin{bmatrix}
-    \cos(\phi_{AC}) & \sin(\phi_{AC}) \\
-    - \sin(\phi_{AC}) & \cos(\phi_{AC})
-    \end{bmatrix}
-    \begin{bmatrix}
-    x(s) \\ y(s)
-    \end{bmatrix}
-    +
-    \begin{bmatrix}
-    x_A \\ y_A
-    \end{bmatrix}
+\begin{aligned}
+y_C(v) = a'v^{2} + b'v + c' \\
+x_C(v) = v
+\end{aligned}
+\label{eqn:parabolic-equations-parametric-nodeC}
+\end{equation}
+
+where $\{a', b', c' \}$ are the parabolic parameters in the local coordinate system of node C. The transformation from the coordinate system of node A to the new coordinate system local to node C is given by Eqs \eqref{eqn:rotation-parabolic-linear-algebra}. First a rotation is applied, through angle $\phi_{AC}$ describing the global angle between node A and node C, followed by a translation adding the corresponding shift $x_s$ and $y_s$.
+
+\begin{equation}
+\begin{aligned}
+x_C = x_s + u\cos(\phi_{AC}) + (au^2 + bu + c)\sin(\phi_{AC}) \\
+y_C = y_s - u\sin(\phi_{AC}) + (au^2 + bu + c)\cos(\phi_{AC})
+\end{aligned}
 \label{eqn:rotation-parabolic-linear-algebra}
 \end{equation}
 
+% the extrapolation ends when this condition is met (target condition
 
+The extrapolation ends when $x_C(u) = 0$, as can be seen in Figure \ref{fig:trackml-parabolic-extrapolation-model-xy} when the parabola crosses the $Y_C$ axis. This forms a quadratic equation in $u$, where the solution $u^{*} = u(a, b , c)$. Using parametric derivatives, the parabolic parameters $\{a’, b’, c’ \}$ in the coordinate system of the target node, C, can be derived in terms of parabolic parameters $\{a, b, c \}$ in the coordinate system of the starting node, A at the boundary condition $x_C(u) = 0$. The Jacobian is then calculated by differentiation of the formulas for $\{a’, b’, c’ \}$ with respect to initial parameters $\{a, b, c \}$, given by Eq \eqref{eqn:transition-jacobian-F-kf-extrapolation-xy}.  
 
-
+% quadratic equation in s, where the solution s* is a function of the parabolic parameters local to node A. We then have a function s* as a function of a, b, c
 
 
 \begin{equation}
 F_{xy} = \begin{bmatrix} 
-        \frac{\partial a_c}{\partial a} & \frac{\partial a_c}{\partial b} & \frac{\partial a_c}{\partial c} \\ 
+        \frac{\partial a'}{\partial a} & \frac{\partial a'}{\partial b} & \frac{\partial a'}{\partial c} \\ 
         
-        \frac{\partial b_c}{\partial a} & \frac{\partial b_c}{\partial b} & \frac{\partial b_c}{\partial c} \\
+        \frac{\partial b'}{\partial a} & \frac{\partial b'}{\partial b} & \frac{\partial b'}{\partial c} \\
         
-        \frac{\partial c_c}{\partial a} & \frac{\partial c_c}{\partial b} & \frac{\partial c_c}{\partial c} \\
+        \frac{\partial c'}{\partial a} & \frac{\partial c'}{\partial b} & \frac{\partial c'}{\partial c} \\
         \end{bmatrix} 
 \label{eqn:transition-jacobian-F-kf-extrapolation-xy}
 \end{equation}
-
-
-Mention here that both the linear and parabolic models were used in this instance, where the track state estimate comprised of a 3x1 vector, a, b, tau. Also mention about tuning the chi2 distance thresholds during extrapolation
-
-%The matrix $\widetilde{C}_{ij}$ includes the addition of the process noise $Q$ modelled by the Ornstein-Uhlenbeck (OU) process \cite{OU} which encompasses all material effects. 
-
-
-
 
 
 
@@ -406,7 +398,7 @@ Mention here that both the linear and parabolic models were used in this instanc
 
 The KF used for state extrapolation considers only a track segment (node-pair).
 
-Transition Jacobian F is derived using the rotation of a parabola into the local coordinate system of the node to extrapolate to.
+Transition Jacobian F is as above
 
 The process noise matrix Q
 
