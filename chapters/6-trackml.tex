@@ -59,14 +59,14 @@ In the $x$-$y$ plane, charged particles experience the influence of the magnetic
 \end{figure}
 
 
-Using the quadratic equation of a parabola, the vector of measurements in the local coordinate system of node A, $ \hat{m} = [m_O \quad m_A \quad m_B]^{T}$ can be expressed in terms of the unknown parabolic coefficients $\hat{p} = [a \quad b \quad c]^{T}$ using Eq \eqref{eqn:parabolic-equations}, 
+Using the quadratic equation of a parabola, the vector of measurements in the local coordinate system of node A, $ m = [m_O \quad m_A \quad m_B]^{T}$ can be expressed in terms of the unknown parabolic coefficients $p = [a \quad b \quad c]^{T}$ using Eq \eqref{eqn:parabolic-equations}, 
 
 \begin{equation}
-    \hat{m} = H \hat{p} 
+    m = H p 
     \label{eqn:parabolic-equations}
 \end{equation}
 
-where $m_O$, $m_A$ and $m_B$ are the respective measurements of the global origin O, node A and node B, transformed into the local coordinate system of node A, and $\{a, b, c\}$ are the parabolic coefficients. Measurements $m_O = 0$ and $m_A = 0$, as illustrated in Figure \ref{fig:gnn-parabolic-state-2}. The measurement matrix, $H$, relates the measurement vector $\hat{m}$, to the vector of parabolic parameters $\hat{p}$ and is given by Eq \eqref{eqn:trackml-matrix-h-xy},
+where $m_O$, $m_A$ and $m_B$ are the respective measurements of the global origin O, node A and node B, transformed into the local coordinate system of node A, and $\{a, b, c\}$ are the parabolic coefficients. Measurements $m_O = 0$ and $m_A = 0$, as illustrated in Figure \ref{fig:gnn-parabolic-state-2}. The measurement matrix, $H$, relates the measurement vector, $m$, to the vector of parabolic parameters, $p$, and is given by Eq \eqref{eqn:trackml-matrix-h-xy},
 
 \begin{equation}
     H = \begin{bmatrix} x_O^{2} & x_O & 1 \\ 0 & 0 & 1 \\ x_B^{2} & x_B & 1 \end{bmatrix} 
@@ -76,7 +76,7 @@ where $m_O$, $m_A$ and $m_B$ are the respective measurements of the global origi
 where $x_O$ and $x_B$ are the $x$-coordinates of global origin O and node B in the local coordinate system of node A. The parabolic parameters are derived using Eq \eqref{eqn:derive-p}.
 
 \begin{equation}
-    \hat{p} = H^{-1} \hat{m} 
+    p = H^{-1} m 
     \label{eqn:derive-p}
 \end{equation}
 
@@ -132,7 +132,7 @@ The joint measurement covariance matrix, $S_{xy}$, for a parabola constructed in
     \label{eqn:trackml-s-matrix-xy}
 \end{equation}
 
-where $\sigma_O$, $\sigma_A$ and $\sigma_B$ are the respective errors due to the measurements at the global origin O, node A and node B, using the parabolic model approximation outlined in Section \ref{parabolic-state}. The measurement error in the global origin $\sigma_O$ is initialised to 4.0mm due to the large error in the beamspot, whereas $\sigma_A$ and $\sigma_B$ are initialised to 0.3mm due to the high precision of the Pixel detector. Hence, the covariance of the vector of parabolic parameters $\hat{p}$, is given by $C_{xy}$ in Eq \eqref{eqn:c-xy}
+where $\sigma_O$, $\sigma_A$ and $\sigma_B$ are the respective errors due to the measurements at the global origin O, node A and node B, using the parabolic model approximation outlined in Section \ref{parabolic-state}. The measurement error in the global origin $\sigma_O$ is initialised to 4.0mm due to the large error in the beamspot, whereas $\sigma_A$ and $\sigma_B$ are initialised to 0.3mm due to the high precision of the Pixel detector. Hence, the covariance of the vector of parabolic parameters, $p$, is given by $C_{xy}$ in Eq \eqref{eqn:c-xy}
 
 \begin{equation}
     C_{xy} = H^{-1}S_{xy}{H^{-1}}^{T}
@@ -160,7 +160,7 @@ The joint measurement covariance matrix, $S_{rz}$, for node $i$ and neighbour no
 
 The magnitude of the error in the $r$-$z$ plane is dependent on the detector layer where the graph node is situated. For example, for a barrel located node the error in the $z$-axis will be greater than the error in the $r$-axis due to the orientation of the barrel layer, and vice versa applies for the endcap. Therefore, for a node located in the Pixel barrel $\sigma_r = 0.4$mm and $\sigma_z = 0.6$mm. For a node located in the Pixel endcap $\sigma_r = 0.6$mm and $\sigma_z = 0.4$mm
 
-The error in the track inclination $\tau$ is computed using the standard error propagation and linear algebra approach. The transition Jacobian, $J$, relates the measurements in the $r$-$z$ plane to the inverse track inclination $\tau$ and is given by Eq \eqref{trackml-g-rz}.
+The error in the track inclination $\tau$ is computed using the standard error propagation and linear algebra approach. The transition Jacobian, $G$, relates the measurements in the $r$-$z$ plane to the inverse track inclination $\tau$ and is given by Eq \eqref{trackml-g-rz}.
 
 % this applies to either node i or node j
 % sigma0r = 0.4 --> error in r for barrel located node
@@ -171,7 +171,7 @@ The error in the track inclination $\tau$ is computed using the standard error p
 
 
 \begin{equation}
-    J = \begin{bmatrix} 
+    G = \begin{bmatrix} 
             (r_i - r_j)^{-1} &
             -(r_i - r_j)^{-1} & 
             \frac{-(z_i - z_j)}{(r_i - r_j)^2} & 
@@ -183,7 +183,7 @@ The error in the track inclination $\tau$ is computed using the standard error p
 The corresponding error in track inclination $\tau$ is given by Eq \eqref{eqn:error-in-tau}
 
 \begin{equation}
-    \sigma_{\tau} = J S_{rz} J^{T}
+    \sigma_{\tau} = G S_{rz} G^{T}
     \label{eqn:error-in-tau}
 \end{equation}
 
@@ -334,7 +334,7 @@ Other classification algorithms were explored, however the SVM was the most appr
 
 \subsection{Parabolic Extrapolation Model}
 
-The transverse $x$-$y$ plane uses a parabolic extrapolation model. We begin with a parabola connecting the global origin O to node A, in the local coordinate system of node A given by axis $(X_A, Y_A)$, illustrated by Figure \ref{fig:trackml-parabolic-extrapolation-model-xy}.
+The transverse $x$-$y$ plane uses a parabolic model for state extrapolation. We begin with a parabola connecting the global origin O to node A, in the local coordinate system of node A given by axis $(X_A, Y_A)$, illustrated by Figure \ref{fig:trackml-parabolic-extrapolation-model-xy}.
 
 \begin{figure}[htbp]
     \centering
@@ -353,7 +353,7 @@ x_A(u) = u
 \label{eqn:parabolic-equations-parametric}
 \end{equation}
 
-The target node of state extrapolation is node C, which has its own local coordinate system given by axis $(X_C, Y_C)$, and is also described by a parabola. In parametric form, the parabola at node C is given by Eqs \eqref{eqn:parabolic-equations-parametric-nodeC}.
+The target node for state extrapolation is node C, which has its own local coordinate system given by axis $(X_C, Y_C)$, and is also described by a parabola. In parametric form, the parabola at node C is given by Eqs \eqref{eqn:parabolic-equations-parametric-nodeC}.
 
 \begin{equation}
 \begin{aligned}
@@ -363,7 +363,7 @@ x_C(v) = v
 \label{eqn:parabolic-equations-parametric-nodeC}
 \end{equation}
 
-where $\{a', b', c' \}$ are the parabolic parameters in the local coordinate system of node C. The transformation from the coordinate system of node A to the new coordinate system local to node C is given by Eqs \eqref{eqn:rotation-parabolic-linear-algebra}. First a rotation is applied, through angle $\phi_{AC}$ describing the global angle between node A and node C, followed by a translation adding the corresponding shift $x_s$ and $y_s$.
+where $\{a', b', c' \}$ are the parabolic parameters in the local coordinate system of node C. The transformation from the local coordinate system of node A to the coordinate system local to node C is given by Eqs \eqref{eqn:rotation-parabolic-linear-algebra}. First a rotation is applied, through angle $\phi_{AC}$ describing the global angle between node A and node C, followed by a translation adding the corresponding shift $x_s$ and $y_s$.
 
 \begin{equation}
 \begin{aligned}
@@ -375,7 +375,7 @@ y_C = y_s - u\sin(\phi_{AC}) + (au^2 + bu + c)\cos(\phi_{AC})
 
 % the extrapolation ends when this condition is met (target condition
 
-The extrapolation ends when $x_C(u) = 0$, as can be seen in Figure \ref{fig:trackml-parabolic-extrapolation-model-xy} when the parabola crosses the $Y_C$ axis. This forms a quadratic equation in $u$, where the solution $u^{*} = u(a, b , c)$. Using parametric derivatives, the parabolic parameters $\{a’, b’, c’ \}$ in the coordinate system of the target node, C, can be derived in terms of parabolic parameters $\{a, b, c \}$ in the coordinate system of the starting node, A at the boundary condition $x_C(u) = 0$. The Jacobian is then calculated by differentiation of the formulas for $\{a’, b’, c’ \}$ with respect to initial parameters $\{a, b, c \}$, given by Eq \eqref{eqn:transition-jacobian-F-kf-extrapolation-xy}.  
+The extrapolation ends when $x_C(u) = 0$, as can be seen in Figure \ref{fig:trackml-parabolic-extrapolation-model-xy} when the parabola crosses the $Y_C$ axis. This condition forms a quadratic equation in $u$, where the solution $u^{*} = u(a, b, c)$. Using parametric derivatives, the parabolic parameters $\{a’, b’, c’ \}$ in the coordinate system of the target node, C, can be derived in terms of parabolic parameters $\{a, b, c \}$ in the coordinate system of the starting node, A at the boundary condition $x_C(u) = 0$. The Jacobian is then calculated by differentiation of the formulas for $\{a’, b’, c’ \}$ with respect to initial parameters $\{a, b, c \}$, given by Eq \eqref{eqn:transition-jacobian-F-kf-extrapolation-xy}.  
 
 % quadratic equation in s, where the solution s* is a function of the parabolic parameters local to node A. We then have a function s* as a function of a, b, c
 
@@ -392,15 +392,7 @@ F_{xy} = \begin{bmatrix}
 \end{equation}
 
 
-
-
-\subsection{KF for State Extrapolation}
-
-The KF used for state extrapolation considers only a track segment (node-pair).
-
-Transition Jacobian F is as above
-
-The process noise matrix Q
+The extrapolated track state, $\tilde{X}_{xy}$, and extrapolated covariance, $\tilde{C}_{xy}$, are calculated using $F_{xy}$ and Eqs \eqref{eqn:extrapolation}, where the process noise, $Q_{xy}$, is given by Eq \eqref{eqn:process-noise-Q-extrapolation-xy}.
 
 \begin{equation}
 \quad Q_{xy} = \begin{bmatrix} 
@@ -409,6 +401,37 @@ The process noise matrix Q
                 0 & 0 & 0 \end{bmatrix} 
 \label{eqn:process-noise-Q-extrapolation-xy}
 \end{equation}
+
+The residual, $r$ , between the projection of the extrapolated state and the measurement at node C is calculated using Eq \eqref{eqn:residual-trackml-xy}
+
+\begin{equation}
+r = m_C - H_{xy} \tilde{X}
+\label{eqn:residual-trackml-xy}
+\end{equation}
+
+where $H_{xy} = [0, 0, 1]$ and $m_C$ is the $y$-coordinate of node C in its local coordinate system, hence $m_C = 0$. The covariance of the residual, $V$ , is given by Eq \eqref{eqn:covariance-of-residual-trackml-xy}
+
+\begin{equation}
+{V} = H \widetilde{C} H^{T} + \sigma_{xy}^{2}
+\label{eqn:covariance-of-residual-trackml-xy}
+\end{equation}
+
+where $\sigma_{xy}^{2} = 300\mu$m. The corresponding Mahalanobis distance is given by Eq \eqref{eqn:mahalanobis-distance-trackml-xy}.
+
+\begin{equation}
+\Delta \chi^{2} = r^{T} {V}^{-1} r
+\label{eqn:mahalanobis-distance-trackml-xy}
+\end{equation}
+
+If $\Delta \chi^{2} < 1$, then $\tilde{X}$ is fully extrapolated to its neighbour node using the KF update.
+
+
+
+
+\subsection{KF for State Extrapolation}
+
+The KF is initialised with filter state estimate set to the extrapolated track vector, such that $\hat{x}_{xy} = \tilde{X}_{xy}$, and similarly with the filter covariance $\hat{P}_{xy} = \tilde{C}_{xy}$. The KF is also initialised with the Jacobian in Eq \eqref{eqn:transition-jacobian-F-kf-extrapolation-xy} and process noise in Eq \eqref{eqn:process-noise-Q-extrapolation-xy}, such that $\hat{F}_{xy} = F_{xy}$ and $\hat{Q}_{xy} = Q_{xy}$. The measurement error in the KF, $\hat{R}$, is attributed to the error due to the measurement of the $x$-$y$ plane and is initialised to $\sigma_{xy}^{2} = 300\mu$m.
+
 
 
 
@@ -425,27 +448,27 @@ The KF works in a rotated coordinate system, whereby the first track segment in 
 
 The KF in the $(x', y')$ plane must take into account the influence of the magnetic field. As the track bends in a particular direction, dependent on the charge of the particle, the magnetic field creates a systematic effect on the track direction and hence a near-constant drift in the azimuthal angle from the $x$-axis, $\phi$. Statistically, such a situation can be described as a correlated noise which affects the track direction and can be modelled by the Ornstein-Uhlenbeck (OU) process \cite{OU}. Using the OU process, the track direction evolves stochastically according to a deterministic drift parameter, $\alpha$, and stochastic noise, $\sigma_{ou}$. The result is one which can be substituted into the KF as a sophisticated process noise, making the KF track fit three-dimensional.
 
-For a set of $n$ nodes representing a track candidate, the sequential set of measurements are $\{m'_0, m'_1, ..., m'_{(n-1)} \}$, where $m'_{(n-1)}$ is the measurement of the node with the largest radius. The KF is initialised with the following three-dimensional filter state estimate, $\hat{x}'_{xy}$, given by Eq \eqref{eqn:kf-track-fit-initialised-state-xy}.
+For a set of $n$ nodes representing a track candidate, the sequential set of measurements are $\{m'_0, m'_1, ..., m'_{(n-1)} \}$, where $m'_{(n-1)}$ is the measurement of the node with the largest radius. The KF is initialised with the following three-dimensional filter state estimate, $\hat{x}_{xy}$, given by Eq \eqref{eqn:kf-track-fit-initialised-state-xy}.
 
 
 \begin{equation}
-\hat{x}'_{xy} = \begin{bmatrix} m'_{(n-1)} \\ \tau'_{xy} \\ w_{ou} \end{bmatrix} 
+\hat{x}_{xy} = \begin{bmatrix} m'_{(n-1)} \\ \tau'_{xy} \\ w_{ou} \end{bmatrix} 
 \label{eqn:kf-track-fit-initialised-state-xy}
 \end{equation}
 
-where the measurement $m'_{(n-1)}$ is known, $\tau'_{xy}$ is the track inclination in the $(x', y')$ coordinate system initialized to zero and $w_{ou}$ is the integrated OU parameter, also initialized to zero. The filter covariance matrix, $P_{xy}$, is initialized using Eq \eqref{eqn:kf-track-fit-initialised-cov-xy}
+where the measurement $m'_{(n-1)}$ is known, $\tau'_{xy}$ is the track inclination in the $(x', y')$ coordinate system initialized to zero and $w_{ou}$ is the integrated OU parameter, also initialized to zero. The filter covariance matrix, $\hat{P}_{xy}$, is initialized using Eq \eqref{eqn:kf-track-fit-initialised-cov-xy}
 
 \begin{equation}
-P_{xy} = \begin{bmatrix} \sigma_{xy}^2 & 0 & 0 
+\hat{P}_{xy} = \begin{bmatrix} \sigma_{xy}^2 & 0 & 0 
                             \\ 0 & \sigma_{\tau_{xy}}^2 & 0 
                             \\ 0 & 0 & \sigma_{w_{ou}}^2 \end{bmatrix} 
 \label{eqn:kf-track-fit-initialised-cov-xy}
 \end{equation}
 
-where $\sigma_{\tau_{xy}}^2$ is the variance in the track inclination, $\tau_{xy}$, and is initialized to 1, and $\sigma_{w_{ou}}^2$ is the variance in the integrated OU parameter, $w_{ou}$, initialized to 1. The state transition Jacobian $F_{xy}$ is derived by integration of the OU motion model \cite{OU} and is given by \eqref{eqn:state-transition-jacobian-ou},
+where $\sigma_{\tau_{xy}}^2$ is the variance in the track inclination, $\tau_{xy}$, and is initialized to 1, and $\sigma_{w_{ou}}^2$ is the variance in the integrated OU parameter, $w_{ou}$, initialized to 1. The state transition Jacobian $\hat{F}_{xy}$ is derived by integration of the OU motion model \cite{OU} and is given by \eqref{eqn:state-transition-jacobian-ou},
 
 \begin{equation}
-F_{xy} = \begin{bmatrix} 1 & dx' & g_1 \\ 0 & 1 & f_1 \\ 0 & 0 & e_1 \end{bmatrix} 
+\hat{F}_{xy} = \begin{bmatrix} 1 & dx' & g_1 \\ 0 & 1 & f_1 \\ 0 & 0 & e_1 \end{bmatrix} 
 \label{eqn:state-transition-jacobian-ou}
 \end{equation}
 
@@ -466,10 +489,10 @@ g_1 = \frac{\lvert dx' \rvert - f_1}{\alpha}
 \label{eqn:g1}
 \end{equation}
 
-The inverse of the deterministic drift parameter, $\alpha^{-1}$, is proportional to the rate of change of the track azimuthal angle, $\phi$, and is initialised to 0.1. If $\alpha \rightarrow \infty$ the track model becomes a straight line, however if $\alpha \rightarrow 0$, the model becomes a parabola. The process noise, $Q_{xy}$, is derived using the OU motion model \cite{OU} and is given by Eq \eqref{eqn:process-noise-q}, 
+The inverse of the deterministic drift parameter, $\alpha^{-1}$, is proportional to the rate of change of the track azimuthal angle, $\phi$, and is initialised to 0.1. If $\alpha \rightarrow \infty$ the track model becomes a straight line, however if $\alpha \rightarrow 0$, the model becomes a parabola. The process noise, $\hat{Q}_{xy}$, is derived using the OU motion model \cite{OU} and is given by Eq \eqref{eqn:process-noise-q}, 
  
 \begin{equation}
-Q_{xy} = \begin{bmatrix} (dx')^{2} (\sigma_{ms}^{2} + \frac{(dx')^{2} \sigma_{ou}^{2}}{4}) & Q_{01} & Q_{02} \\  Q_{01} & \sigma_{ms}^2 + (dx')^{2} \sigma_{ou}^{2} & Q_{12} \\ Q_{02} & Q_{12} & \sigma_{ou}^{2} \end{bmatrix} 
+\hat{Q}_{xy} = \begin{bmatrix} (dx')^{2} (\sigma_{ms}^{2} + \frac{(dx')^{2} \sigma_{ou}^{2}}{4}) & Q_{01} & Q_{02} \\  Q_{01} & \sigma_{ms}^2 + (dx')^{2} \sigma_{ou}^{2} & Q_{12} \\ Q_{02} & Q_{12} & \sigma_{ou}^{2} \end{bmatrix} 
 \label{eqn:process-noise-q}
 \end{equation}
 
@@ -490,7 +513,7 @@ Q_{12} = dx' \sigma_{ou}^{2}
 \label{eqn:q12}
 \end{equation}
 
-The process noise, $Q_{xy}$, is implemented with the addition of a non-zero stochastic noise, $\sigma_{ou}$, as well as the non-zero error due to the multiple scattering, $\sigma_{ms}$. This represents the correlated noise and models the track curvature caused by the presence of the magnetic field. The stochastic noise, $\sigma_{ou}$, is initialised to $10^{-5}$ and $\sigma_{ms}$ is derived using Eq \eqref{eqn:computed-multiple-scattering}. The measurement error in the KF, is attributed to the error due to the measurement of the $x$-$y$ plane and is initialised to $\sigma_{xy}^{2} = 300\mu$m.
+The process noise, $\hat{Q}_{xy}$, is implemented with the addition of a non-zero stochastic noise, $\sigma_{ou}$, as well as the non-zero error due to the multiple scattering, $\sigma_{ms}$. This represents the correlated noise and models the track curvature caused by the presence of the magnetic field. The stochastic noise, $\sigma_{ou}$, is initialised to $10^{-5}$ and $\sigma_{ms}$ is derived using Eq \eqref{eqn:computed-multiple-scattering}. The measurement error in the KF, is attributed to the error due to the measurement of the $x$-$y$ plane and is initialised to $\sigma_{xy}^{2} = 300\mu$m.
 
 
 
@@ -510,9 +533,6 @@ The process noise, $Q_{xy}$, is implemented with the addition of a non-zero stoc
 \section{Extrapolation and Track Extraction for r-z Plane}
 
 \subsection{Linear Extrapolation Model}
-
-\subsection{KF for State Extrapolation}
-
 
 
 \subsection{KF for Track Extraction}

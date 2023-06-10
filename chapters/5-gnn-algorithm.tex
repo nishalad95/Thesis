@@ -187,7 +187,7 @@ Initially, the graph network must be split into smaller components, taking into 
 
 The criteria that a subgraph must possess in order to be considered for track extraction are as follows. Subgraphs must contain a minimum number of four nodes within the volume of interest. There must exist only one node per detector layer, so that there are no are intersecting tracks or holes within the track candidate. 
 
-If the above criteria are met, a KF is then applied in order to perform a final track fit. As opposed to applying the KF on one track segment between two nodes, similar to the method used in Section \ref{chapter-5-kf-extrapolation} for state extrapolation, the KF for track fitting considers the whole chain of track segments. Here, the filter iteratively predicts and updates track state parameters as it receives measurements from each subsequent node in the subgraph.
+If the above criteria are met, a KF is then applied in order to perform a final track fit. As opposed to applying the KF on one track segment between two nodes, similar to the method used in Section \ref{chapter-5-kf-extrapolation} for state extrapolation, the KF for track fitting considers the whole chain of track segments. Here, the filter iteratively predicts and updates track state parameters as it receives measurements from each subsequent node in the subgraph. The KF is initialised with a filter state estimate, $\hat{x}$, a filter state covariance $\hat{P}$, the transition Jacobian, $\hat{F}$, the measurement noise $\hat{R}$ and process noise, $\hat{Q}$.
 
 In order to assess the quality of the track fit the p-value is computed from the $\chi^2$ statistic. The p-value obtained must be greater than 0.01. Subgraphs that fulfill all conditions are defined as good track candidates and are extracted from the network, such that their corresponding nodes and edges are removed. Subgraphs that do not meet the above criteria for track extraction, remain in the graph network for further processing.
 
@@ -270,12 +270,12 @@ where the extrapolated covariance, $\widetilde{C}_{ij}$, is calculated using Eq 
 \label{eqn:mahalanobis-distance}
 \end{equation}
 
-If $\Delta \chi_{ij}^{2} < 1$, then $X^M$ is extrapolated to its neighbour node using the KF update. The extrapolated state, $\widetilde{X}_{ij}$, is calculated by the KF using \eqref{eqn:extrapolation} defined as the linear extrapolation from node $j$ to node $i$. This is described by $m_i = m_j + \tau_j dx$ and $\tau_i = \tau_j$. Therefore, the derived Jacobian used by the KF is given by Eq \eqref{eqn:mc-model-F}.
+If $\Delta \chi_{ij}^{2} < 1$, then $X^M$ is extrapolated to its neighbour node using the KF update. The extrapolated state, $\widetilde{X}_{ij}$, is calculated by the KF using \eqref{eqn:extrapolation} defined as the linear extrapolation from node $j$ to node $i$. This is described by $m_i = m_j + \tau_j dx$ and $\tau_i = \tau_j$. Therefore, the derived Jacobian, $\hat{F}$, for the KF is given by Eq \eqref{eqn:mc-model-F}.
 
 % Jacobian F is derived by differentation of m_i and t_i equations with respect to initial parameters m_j and t_j
 
 \begin{equation}
-F = \begin{bmatrix} 1 & dx \\ 0 & 1 \end{bmatrix}
+\hat{F} = \begin{bmatrix} 1 & dx \\ 0 & 1 \end{bmatrix}
 \label{eqn:mc-model-F}
 \end{equation}
 
@@ -290,14 +290,14 @@ For a set of $n$ nodes representing a track candidate, the sequential set of mea
 \label{eqn:kf-toy-model-x-init}
 \end{equation}
 
-where the track position measurement, $m_{(n-1)}$, is known and the track inclination, $\tau_{(n-1)}$, is initialized to zero. The filter covariance matrix, $P$, is initialised using Eq \eqref{eqn:mc-model-P-init-covariance}
+where the track position measurement, $m_{(n-1)}$, is known and the track inclination, $\tau_{(n-1)}$, is initialized to zero. The filter covariance matrix, $\hat{P}$, is initialised using Eq \eqref{eqn:mc-model-P-init-covariance}
 
 \begin{equation}
-P = \begin{bmatrix} \sigma_0^{2} & 0 \\ 0 & \sigma_{\tau}^2 \end{bmatrix}
+\hat{P} = \begin{bmatrix} \sigma_0^{2} & 0 \\ 0 & \sigma_{\tau}^2 \end{bmatrix}
 \label{eqn:mc-model-P-init-covariance}
 \end{equation}
 
-where $\sigma_{\tau}^2$ is the variance in the track inclination, $\tau$, and is initialized to $10^3$. The measurement error in the KF, is attributed to the error due to the measurement of the $x$-$y$ plane and is initialised to $\sigma_{0}^{2} = 100\mu$m. The transition Jacobian in the KF also uses a linear model and is given by Eq \eqref{eqn:mc-model-F}. The process noise matrix is set to $Q = 0$.
+where $\sigma_{\tau}^2$ is the variance in the track inclination, $\tau$, and is initialized to $10^3$. The measurement error in the KF, $\hat{R}$, is attributed to the error due to the measurement of the $x$-$y$ plane and is initialised to $\sigma_{0}^{2} = 100\mu$m. The transition Jacobian in the KF also uses a linear model and is given by Eq \eqref{eqn:mc-model-F}. The KF process noise matrix is set to $\hat{Q} = 0$.
 
 
 
