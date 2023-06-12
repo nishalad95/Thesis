@@ -10,7 +10,7 @@
 
 The following chapter focuses on the implementation of the GNN pattern recognition algorithm to the publicly available dataset designed for the Kaggle TrackML challenge \cite{kaggle-trackml}. The TrackML detector emulates a full silicon LHC detector and as such, certain models of the GNN algorithm outlined in Chapter \ref{chapter-5}, are improved for the TrackML detector geometry.
 
-This chapter is organised as follows. Section \ref{chapter-6-data-prep} describes the structure of the TrackML data and how it was used to build a graph network. Sections \ref{constructing-track-states} and \ref{chapter-6-covariance-derivation} describe the construction of track state estimates. Section \ref{chapter-6-kl-threshold} presents the classifier constructed to determine the optimal KL threshold used within the GMR stage and Section \ref{chapter-6-extrapolation} presents alterations to the extrapolation models used within the Information Aggregation stage. Finally, Section \ref{gnn-kf-implementation} describes specific implementation of KFs used within the state extrapolation as well as within the track fitting stage. 
+This chapter is organised as follows. Section \ref{chapter-6-data-prep} describes the structure of the TrackML data and how it was used to build a graph network. Sections \ref{constructing-track-states} and \ref{chapter-6-covariance-derivation} describe the construction of track state estimates. Section \ref{chapter-6-kl-threshold} presents the classifier constructed to determine the optimal KL threshold used within the GMR stage. Sections \ref{chapter-6-x-y-plane-impl} and \ref{chapter-6-r-z-plane-impl} presents alterations to the extrapolation models used within the Information Aggregation stage, as well as the KFs used within the track fitting stage. 
  
 
 
@@ -331,6 +331,7 @@ Other classification algorithms were explored, however the SVM was the most appr
 
 
 \section{Extrapolation and Track Extraction in x-y Plane}
+\label{chapter-6-x-y-plane-impl}
 
 \subsection{Parabolic Extrapolation Model}
 
@@ -402,7 +403,7 @@ The extrapolated track state, $\tilde{X}_{xy}$, and extrapolated covariance, $\t
 \label{eqn:process-noise-Q-extrapolation-xy}
 \end{equation}
 
-The residual, $r$ , between the projection of the extrapolated state and the measurement at node C is calculated using Eq \eqref{eqn:residual-trackml-xy}
+The residual, $r$, between the projection of the extrapolated state and the measurement at node C is calculated using Eq \eqref{eqn:residual-trackml-xy}
 
 \begin{equation}
 r = m_C - H_{xy} \tilde{X}
@@ -531,42 +532,69 @@ The process noise, $\hat{Q}_{xy}$, is implemented with the addition of a non-zer
 
 
 \section{Extrapolation and Track Extraction for r-z Plane}
+\label{chapter-6-r-z-plane-impl}
 
 \subsection{Linear Extrapolation Model}
+
+
+Similar to Section \ref{gnn-application-toy-model}, a linear model is used for track state extrapolation in the $r$-$z$ plane. Each connection is modelled as a straight line, where the state to extrapolate, $x_{rz}$, from node $i$ to neighbour node $j$ comprises of the $z$-measurement at node $i$, $m_i$, and the track inclination to node $j$, $\tau_{ij}$, extracted from the combined track state estimate, $X_{ij}$, described at node $i$. The state to extrapolate, $x_{rz}$, is given by Eq \eqref{eqn:track-state-estimate-rz}.
+
+\begin{equation}
+x_{rz} = \begin{bmatrix} m_i \\ \tau_{ij} \end{bmatrix}
+\label{eqn:track-state-estimate-rz}
+\end{equation}
+
+
+The state covariance matrix, $P_{rz}$, is stated in Eq. \eqref{eqn:kf-track-fit-initialised-cov-rz}.  
+
+\begin{equation}
+P_{rz} = \begin{bmatrix} \sigma_{rz}^2 & 0 \\ 0 & \sigma_{\tau}^2 + \sigma_{ms}^2 \end{bmatrix} 
+\label{eqn:kf-track-fit-initialised-cov-rz}
+\end{equation}
+
+where $\sigma_{rz}^2$ is the measurement error in the $r$-$z$ plane and is initialised to $400\mu$m, $\sigma_{\tau}^2$ is the variance in track inclination and $\sigma_{ms}^2$ is the variance due to multiple scattering which is taken from the combined edge state covariance $C_{ij}$ in Eq \eqref{eqn:combined-edge-state-covariance}.
+
+Similar to the procedure described in Section \ref{gnn-application-toy-model}, the state, $x_{rz}$, is projected into the subspace of measurements in the $r$-$z$ plane, where the residual and corresponding Mahalanobis distance, $\Delta \chi_{ij}^{2}$, between the projection and the measurement at each node is calculated. If $\Delta \chi_{ij}^{2} < 1$, then the state is extrapolated to its neighbour node using the KF update.
+
+
+
+\subsection{KF for State Extrapolation}
+
+The extrapolated state, $\widetilde{X}_{ij}$, is calculated by the KF using \eqref{eqn:extrapolation} defined as the linear extrapolation from node $j$ to node $i$. This is described by $m_i = m_j + \tau_j dr$ and $\tau_i = \tau_j$, where $m_i$ and $m_j$ are the $z$-measurements of node $i$ and node $j$ respectively. Therefore, the derived Jacobian, $\hat{F}$, for the KF is given by Eq \eqref{eqn:mc-model-F-rz}.
+
+% Jacobian F is derived by differentation of m_i and t_i equations with respect to initial parameters m_j and t_j
+
+\begin{equation}
+\hat{F}_{rz} = \begin{bmatrix} 1 & dr \\ 0 & 1 \end{bmatrix}
+\label{eqn:mc-model-F-rz}
+\end{equation}
+
+where $dz$ is the difference in $z$ position of nodes $i$ and $j$, $dz = z_i - z_j$.
+
+
+
+
 
 
 \subsection{KF for Track Extraction}
 % linear KF model, with non-zero process noise Q, following multiple scattering only
 
-The KF for track extraction in the $r$-$z$ plane uses a linear model. For a set of $n$ nodes representing a track candidate, the sequential $z$-measurements are $\{z_0, z_1, ..., z_{(n-1)} \}$, where $z_0$ is the $z$-measurement of the node with the smallest radius and $z_{(n-1)}$ is the $z$-measurement of the node with the largest radius. The KF is initialised with the following two-dimensional filter state estimate, $x_{rz}$, given by Eq \eqref{eqn:kf-track-fit-initialised-state-rz}.
+The KF for track extraction in the $r$-$z$ plane uses a linear model. For a set of $n$ nodes representing a track candidate, the sequential $z$-measurements are $\{z_0, z_1, ..., z_{(n-1)} \}$, where $z_0$ is the $z$-measurement of the node with the smallest radius and $z_{(n-1)}$ is the $z$-measurement of the node with the largest radius. The KF is initialised with the following two-dimensional filter state estimate, $\hat{x}_{rz}$, given by Eq \eqref{eqn:kf-track-fit-initialised-state-rz}.
 
 \begin{equation}
-\quad x_{rz} = \begin{bmatrix} z_{(n-1)} \\ 0 \end{bmatrix} 
+\hat{x}_{rz} = \begin{bmatrix} z_{(n-1)} \\ 0 \end{bmatrix} 
 \label{eqn:kf-track-fit-initialised-state-rz}
 \end{equation}
 
-and the covariance matrix, $P_{rz}$, given by Eq \eqref{eqn:kf-track-fit-initialised-cov-rz}
+
+The KF is initialised with filter state estimate set to the track vector in the $r$-$z$ plane, such that $\hat{x}_{rz} = x_{rz}$, and similarly with the filter covariance $\hat{P}_{rz} = P_{rz}$. The KF is also initialised with the Jacobian in Eq \eqref{eqn:mc-model-F-rz}. As the magnetic field only influences the transverse $x$-$y$ plane, the process noise, $\hat{Q}_{rz}$, is reduced to the contribution due to multiple scattering only, given in Eq \eqref{eqn:process-noise-kf-track-fit-rz}
 
 \begin{equation}
-\quad P_{rz} = \begin{bmatrix} 1 & \sigma_{rz}^2 \\ 0 & 1 \end{bmatrix} 
-\label{eqn:kf-track-fit-initialised-cov-rz}
-\end{equation}
-
-where $\sigma_{rz}^2$ is the measurement error in the $r$-$z$ plane and is initialised to 0.4mm. The transition Jacobian, $F_{rz}$, is given by Eq \eqref{eqn:state-transition-jacobian-linear-kf-rz}
-
-\begin{equation}
-\quad F_{rz} = \begin{bmatrix} 1 & dz \\ 0 & 1 \end{bmatrix} 
-\label{eqn:state-transition-jacobian-linear-kf-rz}
-\end{equation}
-
-where $dz$ is the difference in $z$ position of sequential nodes $i$ and $j$ processed in the KF, $dz = z_i - z_j$. As the magnetic field only influences the transverse $x$-$y$ plane, the process noise matrix $Q_{rz}$ is reduced to the contribution due to multiple scattering only, given in Eq \eqref{eqn:process-noise-kf-track-fit-rz}
-
-\begin{equation}
-Q_{rz} = \sigma_{ms}^{2}
+\hat{Q}_{rz} = \sigma_{ms}^{2}
 \label{eqn:process-noise-kf-track-fit-rz}
 \end{equation}
 
-where $\sigma_{ms}^{2}$ is derived using Eq \eqref{eqn:computed-multiple-scattering}.
+where $\sigma_{ms}^{2}$ is derived using Eq \eqref{eqn:computed-multiple-scattering}. The measurement error, $\hat{R}$, is attributed to the error due to the measurement of the $r$-$z$ plane and is initialised to $\sigma_{rz}^2 = 400\mu$m.
 
 
 
