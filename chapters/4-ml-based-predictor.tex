@@ -152,7 +152,7 @@ For each classifier, the triplet selection efficiency and total seed rejection e
 \subsection{Look-Up Table Generation}
 \label{LUT-generation}
 
-Classifier predictions for the Pixel barrel and endcap regions were implemented directly into the ATLAS HLT \texttt{Fast Tracking} algorithm in the form of a look-up table (LUT). This was achieved by first smoothing classifier predictions using Morphological filtering \cite{morphological-filtering} and then converting the acceptance region into a table.
+Classifier predictions for the Pixel barrel and endcap regions were implemented directly into the ATLAS HLT \texttt{Fast Tracking} algorithm in the form of a Look-Up Table (LUT). This was achieved by first smoothing classifier predictions using Morphological filtering \cite{morphological-filtering} and then converting the acceptance region into a table.
 
 Morphological filtering is an image processing technique whereby non-linear transformations are applied to the binary matrix of an image, altering the features. Such non-linear operations include \texttt{dilation} and \texttt{erosion}. Dilation enlarges bright regions and shrinks dark regions, whereas erosion does the inverse of this. A combination of dilation and erosion was applied to the predictions made by the KDE-based classifiers for both the Pixel barrel and endcap via rectangular structuring elements. This was done in order to encourage horizontal extrapolation of the acceptance and achieve a smoothed structure. 
 
@@ -269,7 +269,7 @@ The SVM was applied to the data in the phase space of  [$|cot(\theta)|$, $w_{\et
 \label{fig:barrel-svm-pca}
 \end{figure}
 
-By applying a combination of Principal Component Analysis (PCA) and SVM, the classifier was able to separate the two classes well. However the corresponding FPR obtained was 82\% and the ROC AUC was 0.53, very similar to the no-skill classifier. Both of these metrics indicate that a large proportion of hit-pairs were incorrectly accepted by the model and hence this would increase the proportion of fake seeds constructed by downstream algorithms.
+By applying a combination of PCA and SVM, the classifier was able to separate the two classes well. However the corresponding FPR obtained was 82\% and the ROC AUC was 0.53, very similar to the no-skill classifier. Both of these metrics indicate that a large proportion of hit-pairs were incorrectly accepted by the model and hence this would increase the proportion of fake seeds constructed by downstream algorithms.
 
 SVMs generally perform well, even when trained with imbalanced data sets. This coupled with the fact that a distinct decision boundary could be easily extracted and converted into a LUT would lead to less ambiguity in comparison to applying an extrapolation using morphological smoothing. However, there are key disadvantages by using a SVM rather than Bayes' theorem in this instance. The probabilistic information contained within each discrete 1 dimensional distribution of $w_{\eta}$ is lost, which is an important feature when tuning each individual distribution. Additionally, the SVM typically fits a continuous function for the decision boundary and hence may not be strict enough in certain regions. This factor is important when considering the proportion of fake seeds being accepted using a LUT generated from such a decision boundary. Due to these key differences in classifiers, this method was not pursued.
 
