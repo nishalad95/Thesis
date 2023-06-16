@@ -57,14 +57,16 @@ The graph network is constructed using 9835 nodes located in volume 7 from a sim
     \label{fig:trackml-results-endcap-extracted-v2}%
 \end{figure}
 
-It is clear to see from Figures \ref{fig:endcap-trackml-extracted-xy} and \ref{fig:endcap-trackml-extracted-xy-v2} that track candidates are extracted uniformly within the endcap across all $ 0^{\circ} \leq \phi \leq 360^{\circ}$. This is as expected due to the rotational symmetry of the detector in the transverse plane. The proportion of nodes removed from the main graph network during Stage 1 and Stage 2 were 68\% and 14\% respectively, leaving 18\% of nodes to be processed further. On application of Stage 3 of the GNN algorithm (a further GMR), no additional track candidates were extracted.
+It is clear to see from Figures \ref{fig:endcap-trackml-extracted-xy} and \ref{fig:endcap-trackml-extracted-xy-v2} that track candidates are extracted uniformly within the endcap across all $ 0^{\circ} \leq \phi \leq 360^{\circ}$ during Stage 1 of the GNN algorithm. This is as expected due to the rotational symmetry of the detector in the transverse plane. During Stage 2, we observe the majority of track candidates to be extracted are located at a larger $\theta$ to the $z$-axis (smaller $\eta$). This may be an indication of regions of greater node and edge density, and hence there is a greater proportion of ambiguities to resolve.
+
+The proportion of nodes removed from the main graph network during Stage 1 and Stage 2 were 68\% and 14\% respectively, leaving 18\% of nodes to be further processed. On application of Stage 3 of the GNN algorithm (a further GMR), no additional track candidates were extracted.
 
 % beginning: 9835 nodes
 % post stage 1: 3165 nodes
 % post stsge 2: 2123 nodes
 
 \subsubsection{Confusion Matrices}
-An \textit{outlier edge} is defined to be an edge where its nodes do not belong to the same truth track (truth 1). A \textit{good edge} is defined to be an edge where its nodes do belong to the same truth track (truth 0). The following confusion matrices depict the prediction summary for Stage 1 of the GNN algorithm, where predicted class 1 indicates the prediction of outlier edges with respect to MC truth and predicted class 0 indicates the prediction of good edges to remain active in the network. The confusion matrix for Stage 1 of the GNN algorithm applied to volume 7 is shown in Figure \ref{fig:confusion-matrix-endcap-stage-1}.
+An \textit{outlier edge} is defined to be an edge where its nodes do not belong to the same truth track (truth 1). A \textit{good edge} is defined to be an edge where its nodes do belong to the same truth track (truth 0). The following confusion matrices depict the prediction summary of the GNN algorithm onto the TrackML simulated event, where predicted class 1 indicates the prediction of outlier edges with respect to MC truth and predicted class 0 indicates the prediction of good edges to remain active in the network. The confusion matrix for Stage 1 of the GNN algorithm applied to volume 7 is shown in Figure \ref{fig:confusion-matrix-endcap-stage-1}.
 
 % confusion matrices - endcap stage 1
 % Total number of nodes:  9835, edges:  18184
@@ -106,7 +108,7 @@ An \textit{outlier edge} is defined to be an edge where its nodes do not belong 
             ] table [meta=C] {
                 x y C
                 0 0 90.1
-                1 0 9.9     
+                1 0 9.9    
                 0 1 9.4
                 1 1 90.6
             };
@@ -116,7 +118,7 @@ An \textit{outlier edge} is defined to be an edge where its nodes do not belong 
     \label{fig:confusion-matrix-endcap-stage-1}
 \end{figure}
 
-The TPR in identification of correct outlier edges achieved was 90.1\%, and the True Negative Rate (TNR) in identification of good edges achieved was 90.6\%. With respect to MC ground truth, the proportion of correct outlier edges identified during Stage 1 of the GNN algorithm, and hence the precision, was found to be 85.1\%. The recall in correct outlier edges identified during Stage 1 was 90.1\%. This indicates that the GMR technique of the GNN-algorithm works well for resolving ambiguities in the graph network.
+The TPR for identification of correct outlier edges achieved was 90.1\%, and the True Negative Rate (TNR) in identification of good edges achieved was 90.6\%. With respect to MC ground truth, the proportion of correct outlier edges identified during Stage 1 of the GNN algorithm, and hence the precision, was found to be 85.1\%. The recall in correct outlier edges identified during Stage 1 was 90.1\%. This indicates that the GMR technique of the GNN-algorithm works well for resolving ambiguities in the graph network.
 
 The confusion matrix for Stage 2 of the GNN algorithm applied to volume 7 is shown in Figure \ref{fig:confusion-matrix-endcap-stage-1}.
 
@@ -166,10 +168,7 @@ The confusion matrix for Stage 2 of the GNN algorithm applied to volume 7 is sho
     \label{fig:confusion-matrix-endcap-stage-2}
 \end{figure}
 
-For Stage 2, the TPR in identification of correct outlier edges, and hence the recall, achieved was 81.4\%, and the TNR in identification of good edges achieved was 65.8\%. With respect to MC ground truth, the precision in correct outlier edges identified during Stage 2 was found to be 69.8\%.
-
-
-% TODO: some issues with the information aggregation section?
+For Stage 2, the TPR for identification of correct outlier edges, and hence the recall, achieved was 81.4\%, and the TNR in identification of good edges achieved was 65.8\%. With respect to MC ground truth, the precision in correct outlier edges identified during Stage 2 was found to be 69.8\%. In comparison to the prediction summary for Stage 1 shown in Figure \ref{fig:confusion-matrix-endcap-stage-1}, the second stage of the GNN algorithm does not discriminate between both classes as well as Stage 1. During Stage 2, we observe an increase in the prediction of false positives. This indicates that the algorithm begins to falsely predict a greater proportion of outlier edges, which will then affect the network connections in further algorithm stages.
 
 
 
@@ -194,7 +193,26 @@ We require at least 11 hits within the region of interest to be considered as a 
 Successfully reconstructed reference tracks is defined as having at least 50\% of its hits from the same truth particle $N_{hits}$. If ...
 
 % TODO: put the following information in a table?
-For fully contained MC truth tracks within volume 7 of the TrackML Pixel detector with $p_{T} \geq$ 150MeV, the track reconstruction efficiency obtained was 86.2\%, and for $p_{T} \geq$ 1GMeV the track reconstruction efficiency obtained was 93.8\%.
+For fully contained MC truth tracks within volume 7 of the TrackML Pixel detector with $p_{T} \geq$ 150MeV, the track reconstruction efficiency obtained was 86.2\%, where $n_R = 614$ and $N_R = 712$. Similarly, for fully contained MC truth tracks within volume 7 of the TrackML Pixel detector with $p_{T} \geq$ 1GMeV the track reconstruction efficiency obtained was 93.8\%, where $n_R = 180$ and $N_R = 192$.
+
+
+% \begin{table}[!htbp]
+% \caption{.....}
+% \begin{center}
+% \begin{tabular}{cccc}
+% \toprule
+% $p_{\text{T}}$ & $n_R$ & $N_R$ & $\epsilon$ (\%) \\
+% \hline
+% $\geq$ 150MeV & 614 & 712 & 86.2 \\
+% $\geq$ 1GeV & 180 & 192 & 93.8\\
+% \bottomrule
+% \end{tabular}
+% \end{center}
+% \label{tab:track-reconstruction-eff-gnn-results}
+% \end{table}
+
+
+
 
 %For fully contained MC truth tracks within volume 7 of the TrackML Pixel detector with $p_{T} \geq$ 150MeV, the track reconstruction efficiency obtained was 86.2\%, where the $n_R$ = 614 and $N_R$ = 712, and for $p_{T} \geq$ 1GMeV the track reconstruction efficiency obtained was 93.8\%, where the $n_R$ = 183 and $N_R$ = 195.
 
@@ -215,7 +233,7 @@ For fully contained MC truth tracks within volume 7 of the TrackML Pixel detecto
 \end{figure}
 
 %present the average over many events here
-Executing the GNN algorithm on volume 7 of the TrackML detector and averaging over ... simulated events, the average track reconstruction efficiency achieved was .... The average track purity and particle purity achieved was  ... and ... respectively.
+Executing the GNN algorithm on volume 7 of the TrackML detector and averaging over 70 simulated events, the average track reconstruction efficiency achieved was .... The average track purity and average particle purity achieved were both 99\%.
 
 
 
