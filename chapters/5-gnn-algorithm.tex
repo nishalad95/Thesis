@@ -187,7 +187,7 @@ Initially, the graph network must be split into smaller components, taking into 
 
 The criteria that a subgraph must possess in order to be considered for track extraction are as follows. Subgraphs must contain a minimum number of four nodes within the volume of interest. There must exist only one node per detector layer, so that there are no are intersecting tracks or holes within the track candidate. 
 
-If the above criteria are met, a KF is then applied in order to perform a final track fit. As opposed to applying the KF on one track segment between two nodes, similar to the method used in Section \ref{chapter-5-kf-extrapolation} for state extrapolation, the KF for track fitting considers the whole chain of track segments. Here, the filter iteratively predicts and updates track state parameters as it receives measurements from each subsequent node in the subgraph. The KF is initialised with a filter state estimate, $\hat{x}$, a filter state covariance $\hat{P}$, the transition Jacobian, $\hat{F}$, the measurement noise $\hat{R}$ and process noise, $\hat{Q}$.
+If the above criteria are met, a KF is then applied in order to perform a final track fit. As opposed to applying the KF on one track segment between two nodes, similar to the method used in Section \ref{chapter-5-kf-extrapolation} for state extrapolation, the KF for track fitting considers the whole chain of track segments. Here, the filter iteratively predicts and updates track state parameters as it receives measurements from each subsequent node in the subgraph. The KF is initialised with a filter state estimate, $\hat{x}$, a filter state covariance, $\hat{P}$, state transition Jacobian, $\hat{F}$, measurement function, $\hat{H}$, measurement noise $\hat{R}$ and process noise, $\hat{Q}$.
 
 In order to assess the quality of the track fit the p-value is computed from the $\chi^2$ statistic. The p-value obtained must be greater than 0.01. Subgraphs that fulfill all conditions are defined as good track candidates and are extracted from the network, such that their corresponding nodes and edges are removed. Subgraphs that do not meet the above criteria for track extraction, remain in the graph network for further processing.
 
@@ -214,7 +214,7 @@ m = y + \sigma_0 \eta
 \label{eqn:mc-toy-measurement-model}
 \end{equation}
 
-where $y$ is the unobserved track positions, $\sigma_0$ is the standard deviation in the measurement of the $x$-$y$ plane and is initialised to $\sqrt{100} \mu $m, and $\eta$ is a Gaussian random variable with zero mean and variance of one.
+where $y$ is the unobserved track positions, $\sigma_0$ is the standard deviation in the measurement of the $x$-$y$ plane and is initialised to $100 \mu $m, and $\eta$ is a Gaussian random variable with zero mean and variance of one.
 
 The graph network was formed using a many-to-one mapping of hits-to-nodes, where hits in close proximity within each layer were merged into one node. The threshold for the merging was determined using the distance distribution between hits located in the same layer. To build edge connections and reduce all possible combinatorics between node pairs, an edge-predictor method was devised. The predictor uses the track inclination of neighbour nodes. If the inclination of a neighbour node spanning up to two layers apart is within a particular range, this edge is deemed compatible and a connection is established. 
 
@@ -231,7 +231,7 @@ The node degree (the number of edges associated to each node) and the empirical 
 
 \subsubsection{Graph Network Initialization}
 
-The network is initialised with track state estimates $X_{ij}$, given by Eq \eqref{eqn:track-state-estimate} and MC truth particle at each node. Each connection is modelled as a straight line, where $X_{ij}$ comprises of the $y$-measurement at node $i$, given by $m_i$, and the track inclination to its neighbour node $j$, given by $\tau_{ij} = (m_i - m_j) / (x_i - x_j)$, so that
+The network is initialised with track state estimates, $X_{ij}$, given by Eq \eqref{eqn:track-state-estimate} and MC truth particle at each node. Each connection is modelled as a straight line, where $X_{ij}$ comprises of the $y$-measurement at node $i$, given by $m_i$, and the track inclination to its neighbour node $j$, given by $\tau_{ij} = (m_i - m_j) / (x_i - x_j)$, so that
 
 \begin{equation}
 X_{ij} = \begin{bmatrix} m_i \\ \tau_{ij} \end{bmatrix}
@@ -239,7 +239,7 @@ X_{ij} = \begin{bmatrix} m_i \\ \tau_{ij} \end{bmatrix}
 \end{equation}
 
 
-The joint measurement covariance matrix, $S$, is stated in Eq. \eqref{eqn:track-state-estimate-2}, where $\sigma_0^{2}$ is initialised to 100$\mu$m. Negligible error is assumed in the $x$-measurement due to the low thickness of Pixel sensors. The state covariance, $C_{ij}$, is derived using the standard linear algebra approach, where $C_{ij} = GSG^T$, where matrix $G$ relates the measurements to the state vector, $X_{ij}$, using a linear extrapolation, where $dx = x_i - x_j$.  
+The joint measurement covariance matrix, $S$, is stated in Eq. \eqref{eqn:track-state-estimate-2}, where $\sigma_0 = 100\mu$m. Negligible error is assumed in the $x$-measurement due to the low thickness of Pixel sensors. The state covariance, $C_{ij}$, is derived using the standard linear algebra approach, where $C_{ij} = GSG^T$, where matrix $G$ relates the measurements to the state vector, $X_{ij}$, using a linear extrapolation, where $dx = x_i - x_j$.  
 
 \begin{equation}
 S = \begin{bmatrix} \sigma_0^{2} & 0 \\ 0 & \sigma_0^{2} \end{bmatrix}  \quad G = \begin{bmatrix} 1 & 0 \\ dx^{-1} & -dx^{-1}  \end{bmatrix}
@@ -263,14 +263,24 @@ The covariance of the residual, $V_{ij}$, is given by Eq. \eqref{eqn:covariance-
 \label{eqn:covariance-of-residual}
 \end{equation}
 
-where the extrapolated covariance, $\widetilde{C}_{ij}$, is calculated using Eq \eqref{eqn:extrapolation} with process noise, $Q$, defined as the zero matrix. The corresponding Mahalanobis distance is given by Eq \eqref{eqn:mahalanobis-distance}.
+where the extrapolated covariance, $\widetilde{C}_{ij}$, is calculated using Eq \eqref{eqn:extrapolation} with process noise, $Q$, defined as the zero matrix. The corresponding Mahalanobis distance is given by Eq \eqref{eqn:mahalanobis-distance}, and the distribution can be seen in Figure \ref{fig:mahalanobis-threshold-toy-model}.
 
 \begin{equation}
 \Delta \chi_{ij}^{2} = r_{ij}^{T} {V}_{ij}^{-1} r_{ij}
 \label{eqn:mahalanobis-distance}
 \end{equation}
 
-If $\Delta \chi_{ij}^{2} < 1$, then $X^M$ is extrapolated to its neighbour node using the KF update. The extrapolated state, $\widetilde{X}_{ij}$, is calculated by the KF using \eqref{eqn:extrapolation} defined as the linear extrapolation from node $j$ to node $i$. This is described by $m_i = m_j + \tau_j dx$ and $\tau_i = \tau_j$. Therefore, the derived Jacobian, $\hat{F}$, for the KF is given by Eq \eqref{eqn:mc-model-F}.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{images/5-gnn-algorithm/mahalanobis-threshold-toy-model.png}
+    \caption{Mahalanobis distance, $\Delta \chi^{2}$, computed between the projected state and the measurement at each node, during state extrapolation for the GNN algorithm applied to a simple toy MC model. Truth 1 shows the distribution where the truth particle originating from the extrapolated state and the truth particle originating from the measurement are the same, and truth 0 otherwise.}
+    \label{fig:mahalanobis-threshold-toy-model}%
+\end{figure}
+
+
+
+A threshold cut of 1 is used such that a high purity of truth 1 edge connections are maintained. If $\Delta \chi_{ij}^{2} < 1$, then $X^M$ is extrapolated to its neighbour node using the KF update. The extrapolated state, $\widetilde{X}_{ij}$, is calculated by the KF using \eqref{eqn:extrapolation} defined as the linear extrapolation from node $j$ to node $i$. This is described by $m_i = m_j + \tau_j dx$ and $\tau_i = \tau_j$. Therefore, the derived Jacobian, $\hat{F}$, for the KF is given by Eq \eqref{eqn:mc-model-F}.
 
 % Jacobian F is derived by differentation of m_i and t_i equations with respect to initial parameters m_j and t_j
 
@@ -283,7 +293,7 @@ If $\Delta \chi_{ij}^{2} < 1$, then $X^M$ is extrapolated to its neighbour node 
 
 \subsubsection{Implementation of KF for Track Extraction}
 
-For a set of $n$ nodes representing a track candidate, the sequential set of measurements are $\{m_0, m_1, ..., m_{(n-1)} \}$, where $m_{(n-1)}$ is the measurement of the node with the largest radius. The KF for track extraction is initialised with the following two-dimensional filter state estimate, $\hat{x}$, given by Eq \eqref{eqn:kf-toy-model-x-init}.
+For a set of $n$ nodes representing a track candidate, the sequential set of measurements are $\{m_{(n-1)}, ..., m_1, m_0 \}$, where $m_{(n-1)}$ is the measurement of the node with the largest radius. The KF for track extraction is initialised with the following two-dimensional filter state estimate, $\hat{x}$, given by Eq \eqref{eqn:kf-toy-model-x-init}.
 
 \begin{equation}
 \hat{x} = \begin{bmatrix} m_{(n-1)} \\ \tau_{(n-1)} \end{bmatrix}
@@ -297,7 +307,7 @@ where the track position measurement, $m_{(n-1)}$, is known and the track inclin
 \label{eqn:mc-model-P-init-covariance}
 \end{equation}
 
-where $\sigma_{\tau}^2$ is the variance in the track inclination, $\tau$, and is initialized to $10^3$. The measurement error in the KF, $\hat{R}$, is attributed to the error due to the measurement of the $x$-$y$ plane and is initialised to $\sigma_{0}^{2} = 100\mu$m. The transition Jacobian in the KF also uses a linear model and is given by Eq \eqref{eqn:mc-model-F}. The KF process noise matrix is set to $\hat{Q} = 0$.
+where $\sigma_{\tau}^2$ is the variance in the track inclination, $\tau$, and is initialized to $10^3$. The measurement error in the KF, $\hat{R}$, is attributed to the error due to the measurement of the $x$-$y$ plane and is initialised to $\sigma_{0} = 100\mu$m. The transition Jacobian in the KF uses the linear model and is given by Eq \eqref{eqn:mc-model-F}. The measurement vector is given by $\hat{H} = [1 \quad 0]$ and the process noise matrix is set to $\hat{Q} = 0$.
 
 
 

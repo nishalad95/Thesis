@@ -10,11 +10,8 @@
 
 This chapter focuses on the implementation of the GNN pattern recognition algorithm to the publicly available dataset designed for the Kaggle TrackML challenge \cite{kaggle-trackml}. The TrackML detector emulates a full silicon LHC detector and as such, certain models of the GNN algorithm outlined in Chapter \ref{chapter-5}, are improved for the TrackML detector geometry.
 
-This chapter is organised as follows. Section \ref{chapter-6-data-prep} describes the structure of the TrackML data and how it was used to build a graph network. Sections \ref{constructing-track-states} and \ref{chapter-6-covariance-derivation} describe the construction of track state estimates. Section \ref{chapter-6-kl-threshold} presents the classifier constructed to determine the optimal KL threshold used within the GMR stage. Sections \ref{chapter-6-x-y-plane-impl} and \ref{chapter-6-r-z-plane-impl} presents alterations to the extrapolation models used within the Information Aggregation stage, as well as the KFs used within the track fitting stage. 
+This chapter is organised as follows. Section \ref{chapter-6-data-prep} describes the structure of the TrackML data and how it was used to build a graph network. Sections \ref{constructing-track-states} and \ref{chapter-6-covariance-derivation} describe the construction of track state estimates. Section \ref{chapter-6-kl-threshold} presents the classifier constructed to determine the optimal KL threshold used within the GMR stage. Finally, Section \ref{chapter-6-extrapolation-track-extraction} presents alterations to the extrapolation models used within the Information Aggregation stage, as well as the KFs used within the track fitting stage. 
  
-
-
-
 
 
 \section{Data Preparation}
@@ -335,21 +332,22 @@ Other classification algorithms were explored, however the SVM was the most appr
 
 
 \section{Extrapolation and Track Extraction}
-\label{chapter-6-x-y-plane-impl}
+\label{chapter-6-extrapolation-track-extraction}
 
 \subsection{Overview of KF Implementation}
+\label{chapter-6-overview-of-kf}
 
-Extrapolation and track extraction are handled independently for the $x$-$y$ and $r$-$z$ planes, with each stage a separate KF. The filter parameters are summarized in Table \ref{tab:kf-instance-variables} and the derivations are described in Sections \ref{chapter-6-start-of-derivation} - \ref{chapter-6-end-of-derivation}.
+Extrapolation and track extraction are handled independently for the $x$-$y$ and $r$-$z$ planes, with each stage using a separate KF. The filter parameters are summarized in Table \ref{tab:kf-instance-variables} and the derivations are described in Sections \ref{chapter-6-start-of-derivation} - \ref{chapter-6-end-of-derivation}.
 
 
 
 \begin{table}[!htbp]
-\caption{Summary of parameters used in implementation of KFs for state extrapolation and track extraction, in the $x$-$y$ and $r$-$z$ planes.}
+\caption{Summary of parameters used in the implementation of KFs for state extrapolation and track extraction, in the $x$-$y$ and $r$-$z$ planes.}
 \begin{center}
 \begin{tabular}{lccc}
 \toprule
-Instance Variable Description & \multicolumn{3}{c}{Parameters for $x$-$y$ Plane} \\
-& Symbol  & Extrapolation  & Track Extraction  \\
+& \multicolumn{3}{c}{Parameters for $x$-$y$ Plane} \\
+Instance Variable Description & Symbol  & Extrapolation  & Track Extraction  \\
 \hline
 \rule{0pt}{3ex}%
 
@@ -404,9 +402,10 @@ Process Noise
 \\
 
 
-\toprule
-Instance Variable Description & \multicolumn{3}{c}{Parameters for $r$-$z$ Plane} \\
-& Symbol  & Extrapolation  & Track Extraction  \\
+\bottomrule
+\rule{0pt}{3ex}%
+& \multicolumn{3}{c}{Parameters for $r$-$z$ Plane} \\
+Instance Variable Description & Symbol  & Extrapolation  & Track Extraction  \\
 \hline
 \rule{0pt}{3ex}%
 
@@ -428,7 +427,7 @@ State Transition Jacobian
 & $\hat{F}_{rz}$ 
 & \multicolumn{2}{c}{$\begin{bmatrix} 1 & dr \\ 0 & 1 \end{bmatrix}$}
 \\
-\rule{0pt}{4ex}%
+\rule{0pt}{3ex}%
 
 Measurement Function
 & $\hat{H}_{rz}$ 
@@ -464,7 +463,7 @@ Process Noise
 
 
 
-\subsection{Parabolic Extrapolation Model for $x$-$y$ Plane}
+\subsection{Parabolic Extrapolation Model for x-y Plane}
 \label{chapter-6-start-of-derivation}
 
 A parabolic model for state extrapolation is used for the transverse $x$-$y$ plane. We begin with a parabola connecting the global origin O to node A, in the local coordinate system of node A given by axis $(X_A, Y_A)$, illustrated by Figure \ref{fig:trackml-parabolic-extrapolation-model-xy}.
@@ -549,14 +548,23 @@ where $\hat{H}_{xy} = [0, 0, 1]$ and $m_C$ is the $y$-coordinate of node C in it
 \label{eqn:covariance-of-residual-trackml-xy}
 \end{equation}
 
-where $\sigma_{xy} = 300\mu$m. The corresponding Mahalanobis distance is given by Eq \eqref{eqn:mahalanobis-distance-trackml-xy}.
+where $\sigma_{xy} = 300\mu$m. The corresponding Mahalanobis distance, $\Delta \chi^{2}$, is given by Eq \eqref{eqn:mahalanobis-distance-trackml-xy}, and the distributions can be seen in Figure \ref{fig:mahalanobis-threshold-trackml-xy}.
 
 \begin{equation}
 \Delta \chi^{2} = r^{T} {V}^{-1} r
 \label{eqn:mahalanobis-distance-trackml-xy}
 \end{equation}
 
-If $\Delta \chi^{2} < 1$, $\tilde{X}$ is fully extrapolated to its neighbour node using the KF update.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{images/6-trackml/mahalanobis-threshold-trackml-xy.png}
+    \caption{Mahalanobis distance, $\Delta \chi^{2}$, computed between the projected state and the measurement at each node for the GNN algorithm applied to the TrackML model during state extrapolation in the $x$-$y$ plane. Truth 1 shows the distribution where the truth particle originating from the extrapolated state and the truth particle originating from the measurement are the same, and truth 0 otherwise.}
+    \label{fig:mahalanobis-threshold-trackml-xy}%
+\end{figure}
+
+
+A threshold cut of 1 is used such that a high purity of truth 1 edge connections are maintained. If $\Delta \chi^{2} < 1$, then $\tilde{X}$ is fully extrapolated to its neighbour node using the KF update.
 
 
 
@@ -573,7 +581,7 @@ The KF for state extrapolation is initialised with filter state estimate set to 
 
 
 
-\subsection{KF Setup for Track Extraction in $x$-$y$ Plane}
+\subsection{KF Setup for Track Extraction in x-y Plane}
 %The KF track fit is applied simultaneously in both the $x$-$y$ and $r$-$z$ planes, in order to assess the quality of the fit using both models. In comparison to the KF used for state extrapolation (Section \ref{kf-for-extrp-chapter-6}), the KF for track fitting considers the entire chain of track segments making up a track candidate. Therefore, there will be a non-zero process noise, $Q$, present in both $x$-$y$ and $r$-$z$ planes.
 
 The KF works in a rotated coordinate system, whereby the first track segment in the chain of segments representing a track candidate is rotated to be parallel to the global $x$-axis. This rotated coordinate system is denoted by $(x', y')$, not to be confused with the global coordinate system $(x, y)$. The new $x$-axis, $x'$, is parallel to the first track segment and the new $y$-axis, $y'$, describes the track deviation from the straight line.
@@ -677,7 +685,7 @@ The process noise, $\hat{Q}_{xy}$, is implemented with the addition of a non-zer
 
 
 
-\subsection{Linear Extrapolation Model for $r$-$z$ Plane}
+\subsection{Linear Extrapolation Model for r-z Plane}
 \label{chapter-6-r-z-plane-impl}
 
 
@@ -698,11 +706,11 @@ P_{rz} = \begin{bmatrix} \sigma_{rz}^2 & 0 \\ 0 & \sigma_{\tau}^2 + \sigma_{ms}^
 
 where $\sigma_{rz}$ is the measurement error in the $r$-$z$ plane and is initialised to $400\mu$m, $\sigma_{\tau}$ is the error in track inclination and $\sigma_{ms}$ is the error due to multiple scattering which is taken from the combined edge state covariance $C_{ij}$ in Eq \eqref{eqn:combined-edge-state-covariance}.
 
-Similar to the procedure described in Section \ref{gnn-application-toy-model}, the state, $x_{rz}$, is projected into the subspace of measurements in the $r$-$z$ plane, where the residual and corresponding Mahalanobis distance, $\Delta \chi_{ij}^{2}$, between the projection and the measurement at each node is calculated. If $\Delta \chi_{ij}^{2} < 1$, then the state is extrapolated to its neighbour node using the KF update.
+Similar to the procedure described in Section \ref{gnn-application-toy-model}, the state, $x_{rz}$, is projected into the subspace of measurements in the $r$-$z$ plane, where the residual and corresponding Mahalanobis distance, $\Delta \chi_{ij}^{2}$, between the projection and the measurement at each node is calculated. A threshold distance is determined by using the truth distributions of $\Delta \chi_{ij}^{2}$. Similar to Section \ref{chapter-6-start-of-derivation}, if $\Delta \chi_{ij}^{2} < 1$, then the state is extrapolated to its neighbour node using the KF update.
 
 
 
-\subsection{KF Setup for State Extrapolation}
+%\subsection{KF Setup for State Extrapolation}
 
 The extrapolated state, $\widetilde{X}_{ij}$, is calculated by the KF using \eqref{eqn:extrapolation} defined as the linear extrapolation from node $j$ to node $i$. This is described by $m_i = m_j + \tau_j dr$ and $\tau_i = \tau_j$, where $m_i$ and $m_j$ are the $z$-measurements of node $i$ and node $j$ respectively. Therefore, the derived Jacobian, $\hat{F}$, for the KF is given by Eq \eqref{eqn:mc-model-F-rz}.
 
@@ -720,7 +728,7 @@ where $dz$ is the difference in $z$ position of nodes $i$ and $j$, $dz = z_i - z
 
 
 
-\subsection{KF Setup for Track Extraction in $r$-$z$ Plane}
+\subsection{KF Setup for Track Extraction in r-z Plane}
 \label{chapter-6-end-of-derivation}
 % linear KF model, with non-zero process noise Q, following multiple scattering only
 
@@ -732,7 +740,7 @@ The KF for track extraction in the $r$-$z$ plane uses a linear model. For a set 
 \end{equation}
 
 
-where the track position measurement, $z_{(n-1)}$, is known and the track inclination, $\tau_{(n-1)}$, is initialized to zero as track inclination information is unknown at the start of the filter. The KF is initialised with the filter covariance $\hat{P}_{rz} = P_{rz}$. The KF is also initialised with the Jacobian in Eq \eqref{eqn:mc-model-F-rz}. As the magnetic field only influences the transverse $x$-$y$ plane, the process noise, $\hat{Q}_{rz}$, is reduced to the contribution due to multiple scattering only, given in Eq \eqref{eqn:process-noise-kf-track-fit-rz}
+where the track position measurement, $z_{(n-1)}$, is known and the track inclination, $\tau_{(n-1)}$, is initialized to zero as track inclination information is unknown at the start of the filter. As the magnetic field only influences the transverse $x$-$y$ plane, the process noise, $\hat{Q}_{rz}$, is reduced to the contribution due to multiple scattering only, given in Eq \eqref{eqn:process-noise-kf-track-fit-rz}
 
 \begin{equation}
 \hat{Q}_{rz} = \sigma_{ms}^{2}
