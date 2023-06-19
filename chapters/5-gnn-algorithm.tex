@@ -290,7 +290,7 @@ For a set of $n$ nodes representing a track candidate, the sequential set of mea
 \label{eqn:kf-toy-model-x-init}
 \end{equation}
 
-where the track position measurement, $m_{(n-1)}$, is known and the track inclination, $\tau_{(n-1)}$, is initialized to zero. The filter covariance matrix, $\hat{P}$, is initialised using Eq \eqref{eqn:mc-model-P-init-covariance}
+where the track position measurement, $m_{(n-1)}$, is known and the track inclination, $\tau_{(n-1)}$, is initialized to zero as track inclination information is unknown at the start of the filter. The filter covariance matrix, $\hat{P}$, is initialised using Eq \eqref{eqn:mc-model-P-init-covariance}
 
 \begin{equation}
 \hat{P} = \begin{bmatrix} \sigma_0^{2} & 0 \\ 0 & \sigma_{\tau}^2 \end{bmatrix}
