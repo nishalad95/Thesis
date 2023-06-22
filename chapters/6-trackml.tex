@@ -205,7 +205,7 @@ A charged particle traversing a medium is deflected by many small-angle scatters
     \label{eqn:simplified-moliere-equation}
 \end{equation}
 
-where $p$, $\beta c$, and $z$ are the full momentum, velocity, and charge number of the incident particle, and $x/X_0$ is the thickness of the scattering medium, measured in radiation lengths. For a realistic particle, $\beta c \approx 1$ and the charge, $z$, is assumed to be 1. 
+where $p$, $\beta c$, and $z$ are the full momentum, velocity, and charge number of the incident particle, and $x/X_0$ is the thickness of the scattering medium, measured in radiation lengths. For a relativistic particle, $\beta \approx 1$ and the charge, $z$, is assumed to be 1. 
 
 
 
@@ -222,11 +222,11 @@ The full particle momentum, $p$, is given by Eq \eqref{eqn:full-momentum}
 where $p_\text{T}$ is the transverse momentum of the particle and $\theta$ is the angle of inclination of the particle trajectory to the $z$-axis. The transverse momentum, $p_\text{T}$, for a charged particle in the presence of a magnetic field is given by Eq \eqref{eqn:transverse-momentum}
 
 \begin{equation}
-    p_\text{T} [\text{MeV}] = 0.3 B [\text{T}] \times q [\text{e}] \times r [\text{mm}]
+    p_\text{T} [\text{MeV/c}] = 0.3 B [\text{T}] \times q [\text{e}] \times r [\text{mm}]
     \label{eqn:transverse-momentum}
 \end{equation}
 
-where $p_\text{T}$ is measured in GeV/c. The magnetic field strength of the TrackML model is given by $B$, the charge of the particle is given by $q$ and is set to 1, and $r$ is the radius which is inversely proportional to the track curvature $\kappa$, given by Eq \eqref{eqn:kappa}, 
+The magnetic field strength of the TrackML model is given by $B$, the charge of the particle is given by $q$ and is set to 1, and $r$ is the radius which is inversely proportional to the track curvature $\kappa$, given by Eq \eqref{eqn:kappa}, 
 
 \begin{equation}
 \kappa = \frac{2a}{(1 + (2ax + b)^2)^{\frac{3}{2}}}
@@ -337,17 +337,17 @@ Other classification algorithms were explored, however the SVM was the most appr
 \subsection{Overview of KF Implementation}
 \label{chapter-6-overview-of-kf}
 
-Extrapolation and track extraction are handled independently for the $x$-$y$ and $r$-$z$ planes, with each stage using a separate KF. The filter parameters are summarized in Table \ref{tab:kf-instance-variables} and the derivations are described in Sections \ref{chapter-6-start-of-derivation} - \ref{chapter-6-end-of-derivation}.
+Extrapolation and track extraction are handled independently for the $x$-$y$ and $r$-$z$ planes, with each stage using a separate KF. Therefore, this leads to four separate implementations of the KF. The filter parameters are summarized in Tables \ref{tab:kf-instance-variables-xy} and \ref{tab:kf-instance-variables-rz}, and the derivations of the models are described in Sections \ref{chapter-6-start-of-derivation} - \ref{chapter-6-end-of-derivation}.
 
 
 
-\begin{table}[!htbp]
-\caption{Summary of parameters used in the implementation of KFs for state extrapolation and track extraction, in the $x$-$y$ and $r$-$z$ planes.}
+\begin{table}[!h]
+\caption{Summary of parameters and numerical values used in the implementation of the KFs for state extrapolation and track extraction, in the $x$-$y$ plane. See Section \ref{chapter-6-start-of-derivation} and \ref{chapter-6-derivation-part-2} for derivations.}
 \begin{center}
 \begin{tabular}{lccc}
 \toprule
 & \multicolumn{3}{c}{Parameters for $x$-$y$ Plane} \\
-Instance Variable Description & Symbol  & Extrapolation  & Track Extraction  \\
+Variable Description & Symbol  & Extrapolation  & Track Extraction  \\
 \hline
 \rule{0pt}{3ex}%
 
@@ -367,7 +367,7 @@ Filter State Covariance
 \\
 \rule{0pt}{4ex}%
 
-State Transition Jacobian
+Transition Jacobian
 & $\hat{F}_{xy}$ 
 & $\begin{bmatrix} 
         \frac{\partial a'}{\partial a} & \frac{\partial a'}{\partial b} & \frac{\partial a'}{\partial c} \\ 
@@ -403,7 +403,53 @@ Process Noise
 
 
 \bottomrule
-\rule{0pt}{3ex}%
+\\
+
+\multicolumn{2}{l}{Variable Description} 
+& Symbol & Numerical Value  \\
+\hline
+
+\multicolumn{2}{l}{Edge Track Inclination} 
+& $\tau^{'}_{xy}$ & 0 \\
+
+\multicolumn{2}{l}{Integrated OU
+& $w_{ou}$ & 0 \\
+
+\multicolumn{2}{l}{Error due to measurement in $x$-$y$ plane} 
+& $\sigma^{'}_{xy}$ & 300$\mu$m \\
+
+\multicolumn{2}{l}{Error in Track Inclination $\tau^{'}_{xy}$} 
+& $\sigma_{\tau^{'}_{xy}}$ & 1 \\
+
+\multicolumn{2}{l}{Error in $w_{ou}$} 
+& $\sigma_{w_{ou}}$ & 1 \\
+
+\multicolumn{2}{l}{Error due to Multiple Scattering} 
+& $\sigma_{ms}$ & Derived \\
+
+\multicolumn{2}{l}{Deterministic Drift in OU Process} 
+& $\alpha$ & 0.1 \\
+
+\multicolumn{2}{l}{Stochastic OU Noise} 
+& $\sigma_{ou}$ & $10^{-5}$ \\
+
+\bottomrule
+\end{tabular}
+\end{center}
+\label{tab:kf-instance-variables-xy}
+\end{table}
+
+
+
+
+
+
+\begin{table}[!htbp]
+\caption{Summary of parameters and numerical values used in the implementation of the KFs for state extrapolation and track extraction, in the $r$-$z$ plane. See Section \ref{chapter-6-r-z-plane-impl} and \ref{chapter-6-end-of-derivation} for derivations.}
+\begin{center}
+\begin{tabular}{lccc}
+\toprule
+
 & \multicolumn{3}{c}{Parameters for $r$-$z$ Plane} \\
 Instance Variable Description & Symbol  & Extrapolation  & Track Extraction  \\
 \hline
@@ -418,8 +464,9 @@ Filter State Estimate
 \rule{0pt}{4ex}%
 
 Filter State Covariance
-& $\hat{P}_{rz}$ 
-& \multicolumn{2}{c}{$\begin{bmatrix} \sigma_{rz}^2 & 0 \\ 0 & \sigma_{\tau}^2 + \sigma_{ms}^2 \end{bmatrix}$}
+& $\hat{P}_{rz}$
+& $\begin{bmatrix} \sigma_{rz}^2 & 0 \\ 0 & \sigma_{\tau_{rz}}^2 + \sigma_{ms}^2\end{bmatrix}$
+& $\begin{bmatrix} \sigma_{rz}^2 & 0 \\ 0 & \sigma_{\tau_{rz} + ms}^2\end{bmatrix}$
 \\
 \rule{0pt}{4ex}%
 
@@ -451,8 +498,42 @@ Process Noise
 
 \end{tabular}
 \end{center}
-\label{tab:kf-instance-variables}
+\label{tab:kf-instance-variables-rz}
 \end{table}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\begin{table}[!htbp]
+\caption{Summary of numerical values used for the parameters used in the implementation of KFs for state extrapolation and track extraction, in the $x$-$y$ and $r$-$z$ planes. See Table \ref{tab:kf-instance-variables} for full list of parameters. See Sections \ref{chapter-6-start-of-derivation} - \ref{chapter-6-end-of-derivation} for the derivations and applications of the parameters.}
+\begin{center}
+\begin{tabular}{cc}
+\toprule
+Variable & Value \\
+\hline
+
+$\sigma_{rz}$           &   400$\mu$m, 600$\mu$m    \\
+$\sigma_{\tau_{rz}}$    &       Derived     \\
+$\sigma_{\tau_{rz} + ms}^2$     &   1     \\
+\bottomrule
+\end{tabular}
+\end{center}
+\label{tab:kf-instance-variables-values}
+\end{table}
+
 
 
 
@@ -564,7 +645,7 @@ where $\sigma_{xy} = 300\mu$m. The corresponding Mahalanobis distance, $\Delta \
 \end{figure}
 
 
-A threshold cut of 1 is used such that a high purity of truth 1 edge connections are maintained. If $\Delta \chi^{2} < 1$, then $\tilde{X}$ is fully extrapolated to its neighbour node using the KF update.
+A threshold cut of 1 is used such that 95\% of the truth 1 edge distribution are propagated during this stage. If $\Delta \chi^{2} < 1$, then $\tilde{X}$ is fully extrapolated to its neighbour node using the KF update.
 
 
 
@@ -582,6 +663,7 @@ The KF for state extrapolation is initialised with filter state estimate set to 
 
 
 \subsection{KF Setup for Track Extraction in x-y Plane}
+\label{chapter-6-derivation-part-2}
 %The KF track fit is applied simultaneously in both the $x$-$y$ and $r$-$z$ planes, in order to assess the quality of the fit using both models. In comparison to the KF used for state extrapolation (Section \ref{kf-for-extrp-chapter-6}), the KF for track fitting considers the entire chain of track segments making up a track candidate. Therefore, there will be a non-zero process noise, $Q$, present in both $x$-$y$ and $r$-$z$ planes.
 
 The KF works in a rotated coordinate system, whereby the first track segment in the chain of segments representing a track candidate is rotated to be parallel to the global $x$-axis. This rotated coordinate system is denoted by $(x', y')$, not to be confused with the global coordinate system $(x, y)$. The new $x$-axis, $x'$, is parallel to the first track segment and the new $y$-axis, $y'$, describes the track deviation from the straight line.
@@ -600,12 +682,12 @@ where the measurement $m'_{(n-1)}$ is known, $\tau'_{xy}$ is the track inclinati
 
 \begin{equation}
 \hat{P}_{xy} = \begin{bmatrix} \sigma_{xy}^2 & 0 & 0 
-                            \\ 0 & \sigma_{\tau_{xy}}^2 & 0 
+                            \\ 0 & \sigma_{\tau^{'}_{xy}}^2 & 0 
                             \\ 0 & 0 & \sigma_{w_{ou}}^2 \end{bmatrix} 
 \label{eqn:kf-track-fit-initialised-cov-xy}
 \end{equation}
 
-where $\sigma_{\tau_{xy}}$ is the error in the track inclination, $\tau_{xy}$, and is initialized to 1, and $\sigma_{w_{ou}}$ is the error in the integrated OU parameter, $w_{ou}$, initialized to 1. The state transition Jacobian $\hat{F}_{xy}$ is derived by integration of the OU motion model \cite{OU} and is given by \eqref{eqn:state-transition-jacobian-ou},
+where $\sigma_{\tau^{'}_{xy}}$ is the error in the track inclination, $\tau_{xy}$, and is initialized to 1, and $\sigma_{w_{ou}}$ is the error in the integrated OU parameter, $w_{ou}$, initialized to 1. The state transition Jacobian $\hat{F}_{xy}$ is derived by integration of the OU motion model \cite{OU} and is given by \eqref{eqn:state-transition-jacobian-ou},
 
 \begin{equation}
 \hat{F}_{xy} = \begin{bmatrix} 1 & dx' & g_1 \\ 0 & 1 & f_1 \\ 0 & 0 & e_1 \end{bmatrix} 
@@ -629,7 +711,7 @@ g_1 = \frac{\lvert dx' \rvert - f_1}{\alpha}
 \label{eqn:g1}
 \end{equation}
 
-The inverse of the deterministic drift parameter, $\alpha^{-1}$, is proportional to the rate of change of the track azimuthal angle, $\phi$, and is initialised to 0.1. If $\alpha \rightarrow \infty$ the track model becomes a straight line, however if $\alpha \rightarrow 0$, the model becomes a parabola. The process noise, $\hat{Q}_{xy}$, is derived using the OU motion model \cite{OU} and is given by Eq \eqref{eqn:process-noise-q}, 
+The inverse of the deterministic drift parameter, $\alpha^{-1}$, is proportional to the rate of change of the track azimuthal angle, $\phi$, where $\alpha$ is initialised to 0.1. If $\alpha \rightarrow \infty$ the track model becomes a straight line, however if $\alpha \rightarrow 0$, the model becomes a parabola. The process noise, $\hat{Q}_{xy}$, is derived using the OU motion model \cite{OU} and is given by Eq \eqref{eqn:process-noise-q}, 
  
 \begin{equation}
 \hat{Q}_{xy} = \begin{bmatrix} Q_{00} & Q_{01} & Q_{02} \\  Q_{01} & Q_{11} & Q_{12} \\ Q_{02} & Q_{12} & Q_{22} \end{bmatrix} 
@@ -700,11 +782,11 @@ x_{rz} = \begin{bmatrix} m_i \\ \tau_{ij} \end{bmatrix}
 The state covariance matrix, $P_{rz}$, is stated in Eq. \eqref{eqn:kf-track-fit-initialised-cov-rz}.  
 
 \begin{equation}
-P_{rz} = \begin{bmatrix} \sigma_{rz}^2 & 0 \\ 0 & \sigma_{\tau}^2 + \sigma_{ms}^2 \end{bmatrix} 
+P_{rz} = \begin{bmatrix} \sigma_{rz}^2 & 0 \\ 0 & \sigma_{\tau_{rz}}^2 + \sigma_{ms}^2 \end{bmatrix} 
 \label{eqn:kf-track-fit-initialised-cov-rz}
 \end{equation}
 
-where $\sigma_{rz}$ is the measurement error in the $r$-$z$ plane and is initialised to $400\mu$m, $\sigma_{\tau}$ is the error in track inclination and $\sigma_{ms}$ is the error due to multiple scattering which is taken from the combined edge state covariance $C_{ij}$ in Eq \eqref{eqn:combined-edge-state-covariance}.
+where $\sigma_{rz}$ is the measurement error in the $r$-$z$ plane and is initialised to $400\mu$m, $\sigma_{\tau_{rz}}$ is the error in track inclination of an edge in the $r$-$z$ plane and $\sigma_{ms}$ is the error due to multiple scattering which is taken from the combined edge state covariance $C_{ij}$ in Eq \eqref{eqn:combined-edge-state-covariance}.
 
 Similar to the procedure described in Section \ref{gnn-application-toy-model}, the state, $x_{rz}$, is projected into the subspace of measurements in the $r$-$z$ plane, where the residual and corresponding Mahalanobis distance, $\Delta \chi_{ij}^{2}$, between the projection and the measurement at each node is calculated. A threshold distance is determined by using the truth distributions of $\Delta \chi_{ij}^{2}$. Similar to Section \ref{chapter-6-start-of-derivation}, if $\Delta \chi_{ij}^{2} < 1$, then the state is extrapolated to its neighbour node using the KF update.
 

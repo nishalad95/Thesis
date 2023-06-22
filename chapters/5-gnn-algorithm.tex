@@ -280,7 +280,7 @@ where the extrapolated covariance, $\widetilde{C}_{ij}$, is calculated using Eq 
 
 
 
-A threshold cut of 1 is used such that a high purity of truth 1 edge connections are maintained. If $\Delta \chi_{ij}^{2} < 1$, then $X^M$ is extrapolated to its neighbour node using the KF update. The extrapolated state, $\widetilde{X}_{ij}$, is calculated by the KF using \eqref{eqn:extrapolation} defined as the linear extrapolation from node $j$ to node $i$. This is described by $m_i = m_j + \tau_j dx$ and $\tau_i = \tau_j$. Therefore, the derived Jacobian, $\hat{F}$, for the KF is given by Eq \eqref{eqn:mc-model-F}.
+Using Figure \ref{fig:mahalanobis-threshold-toy-model} a distance of 1 is chosen as a threshold when accepting extrapolated states, such that a high proportion of truth 1 edge connections are maintained. If $\Delta \chi_{ij}^{2} < 1$, then $X^M$ is extrapolated to its neighbour node using the KF update. The extrapolated state, $\widetilde{X}_{ij}$, is calculated by the KF using \eqref{eqn:extrapolation} defined as the linear extrapolation from node $j$ to node $i$. This is described by $m_i = m_j + \tau_j dx$ and $\tau_i = \tau_j$. Therefore, the derived Jacobian, $\hat{F}$, for the KF is given by Eq \eqref{eqn:mc-model-F}.
 
 % Jacobian F is derived by differentation of m_i and t_i equations with respect to initial parameters m_j and t_j
 
