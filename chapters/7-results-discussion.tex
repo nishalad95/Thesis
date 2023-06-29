@@ -2,7 +2,7 @@
 %	7. Application & Perform of GNN Algorithm
 %---------------------------------------------
 
-\chapter{Application to the TrackML Model, Results and Discussion}
+\chapter{Application of the GNN Algorithm to the TrackML Model}
 \label{chapter-7}
 
 This chapter focuses on the application of the GNN algorithm to the Pixel endcap and Pixel barrel regions of the TrackML detector. This chapter is organised as follows. Section \ref{chapter-7-endcap-results} presents the results of the GNN algorithm applied to the Pixel endcap region of the TrackML detector. The performance of the algorithm is evaluated and track reconstruction efficiency metrics are discussed. Section \ref{chapter-7-outlook} presents an outlook to the future of this research. Preliminary results and challenges faced when applying the GNN algorithm onto the entire Pixel detector of the TrackML geometry, including the Pixel barrel region, are presented. Potential software optimisations and other approaches explored are also discussed, followed by several improvements that would be necessary to implement within the GNN algorithm for track reconstruction in particle detectors.
@@ -57,7 +57,7 @@ The graph network is constructed using 9835 nodes located in volume 7 from a sim
     \label{fig:trackml-results-endcap-extracted-v2}%
 \end{figure}
 
-It is clear to see from Figures \ref{fig:endcap-trackml-extracted-xy} and \ref{fig:endcap-trackml-extracted-xy-v2} that track candidates are extracted uniformly within the endcap across all $ 0^{\circ} \leq \phi \leq 360^{\circ}$ during Stage 1 of the GNN algorithm. This is as expected due to the rotational symmetry of the detector in the transverse plane. During Stage 2, we observe the majority of track candidates to be extracted are located at a larger $\theta$ to the $z$-axis (smaller $\eta$). This may be an indication of regions of greater node and edge density, and hence there is a greater proportion of ambiguities to resolve.
+It is clear to see from Figures \ref{fig:endcap-trackml-extracted-xy} and \ref{fig:endcap-trackml-extracted-xy-v2} that track candidates are extracted uniformly within the endcap across all $ 0^{\circ} \leq \phi \leq 360^{\circ}$ during Stage 1 of the GNN algorithm. This is as expected due to the rotational symmetry of the detector in the transverse plane. During Stage 2, we observe the majority of track candidates which are extracted are located at a larger $\theta$ to the $z$-axis (smaller $\eta$). This may be an indication of regions of greater node and edge density, and hence there is a greater proportion of ambiguities to resolve.
 
 The proportion of nodes removed from the main graph network during Stage 1 and Stage 2 were 68\% and 14\% respectively, leaving 18\% of nodes to be further processed. On application of Stage 3 of the GNN algorithm (a further GMR), no additional track candidates were extracted.
 
@@ -177,7 +177,7 @@ For Stage 2, the TPR for identification of correct outlier edges, and hence the 
 
 \subsubsection{Track Reconstruction Efficiency and Purity Metrics}
 
-The track reconstruction efficiency, $\epsilon$, is the ratio of successfully reconstructed reference tracks, $n_R$, to the total number of reconstructable reference tracks, $N_R$, in a given volume of interest and is given by Eq \eqref{eqn:reoncstruction-eff}. 
+The track reconstruction efficiency, $\epsilon$, provides an indication of the performance of the algorithm and is defined as the ratio of successfully reconstructed reference tracks, $n_R$, to the total number of reconstructable reference tracks, $N_R$, in a given volume of interest and is given by Eq \eqref{eqn:reoncstruction-eff}. 
 
 
 \begin{equation}
@@ -269,9 +269,6 @@ The initialization of the graph network adopts the majority of the execution tim
 An important feature of the application of the KF is that reconstruction of curved tracks is possible using a low-dimensionality model. By assuming a slow change in track direction, a special dynamic model for the KF is constructed using the OU process. The OU process implicitly takes into account the track curvature, without the need to extend the track state to contain additional parameters.
 
 
-TODO: 
-This ensures that the KF for track extraction considers the entire chain of individual track segments, each modelled as a straight line, and the track curvature modelled by the OU process.
-
 
 
 
@@ -283,21 +280,28 @@ This ensures that the KF for track extraction considers the entire chain of indi
 
 \subsection{Extension to the Pixel Barrel Region}
 
-% \begin{figure}[htbp]
-%     \centering
-%     \includegraphics[width=0.99\textwidth]{images/7-results/trackml-endcap-barrel-results.png}
-%     \caption{...}
-%     \label{fig:trackml-results-barrel-endcap}%
-% \end{figure}
+The application of the GNN algorithm is extended to the Pixel barrel region and the right endcap of the TrackML detector, in order to cover the entire Pixel detector volumes $\{7, 8, 9\}$, with reference to Figure \ref{fig:trackml-detector-image}. The graph network is constructed using 38,365 nodes contained within these volumes from a simulated TrackML event, and 201,748 predicted edges are formed using the FASTrack algorithm \cite{Dmitry-fasttrack-addtest}. Figure \ref{fig:trackml-results-barrel-endcap} illustrates the extracted track candidates after application of the GNN algorithm. 
+
+It is clear to see from Figure \ref{fig:trackml-results-barrel-endcap-extracted-xy} that track candidates are extracted uniformly across all $ 0^{\circ} \leq \phi \leq 360^{\circ}$ during Stages 1 and 2 of the GNN algorithm. This is as expected due to the rotational symmetry of the detector in the transverse plane. 
+
+Figure \ref{fig:trackml-results-barrel-endcap-extracted-rz} shows the extracted track candidates viewed from the $r$-$z$ plane, where the algorithm works effectively in both the left and right Pixel endcap regions, however the proportion of track candidates extracted in the Pixel barrel is significantly less. During the Stage 1, a total of 1629 track candidates were successfully extracted. During Stage 2 a further 294 track candidates were extracted and in Stage 3 a further 7 were extracted.
+
+In Stage 1, we observe track candidates to be extracted uniformly throughout both endcaps. This is primarily due to the parallel geometry of detector layers and hence telescopic trajectory of the corresponding tracks. This means there are far fewer ambiguities to resolve in comparison to the barrel region. In contrast to this, during Stage 2 we observe the majority of track candidates extracted to be located at a larger $\theta$ to the $z$-axis (smaller $\eta$) in comparison to Stage 1. This is the transition region between the barrel and endcap layers. We also observe a small proportion of track candidates extracted which are contained only within the barrel region.
+
+A greater proportion of track candidates located at .... the transition between the barrel and endcap layers ...are ex The node density in the barrel is ... times greater compared to the endcap regions, and the edge density is .... which is a contributing factor towards this.
+
+
+
+%Comment on the proportion of nodes removed at each stage
 
 
 \begin{figure}[htbp]%
     \centering
-    \subfloat[\centering ...]{{\includegraphics[width=10cm]{images/7-results/trackml-endcap-barrel-extracted-xy.png} } \label{fig:trackml-results-barrel-endcap-extracted-xy}}%
+    \subfloat[\centering $x$-$y$ plane view]{{\includegraphics[width=10cm]{images/7-results/trackml-endcap-barrel-extracted-xy.png} } \label{fig:trackml-results-barrel-endcap-extracted-xy}}%
     \hfill
     %\qquad
-    \subfloat[\centering ...]{{\includegraphics[width=14cm]{images/7-results/trackml-endcap-barrel-extracted-rz.png} } \label{fig:trackml-results-barrel-endcap-extracted-rz}}%
-    \caption{....}%
+    \subfloat[\centering $r$-$z$ plane view]{{\includegraphics[width=14.5cm]{images/7-results/trackml-endcap-barrel-extracted-rz.png} } \label{fig:trackml-results-barrel-endcap-extracted-rz}}%
+    \caption{Extracted track candidates post application of the iterative GNN algorithm onto the Pixel detector of the TrackML model.}%
     \label{fig:trackml-results-barrel-endcap}%
 \end{figure}
 
@@ -317,6 +321,9 @@ This ensures that the KF for track extraction considers the entire chain of indi
     \label{fig:trackml-results-barrel-endcap-purity}%
 \end{figure}
 
+
+
+\subsubsection{Confusion Matrices}
 
 % confusion matrices for barrel and endap, stages 1 and 2
 \begin{figure}
@@ -400,6 +407,7 @@ This ensures that the KF for track extraction considers the entire chain of indi
 
 
 
+\subsection{Execution Times}
 
 
 
@@ -427,7 +435,14 @@ This ensures that the KF for track extraction considers the entire chain of indi
 
 \subsection{Software Optimisations}
 
+
+The following improvements are necessary for proper online usage in detector experiments.
+
 % improvements to implementation - numpy matrices for everything, potential GPU accelerated calculations, improvements to the graph network initialisation stage
+
+% Discuss possible computational refinements and improvements and this can be implemented for proper online usage in detectors
+
+%Mention GPU implementation, one can use possibly QuPy library for optimised numpy and provide a link to this (website)
 
 
 
@@ -436,20 +451,26 @@ This ensures that the KF for track extraction considers the entire chain of indi
 \subsection{Other Approaches}
 \subsubsection{Community Detection}
 
-If a subgraph does not meet the criteria to qualify as a good track candidate, a technique known as \textit{Community Detection} \cite{community} is applied in order to further partition the set of nodes. Community Detection is a generalisation of CCA and works by using a distance metric, typically modularity, in order to label nodes as \textit{closely connected}. Modularity is a benefit function that measures the strength of a particular division of a network using the number of edges and edge weights. A popular modularity maximisation approach is the Louvain method \cite{python_louvain}, which iteratively optimises local communities until global modularity can no longer be improved. An example illustration of a network partition via Community Detection using modularity is shown in Figure \ref{fig:community-detection}. 
+If a subgraph does not meet the criteria to qualify as a good track candidate outlined in Section \ref{gnn-track-extration}, a technique known as \textit{Community Detection} \cite{community} is applied in order to further partition the set of nodes. Community Detection is a generalisation of CCA and works by using a distance metric, typically modularity, in order to label nodes into groups such that all nodes in a group are \textit{closely connected}. Modularity is a benefit function that measures the strength of a particular division of a network using the number of edges and edge weights. A popular modularity maximisation approach is the Louvain method \cite{python_louvain}, which iteratively optimises local communities until global modularity can no longer be improved. An example illustration of a network partition via Community Detection using modularity is shown in Figure \ref{fig:community-detection}. 
 
-However, as it doesn't work every time ... this wasn't used ... needs further refining.
-
-
-%Any subgraphs with zero extracted candidates through this procedure are propagated to further stages for additional processing.
-
-
-\begin{figure}[htbp]
-   \centering
-   \includegraphics[width=0.99\textwidth]{images/7-results/community-detection.png}
-   \caption{TODO: caption ....}
-   \label{fig:community-detection}%
+\begin{figure}[htbp!] 
+    \centering
+    \subfloat[]{%
+        \includegraphics[width=0.45\linewidth]{images/7-results/community-detection-1.png}%
+        \label{fig:community-detection-1}%
+        }%
+    \hfill%
+    \subfloat[]{%
+        \includegraphics[width=0.45\linewidth]{images/7-results/community-detection-2.png}%
+        \label{fig:community-detection-2}%
+        }%
+    \caption{Example application of the Community Detection algorithm applied to a small group of nodes from a TrackML event. a) Subset of nodes and edges connected as one subgraph shown in red. b) Post application of the Community Detection algorithm. Separation of the subgraph in a) into potential track candidates represented by separate colours. The faint grey edges show connections that have been deactivated through Community Detection.}
+    \label{fig:community-detection}
 \end{figure}
+
+Figure \ref{fig:community-detection-1} shows a small subset of nodes from a TrackML event and its corresponding edges connected as one subgraph. The general shape of the network shows the tracks originating from the left-hand side and their trajectories move towards the right-hand side. The results of application of Community Detection are shown in Figure \ref{fig:community-detection-2}. In this instance, the Community Detection was successful to partition the network into a total of seven subgraphs shown by separate colours. Six of these subgraphs met the criteria for a good track candidate, and a single track fragment was also formed shown by the grey subgraph containing two nodes. However upon further investigation, this procedure did not work successfully in all cases, specifically in dense environments, and the algorithm was found to not utilize node properties during network partition. Therefore, as this procedure needed further refinement, it was not implemented into the main GNN pattern recognition algorithm. 
+
+A technique such as Community Detection is advantageous for a problem such as track splitting, as it provides fast convergence in track extraction, given that the algorithm is adapted for highly dense environments.
 
 
 

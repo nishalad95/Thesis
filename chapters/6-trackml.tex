@@ -142,6 +142,7 @@ where $\sigma_O$, $\sigma_A$ and $\sigma_B$ are the respective errors due to the
 
 
 \subsection{Variance in Inverse Track Inclination}
+\label{variance-in-inverse-track-inclination}
 
 The joint measurement covariance matrix, $S_{rz}$, for node $i$ and neighbour node $j$ in the $r$-$z$ plane is stated in Eq \eqref{eqn:trackml-s-matrix-rz}, where $\{ \sigma_{zi}, \sigma_{zj} \}$ are the measurement errors along the $z$-axis and $\{ \sigma_{ri}, \sigma_{rj} \}$ are the measurement errors in $r$, for the respective $i$ and $j$ nodes. 
 
@@ -155,7 +156,7 @@ The joint measurement covariance matrix, $S_{rz}$, for node $i$ and neighbour no
 \end{equation}
 
 
-The magnitude of the error in the $r$-$z$ plane is dependent on the detector layer where the graph node is situated. For example, for a barrel-located node the error in the $z$-axis will be greater than the error in the $r$-axis due to the orientation of the barrel layer, and vice versa for the endcap. Therefore, for a node located in the Pixel barrel $\sigma_r = 0.4$mm and $\sigma_z = 0.6$mm. For a node located in the Pixel endcap $\sigma_r = 0.6$mm and $\sigma_z = 0.4$mm
+The magnitude of the error in the $r$-$z$ plane is dependent on the detector layer where the graph node is situated. For example, for a barrel-located node the error in the $z$-axis will be greater than the error in the $r$-axis due to the orientation of the barrel layer, and vice versa for the endcap. Therefore, for a node located in the Pixel barrel $\sigma_r = 0.4$mm and $\sigma_z = 0.6$mm. For a node located in the Pixel endcap $\sigma_r = 0.6$mm and $\sigma_z = 0.4$mm.
 
 The error in the track inclination $\tau$ is computed using the standard error propagation and linear algebra approach. The transition Jacobian, $G$, relates the measurements in the $r$-$z$ plane to the inverse track inclination $\tau$ and is given by Eq \eqref{trackml-g-rz}.
 
@@ -226,7 +227,7 @@ where $p_\text{T}$ is the transverse momentum of the particle and $\theta$ is th
     \label{eqn:transverse-momentum}
 \end{equation}
 
-The magnetic field strength of the TrackML model is given by $B$, the charge of the particle is given by $q$ and is set to 1, and $r$ is the radius which is inversely proportional to the track curvature $\kappa$, given by Eq \eqref{eqn:kappa}, 
+The magnetic field strength of the TrackML model is given by $B$, the charge of the particle is given by $q$ and is set to 1, as shown in \cite{ATLAS-CONF-2010-072}. The radius, $r$, is inversely proportional to the track curvature $\kappa$, given by Eq \eqref{eqn:kappa}, 
 
 \begin{equation}
 \kappa = \frac{2a}{(1 + (2ax + b)^2)^{\frac{3}{2}}}
@@ -337,16 +338,19 @@ Other classification algorithms were explored, however the SVM was the most appr
 \subsection{Overview of KF Implementation}
 \label{chapter-6-overview-of-kf}
 
-Extrapolation and track extraction are handled independently for the $x$-$y$ and $r$-$z$ planes, with each stage using a separate KF. Therefore, this leads to four separate implementations of the KF. The filter parameters are summarized in Tables \ref{tab:kf-instance-variables-xy} and \ref{tab:kf-instance-variables-rz}, and the derivations of the models are described in Sections \ref{chapter-6-start-of-derivation} - \ref{chapter-6-end-of-derivation}.
+State extrapolation and track extraction are handled independently for the $x$-$y$ and $r$-$z$ planes, with each stage using a separate KF. This leads to four individual implementations of the KF. The filter parameters are summarized in Tables \ref{tab:kf-instance-variables-xy} and \ref{tab:kf-instance-variables-rz}, which include the numerical values used to initialize each KF. The derivations of the models used in extrapolation and track extraction, with application of these parameters, are described in Sections \ref{chapter-6-start-of-derivation} - \ref{chapter-6-end-of-derivation}.
 
 
 
-\begin{table}[!h]
-\caption{Summary of parameters and numerical values used in the implementation of the KFs for state extrapolation and track extraction, in the $x$-$y$ plane. See Section \ref{chapter-6-start-of-derivation} and \ref{chapter-6-derivation-part-2} for derivations.}
+\begin{table}[!htbp]
+\caption{Summary of parameters used in the KFs for state extrapolation and track extraction for the $x$-$y$ plane. The numerical values used in the programmatic implementation to initialize the KFs are also summarized here. Section \ref{chapter-6-start-of-derivation} and \ref{chapter-6-derivation-part-2} provide derivations of the KF models used for the $x$-$y$ plane.}
 \begin{center}
+
+\begin{threeparttable}
+
 \begin{tabular}{lccc}
 \toprule
-& \multicolumn{3}{c}{Parameters for $x$-$y$ Plane} \\
+& \multicolumn{3}{c}{Parameter Implementation for $x$-$y$ Plane} \\
 Variable Description & Symbol  & Extrapolation  & Track Extraction  \\
 \hline
 \rule{0pt}{3ex}%
@@ -354,9 +358,9 @@ Variable Description & Symbol  & Extrapolation  & Track Extraction  \\
 Filter State Estimate
 & $\hat{x}_{xy}$
 & $\tilde{X}_{xy}$
-& $\begin{bmatrix} m'_{(n-1)} & \tau'_{xy} & w_{ou} \end{bmatrix}^{T}$
+& $\begin{bmatrix} m'_{xy} & \tau'_{xy} & w_{ou} \end{bmatrix}^{T}$
 \\
-\rule{0pt}{4ex}%
+\rule{0pt}{6ex}%
 
 Filter State Covariance
 & $\hat{P}_{xy}$ 
@@ -367,75 +371,90 @@ Filter State Covariance
 \\
 \rule{0pt}{4ex}%
 
-Transition Jacobian
-& $\hat{F}_{xy}$ 
-& $\begin{bmatrix} 
-        \frac{\partial a'}{\partial a} & \frac{\partial a'}{\partial b} & \frac{\partial a'}{\partial c} \\ 
+% Transition Jacobian
+% & $\hat{F}_{xy}$ 
+% & $\begin{bmatrix} 
+%         \frac{\partial a'}{\partial a} & \frac{\partial a'}{\partial b} & \frac{\partial a'}{\partial c} \\ 
         
-        \frac{\partial b'}{\partial a} & \frac{\partial b'}{\partial b} & \frac{\partial b'}{\partial c} \\
+%         \frac{\partial b'}{\partial a} & \frac{\partial b'}{\partial b} & \frac{\partial b'}{\partial c} \\
         
-        \frac{\partial c'}{\partial a} & \frac{\partial c'}{\partial b} & \frac{\partial c'}{\partial c} \\
-        \end{bmatrix}$
-& $\begin{bmatrix} 1 & dx' & g_1 \\ 0 & 1 & f_1 \\ 0 & 0 & e_1 \end{bmatrix} $
-\\
-\rule{0pt}{3ex}%
+%         \frac{\partial c'}{\partial a} & \frac{\partial c'}{\partial b} & \frac{\partial c'}{\partial c} \\
+%         \end{bmatrix}$
+% & $\begin{bmatrix} 1 & dx' & g_1 \\ 0 & 1 & f_1 \\ 0 & 0 & e_1 \end{bmatrix} $
+% \\
+% \rule{0pt}{3ex}%
 
 
 Measurement Function
 & $\hat{H}_{xy}$ 
-& \multicolumn{2}{c}{$[0 \quad 0 \quad 1]$}
+& $[0 \quad 0 \quad 1]$
+& $[0 \quad 0 \quad 1]$
+% & \multicolumn{2}{c}{$[0 \quad 0 \quad 1]$}
 \\
 \rule{0pt}{3ex}%
 
 Measurement Uncertainty
 & $\hat{R}_{xy}$ 
-& \multicolumn{2}{c}{$\sigma_{xy}^{2}$}
+& $\sigma_{xy}^{2}$
+& $\sigma_{xy}^{2}$
+% & \multicolumn{2}{c}{$\sigma_{xy}^{2}$}
 \\
-\rule{0pt}{6ex}%
+% \rule{0pt}{6ex}%
 
-Process Noise
-& $\hat{Q}_{xy}$ 
-&  $\begin{bmatrix} 0 & 0 & 0 \\ 
-                    0 & \sigma_{ms}^2 & 0 \\
-                    0 & 0 & 0 \end{bmatrix}$ 
-& $\begin{bmatrix} Q_{00} & Q_{01} & Q_{02} \\  Q_{01} & Q_{11} & Q_{12} \\ Q_{02} & Q_{12} & Q_{22} \end{bmatrix} $ 
-\\
+% Process Noise
+% & $\hat{Q}_{xy}$ 
+% &  $\begin{bmatrix} 0 & 0 & 0 \\ 
+%                     0 & \sigma_{ms}^2 & 0 \\
+%                     0 & 0 & 0 \end{bmatrix}$ 
+% & $\begin{bmatrix} Q_{00} & Q_{01} & Q_{02} \\  Q_{01} & Q_{11} & Q_{12} \\ Q_{02} & Q_{12} & Q_{22} \end{bmatrix} $ 
+% \\
 
 
 \bottomrule
-\\
 
+% & & & Numerical Value \\
 \multicolumn{2}{l}{Variable Description} 
 & Symbol & Numerical Value  \\
 \hline
 
-\multicolumn{2}{l}{Edge Track Inclination} 
-& $\tau^{'}_{xy}$ & 0 \\
 
-\multicolumn{2}{l}{Integrated OU
+\multicolumn{2}{l}{Measurement of Starting Node} 
+& $m'_{xy}$ & Measured \\
+
+\multicolumn{2}{l}{Initial Estimate of Track Inclination} 
+& $\tau^{'}_{xy}$ & 0rad \\
+
+\multicolumn{2}{l}{Initial Estimate of Integrated OU\tnote{*}}
 & $w_{ou}$ & 0 \\
 
 \multicolumn{2}{l}{Error due to measurement in $x$-$y$ plane} 
-& $\sigma^{'}_{xy}$ & 300$\mu$m \\
+& $\sigma_{xy}$ & 0.3mm \\
 
-\multicolumn{2}{l}{Error in Track Inclination $\tau^{'}_{xy}$} 
-& $\sigma_{\tau^{'}_{xy}}$ & 1 \\
+\multicolumn{2}{l}{Initial Estimate of Error in $\tau^{'}_{xy}$} 
+& $\sigma_{\tau^{'}_{xy}}$ & 1rad \\
 
-\multicolumn{2}{l}{Error in $w_{ou}$} 
+\multicolumn{2}{l}{Initial Estimate of Error in $w_{ou}$} 
 & $\sigma_{w_{ou}}$ & 1 \\
 
 \multicolumn{2}{l}{Error due to Multiple Scattering} 
 & $\sigma_{ms}$ & Derived \\
 
 \multicolumn{2}{l}{Deterministic Drift in OU Process} 
-& $\alpha$ & 0.1 \\
+& $\alpha$ & 0.1mm$^{-1}$ \\
 
 \multicolumn{2}{l}{Stochastic OU Noise} 
-& $\sigma_{ou}$ & $10^{-5}$ \\
+& $\sigma_{ou}$ & $10^{-5}$mm \\
 
 \bottomrule
 \end{tabular}
+
+\begin{tablenotes}\footnotesize
+\item[*] OU: Ornstein-Uhlenbeck Process \cite{OU} described in further detail in Section \ref{chapter-6-derivation-part-2}.
+\end{tablenotes}
+
+\end{threeparttable}
 \end{center}
+
 \label{tab:kf-instance-variables-xy}
 \end{table}
 
@@ -444,13 +463,15 @@ Process Noise
 
 
 
-\begin{table}[!htbp]
-\caption{Summary of parameters and numerical values used in the implementation of the KFs for state extrapolation and track extraction, in the $r$-$z$ plane. See Section \ref{chapter-6-r-z-plane-impl} and \ref{chapter-6-end-of-derivation} for derivations.}
+\begin{table}[!t]
+\caption{Summary of parameters used in the KFs for state extrapolation and track extraction for the $r$-$z$ plane. The numerical values used in the programmatic
+implementation to initialize the KFs are also summarized here. Section \ref{chapter-6-r-z-plane-impl} and \ref{chapter-6-end-of-derivation} provide derivations of the KF models used for the $r$-$z$ plane.}
+
 \begin{center}
 \begin{tabular}{lccc}
 \toprule
 
-& \multicolumn{3}{c}{Parameters for $r$-$z$ Plane} \\
+& \multicolumn{3}{c}{Parameter Implementation for $r$-$z$ Plane} \\
 Instance Variable Description & Symbol  & Extrapolation  & Track Extraction  \\
 \hline
 \rule{0pt}{3ex}%
@@ -458,40 +479,71 @@ Instance Variable Description & Symbol  & Extrapolation  & Track Extraction  \\
 
 Filter State Estimate
 & $\hat{x}_{rz}$
-& $\begin{bmatrix} m_i & \tau_{ij} \end{bmatrix}^{T}$
-& $\begin{bmatrix} z_{(n-1)} & \tau_{(n-1)} \end{bmatrix}^{T}$
+& $\begin{bmatrix} m_{rz} & \tau_{rz} \end{bmatrix}^{T}$
+& $\begin{bmatrix} m_{rz} & \tau_{rz} \end{bmatrix}^{T}$
 \\
 \rule{0pt}{4ex}%
 
 Filter State Covariance
 & $\hat{P}_{rz}$
 & $\begin{bmatrix} \sigma_{rz}^2 & 0 \\ 0 & \sigma_{\tau_{rz}}^2 + \sigma_{ms}^2\end{bmatrix}$
-& $\begin{bmatrix} \sigma_{rz}^2 & 0 \\ 0 & \sigma_{\tau_{rz} + ms}^2\end{bmatrix}$
+& $\begin{bmatrix} \sigma_{rz}^2 & 0 \\ 0 & \sigma_{\Sigma}^2\end{bmatrix}$
 \\
 \rule{0pt}{4ex}%
 
-State Transition Jacobian
-& $\hat{F}_{rz}$ 
-& \multicolumn{2}{c}{$\begin{bmatrix} 1 & dr \\ 0 & 1 \end{bmatrix}$}
-\\
-\rule{0pt}{3ex}%
+% Transition Jacobian
+% & $\hat{F}_{rz}$ 
+% & \multicolumn{2}{c}{$\begin{bmatrix} 1 & dr \\ 0 & 1 \end{bmatrix}$}
+% \\
+% \rule{0pt}{3ex}%
 
 Measurement Function
 & $\hat{H}_{rz}$ 
-& \multicolumn{2}{c}{$[1 \quad 0]$}
+& $[1 \quad 0]$
+& $[1 \quad 0]$
+% & \multicolumn{2}{c}{$[1 \quad 0]$}
 \\
 \rule{0pt}{3ex}%
 
 Measurement Uncertainty
 & $\hat{R}_{rz}$ 
-& \multicolumn{2}{c}{$\sigma_{rz}^2$}
+& $\sigma_{rz}^2$
+& $\sigma_{rz}^2$
+% & \multicolumn{2}{c}{$\sigma_{rz}^2$}
 \\
 \rule{0pt}{3ex}%
 
 Process Noise
 & $\hat{Q}_{rz}$ 
-& \multicolumn{2}{c}{$\sigma_{ms}^2$}
+& $\sigma_{ms}^2$
+& $\sigma_{ms}^2$
+% & \multicolumn{2}{c}{$\sigma_{ms}^2$}
 \\  
+
+\bottomrule
+
+\multicolumn{2}{l}{Variable Description} 
+& Symbol & Numerical Value  \\
+\hline
+
+\multicolumn{2}{l}{Measurement of Starting Node} 
+& $m_{rz}$ & Measured \\
+
+\multicolumn{2}{l}{Initial Estimate of Track Inclination} 
+& $\tau_{rz}$ & 0rad \\
+
+\multicolumn{2}{l}{Error in Track Inclination $\tau_{rz}$} 
+& $\sigma_{\tau_{rz}}$ & Derived \\
+
+\multicolumn{2}{l}{Error in Measurement in the $r$-$z$ Plane} 
+& $\sigma_{rz}$ & 0.4mm, 0.6mm  \\
+
+\multicolumn{2}{l}{Error due to Multiple Scattering} 
+& $\sigma_{ms}$ & Derived \\
+
+\multicolumn{2}{l}{Initial Estimate of Error in $\tau_{rz}$} 
+& $\sigma_{\Sigma}$ & 1rad \\
+
               
 
 \bottomrule
@@ -502,48 +554,15 @@ Process Noise
 \end{table}
 
 
+%The initial estimate of the error in $\tau_{rz}$, $\sigma_{\Sigma}$, represents the error due to track inclination as well as the error due to multiple scattering. Upon initialization of the KF, this information is unknown and hence set to a large initial error.
 
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-\begin{table}[!htbp]
-\caption{Summary of numerical values used for the parameters used in the implementation of KFs for state extrapolation and track extraction, in the $x$-$y$ and $r$-$z$ planes. See Table \ref{tab:kf-instance-variables} for full list of parameters. See Sections \ref{chapter-6-start-of-derivation} - \ref{chapter-6-end-of-derivation} for the derivations and applications of the parameters.}
-\begin{center}
-\begin{tabular}{cc}
-\toprule
-Variable & Value \\
-\hline
-
-$\sigma_{rz}$           &   400$\mu$m, 600$\mu$m    \\
-$\sigma_{\tau_{rz}}$    &       Derived     \\
-$\sigma_{\tau_{rz} + ms}^2$     &   1     \\
-\bottomrule
-\end{tabular}
-\end{center}
-\label{tab:kf-instance-variables-values}
-\end{table}
-
-
-
-
-
-
-
-
-
-
-
+%\newpage
+\clearpage
 \subsection{Parabolic Extrapolation Model for x-y Plane}
 \label{chapter-6-start-of-derivation}
 
@@ -551,7 +570,7 @@ A parabolic model for state extrapolation is used for the transverse $x$-$y$ pla
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.7\textwidth]{images/6-trackml/extrapolation-model-xy-trackml-2.png}
+    \includegraphics[width=0.65\textwidth]{images/6-trackml/extrapolation-model-xy-trackml-2.png}
     \caption{Illustration of the parabolic extrapolation model used from starting node A and to target node C. The angle of rotation between node A and node C is given by $\phi_{AC}$. The parabola (red) connects the global origin O to node A.}
     \label{fig:trackml-parabolic-extrapolation-model-xy}%
 \end{figure}
@@ -629,7 +648,7 @@ where $\hat{H}_{xy} = [0, 0, 1]$ and $m_C$ is the $y$-coordinate of node C in it
 \label{eqn:covariance-of-residual-trackml-xy}
 \end{equation}
 
-where $\sigma_{xy} = 300\mu$m. The corresponding Mahalanobis distance, $\Delta \chi^{2}$, is given by Eq \eqref{eqn:mahalanobis-distance-trackml-xy}, and the distributions can be seen in Figure \ref{fig:mahalanobis-threshold-trackml-xy}.
+The corresponding Mahalanobis distance, $\Delta \chi^{2}$, is given by Eq \eqref{eqn:mahalanobis-distance-trackml-xy}, and the distributions can be seen in Figure \ref{fig:mahalanobis-threshold-trackml-xy}.
 
 \begin{equation}
 \Delta \chi^{2} = r^{T} {V}^{-1} r
@@ -637,21 +656,26 @@ where $\sigma_{xy} = 300\mu$m. The corresponding Mahalanobis distance, $\Delta \
 \end{equation}
 
 
-\begin{figure}[htbp]
+
+
+\begin{figure}[htbp!] 
     \centering
-    \includegraphics[width=0.85\textwidth]{images/6-trackml/mahalanobis-threshold-trackml-xy.png}
-    \caption{Mahalanobis distance, $\Delta \chi^{2}$, computed between the projected state and the measurement at each node for the GNN algorithm applied to the TrackML model during state extrapolation in the $x$-$y$ plane. Truth 1 shows the distribution where the truth particle originating from the extrapolated state and the truth particle originating from the measurement are the same, and truth 0 otherwise.}
-    \label{fig:mahalanobis-threshold-trackml-xy}%
+    \subfloat[]{%
+        \includegraphics[width=0.8\textwidth]{images/6-trackml/mahalanobis-threshold-trackml-xy.png}%
+        \label{fig:chi2-distance-trackml-xy-1}%
+        }%
+    \hfill%
+    \subfloat[]{%
+        \includegraphics[width=0.8\textwidth]{images/6-trackml/mahalanobis-threshold-trackml-xy-cumulative.png}%
+        \label{fig:chi2-distance-trackml-xy-2}%
+        }%
+    \caption{Mahalanobis distance, $\Delta \chi^{2}$, computed between the projected state and the measurement at each node for the GNN algorithm applied to the TrackML model during state extrapolation in the $x$-$y$ plane. a) Probability distribution for both classes. Truth 1 shows the distribution where the truth particle originating from the extrapolated state and the truth particle originating from the measurement are the same, and truth 0 otherwise. b) Cumulative probability distribution of truth 1 class, where the chosen $\Delta \chi^{2}$ threshold is labelled.}
+    \label{fig:mahalanobis-threshold-trackml-xy}
 \end{figure}
 
 
-A threshold cut of 1 is used such that 95\% of the truth 1 edge distribution are propagated during this stage. If $\Delta \chi^{2} < 1$, then $\tilde{X}$ is fully extrapolated to its neighbour node using the KF update.
 
-
-
-%\subsubsection{KF Setup for State Extrapolation}
-
-The KF for state extrapolation is initialised with filter state estimate set to the extrapolated track vector, $\hat{x}_{xy} = \tilde{X}_{xy}$, and similarly the filter covariance, $\hat{P}_{xy} = \tilde{C}_{xy}$. The KF is also initialised with the Jacobian in Eq \eqref{eqn:transition-jacobian-F-kf-extrapolation-xy} and process noise in Eq \eqref{eqn:process-noise-Q-extrapolation-xy}. The measurement error, $\hat{R}$, is attributed to the error due to the measurement of the $x$-$y$ plane and is set to $\sigma_{xy} = 300\mu$m.
+A threshold cut, $d_{\chi}$, was determined using the cumulative distribution function shown in Figure \ref{fig:chi2-distance-trackml-xy-2} in order to provide 95\% efficiency on selecting the truth 1 class. Therefore, if $\Delta \chi^{2} < d_{\chi}$, then $\tilde{X}$ is fully extrapolated to its neighbour node using the KF update. The KF for state extrapolation is initialised with the Jacobian in Eq \eqref{eqn:transition-jacobian-F-kf-extrapolation-xy} and process noise in Eq \eqref{eqn:process-noise-Q-extrapolation-xy}.
 
 
 
@@ -661,7 +685,7 @@ The KF for state extrapolation is initialised with filter state estimate set to 
 
 
 
-
+\clearpage
 \subsection{KF Setup for Track Extraction in x-y Plane}
 \label{chapter-6-derivation-part-2}
 %The KF track fit is applied simultaneously in both the $x$-$y$ and $r$-$z$ planes, in order to assess the quality of the fit using both models. In comparison to the KF used for state extrapolation (Section \ref{kf-for-extrp-chapter-6}), the KF for track fitting considers the entire chain of track segments making up a track candidate. Therefore, there will be a non-zero process noise, $Q$, present in both $x$-$y$ and $r$-$z$ planes.
@@ -751,7 +775,7 @@ Q_{22} = \sigma_{ou}^2
 \label{eqn:q22}
 \end{equation}
 
-The process noise, $\hat{Q}_{xy}$, is implemented with the addition of a non-zero stochastic noise, $\sigma_{ou}$, as well as the non-zero error due to the multiple scattering, $\sigma_{ms}$. This represents the correlated noise and models the track curvature caused by the presence of the magnetic field. The stochastic noise, $\sigma_{ou}$, is initialised to $10^{-5}$ and $\sigma_{ms}$ is derived using Eq \eqref{eqn:computed-multiple-scattering}. The measurement error in the KF, $\hat{R}_{xy}$ is attributed to the error due to the measurement of the $x$-$y$ plane and is initialised to $\sigma_{xy} = 300\mu$m.
+The process noise, $\hat{Q}_{xy}$, is implemented with the addition of a non-zero stochastic noise, $\sigma_{ou}$, as well as the non-zero error due to the multiple scattering, $\sigma_{ms}$, derived using Eq \eqref{eqn:computed-multiple-scattering}. This represents the correlated noise and models the track curvature caused by the presence of the magnetic field.
 
 
 
@@ -766,7 +790,7 @@ The process noise, $\hat{Q}_{xy}$, is implemented with the addition of a non-zer
 
 
 
-
+\clearpage
 \subsection{Linear Extrapolation Model for r-z Plane}
 \label{chapter-6-r-z-plane-impl}
 
@@ -786,9 +810,9 @@ P_{rz} = \begin{bmatrix} \sigma_{rz}^2 & 0 \\ 0 & \sigma_{\tau_{rz}}^2 + \sigma_
 \label{eqn:kf-track-fit-initialised-cov-rz}
 \end{equation}
 
-where $\sigma_{rz}$ is the measurement error in the $r$-$z$ plane and is initialised to $400\mu$m, $\sigma_{\tau_{rz}}$ is the error in track inclination of an edge in the $r$-$z$ plane and $\sigma_{ms}$ is the error due to multiple scattering which is taken from the combined edge state covariance $C_{ij}$ in Eq \eqref{eqn:combined-edge-state-covariance}.
+The magnitude of the error in the measurement of the $r$-$z$ plane, $\sigma_{rz}$, is dependent on the detector layer where the graph node is situated. For example, for a endcap-located node the error in the measurement will be greater than for a barrel-located node, due to the orientation of the detector layer. Therefore, for a node located in the Pixel barrel $\sigma_{rz} = 0.4$mm and for a node located in the Pixel endcap $\sigma_{rz} = 0.6$mm. The derivation of the error in track inclination, $\sigma_{\tau_{rz}}$, is described in Section \ref{variance-in-inverse-track-inclination}. 
 
-Similar to the procedure described in Section \ref{gnn-application-toy-model}, the state, $x_{rz}$, is projected into the subspace of measurements in the $r$-$z$ plane, where the residual and corresponding Mahalanobis distance, $\Delta \chi_{ij}^{2}$, between the projection and the measurement at each node is calculated. A threshold distance is determined by using the truth distributions of $\Delta \chi_{ij}^{2}$. Similar to Section \ref{chapter-6-start-of-derivation}, if $\Delta \chi_{ij}^{2} < 1$, then the state is extrapolated to its neighbour node using the KF update.
+Similar to the procedure described in Section \ref{gnn-application-toy-model}, the state, $x_{rz}$, is projected into the subspace of measurements in the $r$-$z$ plane, where the residual and corresponding Mahalanobis distance, $\Delta \chi_{ij}^{2}$, between the projection and the measurement at each node is calculated. Similar to Section \ref{chapter-6-start-of-derivation} a threshold distance is determined by using the truth distributions of $\Delta \chi_{ij}^{2}$ in order to provide 95\% efficiency in selection of the truth 1 class. 
 
 
 
@@ -822,14 +846,7 @@ The KF for track extraction in the $r$-$z$ plane uses a linear model. For a set 
 \end{equation}
 
 
-where the track position measurement, $z_{(n-1)}$, is known and the track inclination, $\tau_{(n-1)}$, is initialized to zero as track inclination information is unknown at the start of the filter. As the magnetic field only influences the transverse $x$-$y$ plane, the process noise, $\hat{Q}_{rz}$, is reduced to the contribution due to multiple scattering only, given in Eq \eqref{eqn:process-noise-kf-track-fit-rz}
-
-\begin{equation}
-\hat{Q}_{rz} = \sigma_{ms}^{2}
-\label{eqn:process-noise-kf-track-fit-rz}
-\end{equation}
-
-where $\sigma_{ms}^{2}$ is derived using Eq \eqref{eqn:computed-multiple-scattering}. The measurement error, $\hat{R}$, is attributed to the error due to the measurement of the $r$-$z$ plane and is initialised to $\sigma_{rz} = 400\mu$m.
+where the track position measurement, $z_{(n-1)}$, is known and the track inclination, $\tau_{(n-1)}$, is initialized to zero as track inclination information is unknown at the start of the filter. As the magnetic field only influences the transverse $x$-$y$ plane, the process noise, is reduced to the contribution due to multiple scattering only, such that $\hat{Q}_{rz} = \sigma_{ms}^{2}$, where $\sigma_{ms}^{2}$ is derived using Eq \eqref{eqn:computed-multiple-scattering}.
 
 
 
