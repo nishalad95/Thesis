@@ -63,6 +63,8 @@ The proportion of nodes removed from the main graph network during Stage 1 and S
 % post stsge 2: 2123 nodes
 
 \subsection{Confusion Matrices}
+\label{confusion-matrices-endcap-trackml}
+
 An \textit{outlier edge} is defined to be an edge where its nodes do not belong to the same truth track (truth 1). A \textit{good edge} is defined to be an edge where its nodes do belong to the same truth track (truth 0). The following confusion matrices depict the prediction summary of the GNN algorithm onto the TrackML simulated event, where predicted class 1 indicates the prediction of outlier edges with respect to MC truth and predicted class 0 indicates the prediction of good edges to remain active in the network. The confusion matrix for Stage 1 of the GNN algorithm applied to volume 7 is shown in Figure \ref{fig:confusion-matrix-endcap-stage-1}.
 
 % confusion matrices - endcap stage 1
@@ -203,11 +205,11 @@ The track reconstruction efficiency, $\epsilon$, provides an indication of the p
     \label{eqn:reoncstruction-eff}
 \end{equation}
 
-A reconstructable reference track is defined as a fully connected track within the volume of interest. As the TrackML detector can produce up to 4 hits per detector layer, a fully connected track is defined here as ...
+A reconstructable reference track is defined as a fully connected track within the volume of interest. As the TrackML detector can produce up to four hits per detector layer, a fully connected track is defined here as ...
 
-Particles with eleven or more hits contained within volume 7 are considered and only proposed tracks with eleven or more hits are considered. 
+Particles with twelve or more hits contained within volume 7 are considered and only proposed tracks with eleven or more hits are considered. 
 
-We require at least 11 hits within the region of interest to be considered as a reconstructable reference track...
+We require at least 12 hits within the region of interest to be considered as a reconstructable reference track...
 
 Successfully reconstructed reference tracks is defined as having at least 50\% of its hits from the same truth particle $N_{hits}$. If ...
 
@@ -257,7 +259,7 @@ The initialization of the graph network adopts the majority of the execution tim
 
 \subsection{Advantages of the KF Implementation}
 
-An important feature of the application of the KF is that reconstruction of curved tracks is possible using a low-dimensionality model. By assuming a slow change in track direction, a special dynamic model for the KF is constructed using the OU process. The OU process implicitly takes into account the track curvature, without the need to extend the track state to contain additional parameters.
+An important feature of the application of the KF is that reconstruction of curved tracks is possible using a low-dimensionality model. By assuming a slow change in track direction, a special dynamic model for the KF is constructed using the OU process. This indicates that the OU process implicitly takes into account the track curvature, without the need to extend the track state to contain additional parameters.
 
 
 
@@ -300,46 +302,7 @@ The node density in the barrel is ... times greater compared to the endcap regio
 
 \subsection{Confusion Matrices}
 
-% % confusion matrices for barrel and endap, stages 1 and 2
-% \begin{figure}
-%     \centering
-%     \begin{tikzpicture}
-%         \begin{axis}[
-%                 colormap={greenyellow}{color=(white) rgb255=(76,153,0)},
-%                 xlabel=Predicted Class,
-%                 xlabel style={yshift=-15pt},
-%                 ylabel=True Class,
-%                 ylabel style={yshift=20pt},
-%                 xticklabels={1, 0}, % changed
-%                 xtick={0,...,1}, % changed
-%                 xtick style={draw=none},
-%                 yticklabels={1, 0}, % changed
-%                 ytick={0,...,1}, % changed
-%                 ytick style={draw=none},
-%                 enlargelimits=false,
-%                 colorbar,
-%                 xticklabel style={rotate=0},
-%                 nodes near coords={\pgfmathprintnumber\pgfplotspointmeta},
-%                 nodes near coords style={yshift=-7pt},
-%             ]
-%             \addplot[
-%                 matrix plot,
-%                 mesh/cols=2, % changed
-%                 point meta=explicit,draw=gray
-%             ] table [meta=C] {
-%                 x y C
-%                 0 0 0.92
-%                 1 0 0.08     
-%                 0 1 0.15
-%                 1 1 0.85
-%             };
-%         \end{axis}
-%     \end{tikzpicture}
-%     \caption{Confusion matrix for Stage 1 of the GNN algorithm applied to the Pixel barrel and endcap of the TrackML detector model.}
-%     \label{fig:confusion-matrix-barrel-endcap-stage-1}
-% \end{figure}
-
-
+The following confusion matrices depict the prediction summary of the GNN algorithm onto the TrackML simulated event, where predicted class 1 indicates the prediction of outlier edges with respect to MC truth and predicted class 0 indicates the prediction of good edges to remain active in the network. The confusion matrix for Stage 1 of the GNN algorithm applied to the Pixel barrel and endcap regions is shown in Figure \ref{fig:confusion-matrix-barrel-endcap-stage-1}.
 
 \begin{figure}[htbp]
     \centering
@@ -349,44 +312,9 @@ The node density in the barrel is ... times greater compared to the endcap regio
 \end{figure}
 
 
+The TPR for identification of correct outlier edges achieved was 92.3\%, and the True Negative Rate (TNR) in identification of good edges achieved was 84.9\%. With respect to MC ground truth, the proportion of correct outlier edges identified during Stage 1 of the GNN algorithm, and hence the precision, was found to be 95.6\%. The recall in correct outlier edges identified during Stage 1 was 92.3\%. Similar to Section \ref{confusion-matrices-endcap-trackml} these results indicate that the GMR technique of the GNN-algorithm works well for resolving ambiguities in the graph network.
 
-% \begin{figure}
-%     \centering
-%     \begin{tikzpicture}
-%         \begin{axis}[
-%                 colormap={greenyellow}{color=(white) rgb255=(76,153,0)},
-%                 xlabel=Predicted Class,
-%                 xlabel style={yshift=-15pt},
-%                 ylabel=True Class,
-%                 ylabel style={yshift=20pt},
-%                 xticklabels={1, 0}, % changed
-%                 xtick={0,...,1}, % changed
-%                 xtick style={draw=none},
-%                 yticklabels={1, 0}, % changed
-%                 ytick={0,...,1}, % changed
-%                 ytick style={draw=none},
-%                 enlargelimits=false,
-%                 colorbar,
-%                 xticklabel style={rotate=0},
-%                 nodes near coords={\pgfmathprintnumber\pgfplotspointmeta},
-%                 nodes near coords style={yshift=-7pt},
-%             ]
-%             \addplot[
-%                 matrix plot,
-%                 mesh/cols=2, % changed
-%                 point meta=explicit,draw=gray
-%             ] table [meta=C] {
-%                 x y C
-%                 0 0 0.48
-%                 1 0 0.52     
-%                 0 1 0.54
-%                 1 1 0.46
-%             };
-%         \end{axis}
-%     \end{tikzpicture}
-%     \caption{Confusion matrix for Stage 1 of the GNN algorithm applied to the Pixel barrel and endcap of the TrackML detector model.}
-%     \label{fig:confusion-matrix-barrel-endcap-stage-2}
-% \end{figure}
+The confusion matrix for Stage 2 of the GNN algorithm applied to the Pixel barrel and endcap regions is shown in Figure \ref{fig:confusion-matrix-barrel-endcap-stage-2}.
 
 
 \begin{figure}[htbp]
@@ -395,6 +323,8 @@ The node density in the barrel is ... times greater compared to the endcap regio
     \caption{Confusion matrix for Stage 1 of the GNN algorithm applied to the Pixel barrel and endcap of the TrackML detector model.}
     \label{fig:confusion-matrix-barrel-endcap-stage-2}%
 \end{figure}
+
+For Stage 2, the TPR for identification of correct outlier edges, and hence the recall, achieved was 48.1\%, and the TNR in identification of good edges achieved was 46.1\%. With respect to MC ground truth, the precision in correct outlier edges identified during Stage 2 was found to be 67.5\%. In comparison to the prediction summary for Stage 1 shown in Figure \ref{fig:confusion-matrix-barrel-endcap-stage-1}, the second stage of the GNN algorithm does not discriminate between both classes as well as Stage 1, as there is a much greater proportion of false positives and false negatives. This suggests that the algorithm begins to falsely predict a greater proportion of outlier edges, which will then affect the network connections in further algorithm stages.
 
 
 
@@ -520,8 +450,4 @@ It is promising to see that the GNN algorithm works on simulated particle collis
 
 Neighbourhood complexity is inferred by the network, this is observed as the GNN algorithm automatically initiates the pattern recognition process in regions where outlier connections are easily identifiable. The network starts with low density regions (both endcap regions) and gradually progresses towards higher density areas (the transition between the barrel and endcap layers). This shows that the GNN algorithm behaves as expected.
 
-However the algorithm requires significant refinement and further improvement for application to the Pixel barrel region. A deeper understanding is needed in order to evaluate the behaviour of the network on the Pixel barrel region and assess the quality of its performance.
-
-In general stage 1 looks good…stats…., stage 2 needs work…
-
-Further work would includes …
+However the algorithm requires significant refinement and further improvement for application to the Pixel barrel region. A deeper understanding is needed in order to evaluate the behaviour of the network on the Pixel barrel region and assess the quality of its performance. Further work would include improvement of Stage 2 of the GNN algorithm in order to improve the TPR and TNR, as well as analysis of the remaining network within the barrel region.
