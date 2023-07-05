@@ -5,14 +5,15 @@
 \chapter{Application of the GNN Algorithm to the TrackML Model}
 \label{chapter-7}
 
-This chapter focuses on the application of the GNN algorithm to the Pixel endcap and Pixel barrel regions of the TrackML detector. This chapter is organised as follows. Section \ref{chapter-7-endcap-results} presents the results of the GNN algorithm applied to the Pixel endcap region of the TrackML detector. The performance of the algorithm is evaluated and track reconstruction efficiency metrics are discussed. Section \ref{chapter-7-outlook} presents an outlook to the future of this research. Preliminary results and challenges faced when applying the GNN algorithm onto the entire Pixel detector of the TrackML geometry, including the Pixel barrel region, are presented. Potential software optimisations and other approaches explored are also discussed, followed by several improvements that would be necessary to implement within the GNN algorithm for track reconstruction in particle detectors.
+This chapter focuses on the application of the GNN algorithm to the Pixel endcap and Pixel barrel regions of the TrackML detector. This chapter is organised as follows. Section \ref{chapter-7-endcap-results} presents the results of the GNN algorithm applied to the Pixel endcap region of the TrackML detector. The performance of the algorithm is evaluated and track reconstruction efficiency metrics are discussed. Section \ref{chapter-7-outlook} presents preliminary results and challenges faced when applying the GNN algorithm onto the full Pixel detector of the TrackML geometry, including the barrel region. Potential software optimisations and other approaches explored are also discussed, followed by several improvements that would be necessary to implement within the GNN algorithm in order for it to be considered for proper online usage for track reconstruction in particle detectors.
 
 
 
-
-
-\section{Pixel Endcap Performance Evaluation}
+\section{Pixel Endcap Results}
 \label{chapter-7-endcap-results}
+
+
+\subsection{Performance Evaluation on Volume 7}
 
 The GNN algorithm is first applied to volume 7 of the TrackML detector model, by isolating the left Pixel endcap. The geometry in the endcap consists of parallel silicon layers and is the simplest part of the detector to begin reconstruction. An example TrackML simulated event shown in volume 7 can be seen in Figure \ref{fig:trackml-results-endcap-nodes-sim}.
 
@@ -67,125 +68,23 @@ The proportion of nodes removed from the main graph network during Stage 1 and S
 
 An \textit{outlier edge} is defined to be an edge where its nodes do not belong to the same truth track (truth 1). A \textit{good edge} is defined to be an edge where its nodes do belong to the same truth track (truth 0). The following confusion matrices depict the prediction summary of the GNN algorithm onto the TrackML simulated event, where predicted class 1 indicates the prediction of outlier edges with respect to MC truth and predicted class 0 indicates the prediction of good edges to remain active in the network. The confusion matrix for Stage 1 of the GNN algorithm applied to volume 7 is shown in Figure \ref{fig:confusion-matrix-endcap-stage-1}.
 
-% confusion matrices - endcap stage 1
-% Total number of nodes:  9835, edges:  18184
-% Total number of nodes with updated states:  9835
-% Total number of nodes with a new merged state:  1029
-% numerator: 1237 denominator: 1453
-% Percentage of correct outliers detected: 85.13420509291122
-% true positive number:  1237  false positive number:  216
-% true negative number:  2069  false negative number:  136
-% Precision: 0.8513420509291122  Recall:  0.9009468317552805
-% Normalised confusion matrix
-% TPR:  0.9009468317552805  FNR:  0.09905316824471959 
-% FPR:  0.09452954048140044  TNR:  0.9054704595185996
-% \begin{figure}[htbp]%
-%     \centering
-%     \begin{tikzpicture}
-%         \begin{axis}[
-%                 colormap={greenyellow}{color=(white) rgb255=(76,153,0)},
-%                 xlabel=Predicted Class,
-%                 xlabel style={yshift=-15pt},
-%                 ylabel=True Class,
-%                 ylabel style={yshift=20pt},
-%                 xticklabels={1, 0}, % changed
-%                 xtick={0,...,1}, % changed
-%                 xtick style={draw=none},
-%                 yticklabels={1, 0}, % changed
-%                 ytick={0,...,1}, % changed
-%                 ytick style={draw=none},
-%                 enlargelimits=false,
-%                 colorbar,
-%                 xticklabel style={rotate=0},
-%                 nodes near coords={\pgfmathprintnumber\pgfplotspointmeta},
-%                 nodes near coords style={yshift=-7pt},
-%             ]
-%             \addplot[
-%                 matrix plot,
-%                 mesh/cols=2, % changed
-%                 point meta=explicit,draw=gray
-%             ] table [meta=C] {
-%                 x y C
-%                 0 0 90.1
-%                 1 0 9.9    
-%                 0 1 9.4
-%                 1 1 90.6
-%             };
-%         \end{axis}
-%     \end{tikzpicture}
-%     \caption{Confusion matrix percentages for Stage 1 of the GNN algorithm applied to the Pixel endcap (volume 7) of the TrackML detector model.}
-%     \label{fig:confusion-matrix-endcap-stage-1}
-% \end{figure}
 
-
+The TPR for identification of correct outlier edges achieved was 90.1\%, and the True Negative Rate (TNR) in identification of good edges achieved was 90.6\%. With respect to MC ground truth, the proportion of correct outlier edges identified during Stage 1 of the GNN algorithm, and hence the precision, was found to be 85.1\%. The recall in correct outlier edges identified during Stage 1 was 90.1\%. This indicates that the GMR technique of the GNN-algorithm works well for resolving ambiguities in the graph network. The confusion matrix for Stage 2 of the GNN algorithm applied to volume 7 is shown in Figure \ref{fig:confusion-matrix-endcap-stage-1}.
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.88\textwidth]{images/7-results/confusion_matrix_endcap_stage_1.png}
+    \includegraphics[width=0.79\textwidth]{images/7-results/confusion_matrix_endcap_stage_1.png}
     \caption{Confusion matrix percentages for Stage 1 of the GNN algorithm applied to the Pixel endcap (volume 7) of the TrackML detector model.}
     \label{fig:confusion-matrix-endcap-stage-1}%
 \end{figure}
-
-
-
-
-The TPR for identification of correct outlier edges achieved was 90.1\%, and the True Negative Rate (TNR) in identification of good edges achieved was 90.6\%. With respect to MC ground truth, the proportion of correct outlier edges identified during Stage 1 of the GNN algorithm, and hence the precision, was found to be 85.1\%. The recall in correct outlier edges identified during Stage 1 was 90.1\%. This indicates that the GMR technique of the GNN-algorithm works well for resolving ambiguities in the graph network.
-
-The confusion matrix for Stage 2 of the GNN algorithm applied to volume 7 is shown in Figure \ref{fig:confusion-matrix-endcap-stage-1}.
-
-% % confusion matrices - endcap stage 1
-% % PRINTING ALGORITHM METRICS:
-% % true positive number:  591  false positive number:  920
-% % true negative number:  575  false negative number:  162
-% % Precision: 0.39113170086035737  Recall:  0.7848605577689243
-% % Normalised confusion matrix
-% % TPR:  0.7848605577689243  FNR:  0.2151394422310757 
-% % FPR:  0.6153846153846154  TNR:  0.38461538461538464
-% \begin{figure}[htbp]%
-%     \centering
-%     \begin{tikzpicture}
-%         \begin{axis}[
-%                 colormap={greenyellow}{color=(white) rgb255=(76,153,0)},
-%                 xlabel=Predicted Class,
-%                 xlabel style={yshift=-15pt},
-%                 ylabel=True Class,
-%                 ylabel style={yshift=20pt},
-%                 xticklabels={1, 0}, % changed
-%                 xtick={0,...,1}, % changed
-%                 xtick style={draw=none},
-%                 yticklabels={1, 0}, % changed
-%                 ytick={0,...,1}, % changed
-%                 ytick style={draw=none},
-%                 enlargelimits=false,
-%                 colorbar,
-%                 xticklabel style={rotate=0},
-%                 nodes near coords={\pgfmathprintnumber\pgfplotspointmeta},
-%                 nodes near coords style={yshift=-7pt},
-%             ]
-%             \addplot[
-%                 matrix plot,
-%                 mesh/cols=2, % changed
-%                 point meta=explicit,draw=gray
-%             ] table [meta=C] {
-%                 x y C
-%                 0 0 81.4
-%                 1 0 18.6     
-%                 0 1 34.2
-%                 1 1 65.8
-%             };
-%         \end{axis}
-%     \end{tikzpicture}
-%     \caption{Confusion matrix percentages for Stage 2 of the GNN algorithm applied to the Pixel endcap (volume 7) of the TrackML detector model.}
-%     \label{fig:confusion-matrix-endcap-stage-2}
-% \end{figure}
+  
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.88\textwidth]{images/7-results/confusion_matrix_endcap_stage_2.png}
+    \includegraphics[width=0.79\textwidth]{images/7-results/confusion_matrix_endcap_stage_2.png}
     \caption{Confusion matrix percentages for Stage 2 of the GNN algorithm applied to the Pixel endcap (volume 7) of the TrackML detector model.}
     \label{fig:confusion-matrix-endcap-stage-2}%
 \end{figure}
-
 
 
 For Stage 2, the TPR for identification of correct outlier edges, and hence the recall, achieved was 81.4\%, and the TNR in identification of good edges achieved was 66.2\%. With respect to MC ground truth, the precision in correct outlier edges identified during Stage 2 was found to be 63.2\%. In comparison to the prediction summary for Stage 1 shown in Figure \ref{fig:confusion-matrix-endcap-stage-1}, the second stage of the GNN algorithm does not discriminate between both classes as well as Stage 1. During Stage 2, we observe an increase in the prediction of false positives. This indicates that the algorithm begins to falsely predict a greater proportion of outlier edges, which will then affect the network connections in further algorithm stages.
@@ -197,7 +96,7 @@ For Stage 2, the TPR for identification of correct outlier edges, and hence the 
 
 \subsection{Track Reconstruction Efficiency and Purity Metrics}
 
-The track reconstruction efficiency, $\epsilon$, provides an indication of the performance of the algorithm and is defined as the ratio of successfully reconstructed reference tracks, $n_R$, to the total number of reconstructable reference tracks, $N_R$, in a given volume of interest and is given by Eq \eqref{eqn:reoncstruction-eff}. 
+The track reconstruction efficiency, $\epsilon$, provides an indication of the performance of the algorithm and is defined as the ratio of successfully reconstructed reference tracks, $n_R$, to the total number of reconstructable reference tracks, $N_R$, in a given volume of interest and is defined by Eq \eqref{eqn:reoncstruction-eff}. 
 
 
 \begin{equation}
@@ -205,37 +104,33 @@ The track reconstruction efficiency, $\epsilon$, provides an indication of the p
     \label{eqn:reoncstruction-eff}
 \end{equation}
 
-A reconstructable reference track is defined as a fully connected track within the volume of interest. As the TrackML detector can produce up to four hits per detector layer, a fully connected track is defined here as ...
+Track reconstruction efficiency is calculated by first dissociating graph nodes back to hits, which means that a track candidate is now a collection of hits from several truth particles. A reconstructable reference track, $N_R$, is defined as a fully contained track within the volume of interest. As the TrackML detector can produce up to four hits per detector layer, we define a fully contained track to have at least twelve hits within the region of interest. Particles with twelve or more hits and proposed tracks with twelve or more hits are considered. Successfully reconstructed reference tracks, $n_R$, are defined as having at least 50\% of its hits from the same truth particle, $N_{hits}$. If $N_{hits} \geq 0.5 \times N_{ref}$, where $N_{ref}$ is the number of reference hits in the volume of interest, then the truth particle reference track is considered as reconstructed.
 
-Particles with twelve or more hits contained within volume 7 are considered and only proposed tracks with eleven or more hits are considered. 
-
-We require at least 12 hits within the region of interest to be considered as a reconstructable reference track...
-
-Successfully reconstructed reference tracks is defined as having at least 50\% of its hits from the same truth particle $N_{hits}$. If ...
-
-% TODO: put the following information in a table?
-For fully contained MC truth tracks within volume 7 of the TrackML Pixel detector with $p_{T} \geq$ 150MeV, the track reconstruction efficiency obtained was 86.2\%. Similarly, for fully contained MC truth tracks within volume 7 of the TrackML Pixel detector with $p_{T} \geq$ 1GMeV the track reconstruction efficiency obtained was 93.8\%.
-
-% For fully contained MC truth tracks within volume 7 of the TrackML Pixel detector with $p_{T} \geq$ 150MeV, the track reconstruction efficiency obtained was 86.2\%, where $n_R = 614$ and $N_R = 712$. Similarly, for fully contained MC truth tracks within volume 7 of the TrackML Pixel detector with $p_{T} \geq$ 1GMeV the track reconstruction efficiency obtained was 93.8\%, where $n_R = 180$ and $N_R = 192$.
-
+For fully contained MC truth tracks within volume 7 of the TrackML Pixel detector with $p_{\text{T}} \geq$ 150MeV, the track reconstruction efficiency obtained was 86.2\%, where $n_R = 614$ and $N_R = 712$. Similarly, for fully contained MC truth tracks within volume 7 of the TrackML Pixel detector with $p_{\text{T}} \geq$ 1GeV the track reconstruction efficiency obtained was 93.8\%, where $n_R = 180$ and $N_R = 192$.
 
 % Total num of reconstructed tracks: 180
 % Total num of reference tracks: 192
 % Track reconstruction efficiency:  93.750 %
 
 
-Each track is matched with the ground truth majority particle sharing with it the greatest hit number, $N_{truth}$. The ratio of $N_{truth}$ to the number of hits, $N_{hits}$ for the reconstructed track defines the track purity, whilst the ratio of this to the number of hits of the underlying particle defines the particle purity. Both the track purity and particle purity must be $>$ 50\%. This criteria coincides with the definition of an accepted track candidate stated in the TrackML competition \cite{kaggle-trackml}. The resulting average track purity and particle purity achieved for all extracted candidates in volume 7 after application of the GNN algorithm was 99\% for both quantities. This indicates that the application of the OU process works well for the given $p_{T}$ range. The purity distributions are shown in Figure \ref{fig:trackml-results-endcap-purity}.
+Each track is matched with the ground truth majority particle sharing with it the greatest hit number, $N_{truth}$. The ratio of $N_{truth}$ to the number of hits for the reconstructed track, $N_{hits}$, defines the track purity, whilst the ratio of $N_{truth}$ to the number of hits of the underlying particle, $N_{phits}$, defines the particle purity. Both the track purity and particle purity must be $>$ 50\%. This criteria coincides with the definition of an accepted track candidate stated in the TrackML competition \cite{kaggle-trackml}. The resulting average track purity and particle purity achieved for all extracted candidates in volume 7 after application of the GNN algorithm was 99.0\% for both quantities. This indicates that the application of the OU process within the KF for track extraction works well for the given $p_{T}$ range. The purity distributions are shown in Figure \ref{fig:trackml-results-endcap-purity}.
 
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.7\textwidth]{images/7-results/barrel-and-endcap-purity.png}
-    \caption{Purity distributions for application of the GNN algorithm for track reconstruction on the left Pixel endcap (volume 7) of the TrackML detector}
+    \includegraphics[width=0.7\textwidth]{images/7-results/endcap-purity.png}
+    \caption{Purity distributions for extracted track candidates after application of the GNN algorithm for track reconstruction within volume 7 of the TrackML Pixel detector with $p_{\text{T}} \geq$ 150MeV.}
     \label{fig:trackml-results-endcap-purity}%
 \end{figure}
 
 %present the average over many events here
-Executing the GNN algorithm on volume 7 of the TrackML detector and averaging over 70 simulated events, the average track reconstruction efficiency achieved was .... The average track purity and average particle purity achieved were both 99\%.
+Executing the GNN algorithm on 50 simulated TrackML events, the average track reconstruction efficiency achieved for fully contained tracks within volume 7 and with $p_{\text{T}} \geq$ 1GeV was 93.3\%. The average track purity and average particle purity achieved were 99.0\% for both quantities.
+
+
+
+%\subsection{Performance Evaluation on Volumes 7 and 9}
+
+
 
 
 
@@ -249,6 +144,8 @@ The GNN algorithm was executed on a MacOS machine, M1 Pro chip, 16GB RAM, with n
     \caption{Breakdown of execution time for each stage of the GNN algorithm applied to volume 7 of the TrackML detector.}
     \label{fig:execution-time-endcap-1}%
 \end{figure}
+
+%TODO: execution time on both left and right endcaps
 
 
 The initialization of the graph network adopts the majority of the execution time, where the remaining algorithmic components comprise 15.9s in execution time. Graph network initialization comprises of a conversion of TrackML hit data to nodes and edges, as well as construction of track state estimates $X_{ij}$ and covariances $C_{ij}$. Reading and writing into the graph network implemented using the NetworkX library contributes a significant proportion of execution time. Whereas, the execution time for each stage of the GNN algorithm, as well as track extraction, is notably small.
@@ -269,7 +166,7 @@ An important feature of the application of the KF is that reconstruction of curv
 
 
 %\section{Outlook and Further Work}
-\label{chapter-7-outlook}
+% \label{chapter-7-outlook}
 
 \section{Extension to the Pixel Barrel Region}
 \label{chapter-7-outlook}
@@ -446,7 +343,7 @@ A technique such as Community Detection is advantageous for a problem such as tr
 
 \section{Conclusion}
 
-It is promising to see that the GNN algorithm works on simulated particle collision events produced by the TrackML detector, which have significant track multiplicity. The proposed GNN algorithm is successful in identifying outlier edge connections in an iterative manner, as well as successful in extracting track candidates for the endcap regions. It is an encouraging result that this methodology provides a high performance for fully contained tracks within the endcap volume, achieving 93.8\% track reconstruction efficiency for tracks with $p_{\text{T}} >$ 1GeV. The precision and recall achieved after Stage 1 of the GNN algorithm was 85.1\% and 90.1\% respectively. Overall, the application to the endcap region is highly successful.
+It is promising to see that the GNN algorithm works on simulated particle collision events produced by the TrackML detector, which have significant track multiplicity. The proposed GNN algorithm is successful in identifying outlier edge connections in an iterative manner, as well as successful in extracting track candidates for the endcap regions. It is an encouraging result that this methodology provides a high performance for fully contained tracks within the endcap volume, achieving 93.3\% average track reconstruction efficiency for tracks with $p_{\text{T}} >$ 1GeV and averaging over 50 simulated TrackML events. The average track purity and average particle purity achieved were 99.0\% for both quantities. Overall, the application to the endcap region is highly successful.
 
 Neighbourhood complexity is inferred by the network, this is observed as the GNN algorithm automatically initiates the pattern recognition process in regions where outlier connections are easily identifiable. The network starts with low density regions (both endcap regions) and gradually progresses towards higher density areas (the transition between the barrel and endcap layers). This shows that the GNN algorithm behaves as expected.
 
