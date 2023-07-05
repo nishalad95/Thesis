@@ -69,12 +69,12 @@ The proportion of nodes removed from the main graph network during Stage 1 and S
 An \textit{outlier edge} is defined to be an edge where its nodes do not belong to the same truth track (truth 1). A \textit{good edge} is defined to be an edge where its nodes do belong to the same truth track (truth 0). The following confusion matrices depict the prediction summary of the GNN algorithm onto the TrackML simulated event, where predicted class 1 indicates the prediction of outlier edges with respect to MC truth and predicted class 0 indicates the prediction of good edges to remain active in the network. The confusion matrix for Stage 1 of the GNN algorithm applied to volume 7 is shown in Figure \ref{fig:confusion-matrix-endcap-stage-1}.
 
 
-The TPR for identification of correct outlier edges achieved was 90.1\%, and the True Negative Rate (TNR) in identification of good edges achieved was 90.6\%. With respect to MC ground truth, the proportion of correct outlier edges identified during Stage 1 of the GNN algorithm, and hence the precision, was found to be 85.1\%. The recall in correct outlier edges identified during Stage 1 was 90.1\%. This indicates that the GMR technique of the GNN-algorithm works well for resolving ambiguities in the graph network. The confusion matrix for Stage 2 of the GNN algorithm applied to volume 7 is shown in Figure \ref{fig:confusion-matrix-endcap-stage-1}.
+The TPR (and recall) for identification of correct outlier edges achieved was 90.1\%, and the True Negative Rate (TNR) in identification of good edges achieved was 90.6\%. With respect to MC ground truth, the proportion of correct outlier edges identified during Stage 1 of the GNN algorithm, and hence the precision, was found to be 85.1\%. This indicates that the GMR technique of the GNN-algorithm works well for resolving ambiguities in the graph network. The confusion matrix for Stage 2 of the GNN algorithm applied to volume 7 is shown in Figure \ref{fig:confusion-matrix-endcap-stage-1}.
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.79\textwidth]{images/7-results/confusion_matrix_endcap_stage_1.png}
-    \caption{Confusion matrix percentages for Stage 1 of the GNN algorithm applied to the Pixel endcap (volume 7) of the TrackML detector model.}
+    \caption{Confusion matrix for Stage 1 of the GNN algorithm applied to the Pixel endcap (volume 7) of the TrackML detector model.}
     \label{fig:confusion-matrix-endcap-stage-1}%
 \end{figure}
   
@@ -82,7 +82,7 @@ The TPR for identification of correct outlier edges achieved was 90.1\%, and the
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.79\textwidth]{images/7-results/confusion_matrix_endcap_stage_2.png}
-    \caption{Confusion matrix percentages for Stage 2 of the GNN algorithm applied to the Pixel endcap (volume 7) of the TrackML detector model.}
+    \caption{Confusion matrix for Stage 2 of the GNN algorithm applied to the Pixel endcap (volume 7) of the TrackML detector model.}
     \label{fig:confusion-matrix-endcap-stage-2}%
 \end{figure}
 
@@ -113,8 +113,7 @@ For fully contained MC truth tracks within volume 7 of the TrackML Pixel detecto
 % Track reconstruction efficiency:  93.750 %
 
 
-Each track is matched with the ground truth majority particle sharing with it the greatest hit number, $N_{truth}$. The ratio of $N_{truth}$ to the number of hits for the reconstructed track, $N_{hits}$, defines the track purity, whilst the ratio of $N_{truth}$ to the number of hits of the underlying particle, $N_{phits}$, defines the particle purity. Both the track purity and particle purity must be $>$ 50\%. This criteria coincides with the definition of an accepted track candidate stated in the TrackML competition \cite{kaggle-trackml}. The resulting average track purity and particle purity achieved for all extracted candidates in volume 7 after application of the GNN algorithm was 99.0\% for both quantities. This indicates that the application of the OU process within the KF for track extraction works well for the given $p_{T}$ range. The purity distributions are shown in Figure \ref{fig:trackml-results-endcap-purity}.
-
+Each track is matched with the ground truth majority particle sharing with it the greatest hit number, $N_{truth}$. The ratio of $N_{truth}$ to the number of hits for the reconstructed track, $N_{hits}$, defines the track purity, whilst the ratio of $N_{truth}$ to the number of hits of the underlying particle, $N_{phits}$, defines the particle purity. Both the track purity and particle purity must be $>$ 50\%. This criteria coincides with the definition of an accepted track candidate stated in the TrackML competition \cite{kaggle-trackml}. The purity distributions are shown in Figure \ref{fig:trackml-results-endcap-purity}. 
 
 \begin{figure}[htbp]
     \centering
@@ -122,6 +121,9 @@ Each track is matched with the ground truth majority particle sharing with it th
     \caption{Purity distributions for extracted track candidates after application of the GNN algorithm for track reconstruction within volume 7 of the TrackML Pixel detector with $p_{\text{T}} \geq$ 150MeV.}
     \label{fig:trackml-results-endcap-purity}%
 \end{figure}
+
+
+The average track purity and particle purity achieved for all extracted candidates in volume 7 after application of the GNN algorithm was 99.0\% for both quantities. This indicates that the application of the OU process within the KF for track extraction works well for the given $p_{T}$ range.
 
 %present the average over many events here
 Executing the GNN algorithm on 50 simulated TrackML events, the average track reconstruction efficiency achieved for fully contained tracks within volume 7 and with $p_{\text{T}} \geq$ 1GeV was 93.3\%. The average track purity and average particle purity achieved were 99.0\% for both quantities.
@@ -191,8 +193,6 @@ In Stage 1, we observe track candidates extracted uniformly in both endcaps. Thi
 \end{figure}
 
 
-The node density in the barrel is ... times greater compared to the endcap regions, and the edge density is .... which is a contributing factor towards this.
-
 
 
 
@@ -201,22 +201,22 @@ The node density in the barrel is ... times greater compared to the endcap regio
 
 The following confusion matrices depict the prediction summary of the GNN algorithm onto the TrackML simulated event, where predicted class 1 indicates the prediction of outlier edges with respect to MC truth and predicted class 0 indicates the prediction of good edges to remain active in the network. The confusion matrix for Stage 1 of the GNN algorithm applied to the Pixel barrel and endcap regions is shown in Figure \ref{fig:confusion-matrix-barrel-endcap-stage-1}.
 
+
+The TPR for identification of correct outlier edges achieved was 92.3\%, and the True Negative Rate (TNR) in identification of good edges achieved was 84.9\%. With respect to MC ground truth, the proportion of correct outlier edges identified during Stage 1 of the GNN algorithm, and hence the precision, was found to be 95.6\%. The recall in correct outlier edges identified during Stage 1 was 92.3\%. Similar to Section \ref{confusion-matrices-endcap-trackml} these results indicate that the GMR technique of the GNN-algorithm works well for resolving ambiguities in the graph network.
+
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.88\textwidth]{images/7-results/confusion_matrix_barrel_stage_1.png}
+    \includegraphics[width=0.79\textwidth]{images/7-results/confusion_matrix_barrel_stage_1.png}
     \caption{Confusion matrix for Stage 1 of the GNN algorithm applied to the Pixel barrel and endcap of the TrackML detector model.}
     \label{fig:confusion-matrix-barrel-endcap-stage-1}%
 \end{figure}
-
-
-The TPR for identification of correct outlier edges achieved was 92.3\%, and the True Negative Rate (TNR) in identification of good edges achieved was 84.9\%. With respect to MC ground truth, the proportion of correct outlier edges identified during Stage 1 of the GNN algorithm, and hence the precision, was found to be 95.6\%. The recall in correct outlier edges identified during Stage 1 was 92.3\%. Similar to Section \ref{confusion-matrices-endcap-trackml} these results indicate that the GMR technique of the GNN-algorithm works well for resolving ambiguities in the graph network.
 
 The confusion matrix for Stage 2 of the GNN algorithm applied to the Pixel barrel and endcap regions is shown in Figure \ref{fig:confusion-matrix-barrel-endcap-stage-2}.
 
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.88\textwidth]{images/7-results/confusion_matrix_barrel_stage_2.png}
+    \includegraphics[width=0.79\textwidth]{images/7-results/confusion_matrix_barrel_stage_2.png}
     \caption{Confusion matrix for Stage 1 of the GNN algorithm applied to the Pixel barrel and endcap of the TrackML detector model.}
     \label{fig:confusion-matrix-barrel-endcap-stage-2}%
 \end{figure}
@@ -226,7 +226,7 @@ For Stage 2, the TPR for identification of correct outlier edges, and hence the 
 
 
 
-\subsection{Track Reconstruction Efficiency and Purity Metrics}
+%\subsection{Track Reconstruction Efficiency and Purity Metrics}
 
 
 % \begin{figure}[htbp]
@@ -241,16 +241,16 @@ For Stage 2, the TPR for identification of correct outlier edges, and hence the 
 
 
 
-\subsection{Remaining Network Post Track Extraction}
+% \subsection{Remaining Network Post Track Extraction}
 
+% The node density in the barrel is ... times greater compared to the endcap regions, and the edge density is .... which is a contributing factor towards this.
 
-
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.99\textwidth]{images/7-results/trackml-barrel-remaining-node-degree.png}
-    \caption{TODO: regenerate this plot but with the node degree inverted!!! }
-    \label{fig:trackml-results-barrel-endcap-remaining-node-degree}%
-\end{figure}
+% \begin{figure}[htbp]
+%     \centering
+%     \includegraphics[width=0.99\textwidth]{images/7-results/trackml-barrel-remaining-node-degree.png}
+%     \caption{TODO: regenerate this plot but with the node degree inverted!!! }
+%     \label{fig:trackml-results-barrel-endcap-remaining-node-degree}%
+% \end{figure}
 
 
 
