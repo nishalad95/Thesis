@@ -167,7 +167,7 @@ Executing the GNN algorithm on 50 simulated TrackML events, the average track re
 
 The GNN algorithm was executed on a MacOS machine, M1 Pro chip, 16GB RAM, with no multi-threaded functions. The minimum execution time for the GNN algorithm to process 1 simulated event in volume 7 of the TrackML detector was 45.6s. Table \ref{tab:trackml-endcap-execution-times} and Figure \ref{fig:execution-time-endcap-1} show the breakdown of execution time for each stage of the GNN algorithm. The initialization of the graph network adopts the majority of the execution time, where the remaining algorithmic components comprise 15.9s in execution time. Graph network initialization comprises of a conversion of TrackML hit data to nodes and edges, as well as construction of track state estimates $X_{ij}$ and covariances $C_{ij}$. Reading and writing into the graph network implemented using the NetworkX library contributes a significant proportion of execution time. Whereas, the execution time for each stage of the GNN algorithm, as well as track extraction, is notably small.
 
-\begin{table}[htbp]
+\begin{table}[!htbp]
 \caption{Breakdown of execution time and cumulative execution time for each stage of the GNN algorithm applied to volume 7 of the TrackML detector.}
 \begin{center}
 \begin{tabular}{lccc}
@@ -188,7 +188,7 @@ Track Extraction 2              & 4.4   & 45.6   &  9.6    \\
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.7\textwidth]{images/7-results/execution-time-endcap-1.png}
-    \caption{Breakdown of execution time for each stage of the GNN algorithm applied to volume 7 of the TrackML detector.}
+    \caption{Pie-chart of execution time for each stage of the GNN algorithm applied to volume 7 of the TrackML detector.}
     \label{fig:execution-time-endcap-1}%
 \end{figure}
 
