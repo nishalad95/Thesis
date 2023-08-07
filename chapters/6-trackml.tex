@@ -17,9 +17,9 @@ This chapter is organised as follows. Section \ref{chapter-6-data-prep} describe
 \section{Data Preparation}
 \label{chapter-6-data-prep}
 
-The TrackML dataset \cite{kaggle-trackml-data} comprises of multiple independent events, where each event contains simulated measurements (3D points) of particles generated in a collision between proton bunches at the LHC. The training dataset contains the recorded hits and the measured $(x, y, z)$ position of each corresponding hit in the global coordinate system. The event truth data contains each hit's ground truth counterpart, their association to particles and the initial parameters of those particles. The radius at a given point on the particle's trajectory, $r$, is computed using the square root of the sum in quadrature of the global $x$ and $y$ measurements.
+The TrackML dataset \cite{kaggle-trackml-data} comprises multiple independent events, where each event contains simulated measurements (3D points) of particles generated in a collision between proton bunches at the LHC. The training dataset contains the recorded hits and the measured $(x, y, z)$ position of each corresponding hit in the global coordinate system. The event truth data contains each hit's ground truth counterpart, their association to particles and the initial parameters of those particles. The radius at a given point on the particle's trajectory, $r$, is computed using the square root of the sum in quadrature of the global $x$ and $y$ measurements.
 
-In order to read the TrackML data, Python scripts provided by the Kaggle competition organisers are used \cite{python-scripts-kaggle}. The TrackML data provide hit information only, such that graph nodes and edges must be created independently. The hits are converted into graph nodes and edge pairs were constructed using the \textit{FASTrack} algorithm used during the throughput phase of the TrackML Kaggle competition \cite{Amrouche2023}. The FASTrack algorithm is based on a similar hit-pair predictor methodology outlined in Chapter \ref{chapter-4}, whereby hit cluster shapes are used to predict the intervals of track inclination angles and save CPU time by avoiding hit combinations with parameters incompatible with the prediction. Graph edges are predicted and can span up to two layers apart.
+In order to read the TrackML data, Python scripts provided by the Kaggle competition organisers are used \cite{python-scripts-kaggle}. The TrackML data provide hit information only, such that graph nodes and edges must be created independently. The hits are converted into graph nodes and edge pairs are constructed using the \textit{FASTrack} algorithm used during the throughput phase of the TrackML Kaggle competition \cite{Amrouche2023}. The FASTrack algorithm is based on a similar hit-pair predictor methodology outlined in Chapter \ref{chapter-4}, whereby hit cluster shapes are used to predict the intervals of track inclination angles and save CPU time by avoiding hit combinations with parameters incompatible with the prediction. Graph edges are predicted and can span up to two layers apart.
 
 Due to the sheer volume of data generated during high-energy proton-proton collisions, it is impossible for any Trigger system to reconstruct all objects. There are many low momentum tracks that will produce hits and will begin to curve under the influence of the magnetic field. These types of tracks are not of interest for reconstruction within this study. As a result, there are certain kinematic requirements imposed. Constraints are embedded on the graph edge parameters, in order to select the tracks of interest with a particular $p_{\text{T}}$ from the very beginning \cite{Dmitry-fasttrack-addtest}, and construct the graph network. 
 
@@ -129,7 +129,7 @@ The joint measurement covariance matrix, $S_{xy}$, for a parabola constructed in
     \label{eqn:trackml-s-matrix-xy}
 \end{equation}
 
-where $\sigma_O$, $\sigma_A$ and $\sigma_B$ are the respective errors due to the measurements at the global origin O, node A and node B, using the parabolic model approximation outlined in Section \ref{parabolic-state}. The measurement error in the global origin $\sigma_O$ is initialised to 4.0mm due to the large error in the beamspot, whereas $\sigma_A$ and $\sigma_B$ are initialised to 0.3mm due to the high precision of the Pixel detector. Hence, the covariance of the vector of parabolic parameters, $p$, is given by $C_{xy}$ in Eq \eqref{eqn:c-xy}
+where $\sigma_O$, $\sigma_A$ and $\sigma_B$ are the respective errors due to the measurements at the global origin O, node A and node B, using the parabolic model approximation outlined in Section \ref{parabolic-state}. The measurement uncertainty in the global origin $\sigma_O$ is initialised to 4.0mm due to the large uncertainty in the beamspot, whereas $\sigma_A$ and $\sigma_B$ are initialised to 0.3mm due to the high precision of the Pixel detector. Hence, the covariance of the vector of parabolic parameters, $p$, is given by $C_{xy}$ in Eq \eqref{eqn:c-xy}
 
 \begin{equation}
     C_{xy} = H^{-1}S_{xy}{H^{-1}}^{T}
@@ -156,9 +156,9 @@ The joint measurement covariance matrix, $S_{rz}$, for node $i$ and neighbour no
 \end{equation}
 
 
-The magnitude of the error in the $r$-$z$ plane is dependent on the detector layer where the graph node is situated. For example, for a barrel-located node the error in the $z$-axis will be greater than the error in the $r$-axis due to the orientation of the barrel layer, and vice versa for the endcap. Therefore, for a node located in the Pixel barrel $\sigma_r = 0.4$mm and $\sigma_z = 0.6$mm. For a node located in the Pixel endcap $\sigma_r = 0.6$mm and $\sigma_z = 0.4$mm.
+The magnitude of the uncertainty in the $r$-$z$ plane is dependent on the detector layer where the graph node is situated. For example, for a barrel-located node, the uncertainty in the $z$-axis will be greater than the uncertainty in the $r$-axis due to the orientation of the barrel layer, and vice versa for the endcap. Therefore, for a node located in the Pixel barrel $\sigma_r = 0.4$mm and $\sigma_z = 0.6$mm. For a node located in the Pixel endcap $\sigma_r = 0.6$mm and $\sigma_z = 0.4$mm.
 
-The error in the track inclination $\tau$ is computed using the standard error propagation and linear algebra approach. The transition Jacobian, $G$, relates the measurements in the $r$-$z$ plane to the inverse track inclination $\tau$ and is given by Eq \eqref{trackml-g-rz}.
+The uncertainty in the track inclination $\tau$ is computed using the standard error propagation and linear algebra approach. The transition Jacobian, $G$, relates the measurements in the $r$-$z$ plane to the inverse track inclination $\tau$ and is given by Eq \eqref{trackml-g-rz}.
 
 % this applies to either node i or node j
 % sigma0r = 0.4 --> error in r for barrel located node
@@ -192,7 +192,7 @@ The corresponding error in track inclination $\tau$ is given by Eq \eqref{eqn:er
 
 \subsection{Moli\`ere Theory of Multiple Scattering}
 
-A charged particle traversing a medium is deflected by many small-angle scatters. Most of this deflection is due to Coulomb scattering from nuclei. However, for hadronic projectiles the strong interactions also contribute to multiple scattering. Therefore, the error in track direction will have a contribution from the observed error due to multiple scattering, $\sigma_{ms}$. According to the theory of Moli\`ere, the scattering distribution is roughly Gaussian for small deflection angles. The contribution due to Moli\`ere multiple scattering is given by the simplified Highland formula \cite{moliere-theory-formula, Lynch:1990sq} stated in Eq \eqref{eqn:simplified-moliere-equation}.
+A charged particle traversing a medium is deflected by many small-angle scatters. Most of this deflection is due to Coulomb scattering from nuclei. However, for hadronic projectiles the strong interactions also contribute to multiple scattering. Therefore, the uncertainty in track direction will have a contribution from multiple scattering, $\sigma_{ms}$. According to the theory of Moli\`ere, the scattering distribution is roughly Gaussian for small deflection angles. The contribution due to Moli\`ere multiple scattering is given by the simplified Highland formula \cite{moliere-theory-formula, Lynch:1990sq} stated in Eq \eqref{eqn:simplified-moliere-equation}.
 
 %The Moli\`ere multiple scattering is inversely proportional to particle full momentum and proportional to the square root of material thickness.
 
@@ -252,7 +252,7 @@ x/X_0 = 0.02 f(\theta)
 \label{eqn:radiation-length}
 \end{equation}
 
-where 0.02 is the integrated $x/X_0$ for a typical silicon detector layer which is considered as a single thin scatter. The function $f(\theta)$ is determined by the orientation of the detector layer, on which the node-pair is located. For example, for a scattered node in the Pixel barrel layer $f(\theta) = 1 / \sin(\theta)$, and for a scattered node in the Pixel endcap layer $f(\theta) = 1 / \cos(\theta)$.
+where 0.02 is the integrated $x/X_0$ for a typical silicon detector layer, which is considered as a single thin scatter. The function $f(\theta)$ is determined by the orientation of the detector layer, on which the node-pair is located. For example, for a scattered node in the Pixel barrel layer $f(\theta) = 1 / \sin(\theta)$, and for a scattered node in the Pixel endcap layer $f(\theta) = 1 / \cos(\theta)$.
 
 
 
@@ -293,17 +293,13 @@ Components of $X_{ij}$, that represent the error in track direction must have a 
 \section{Learning the Optimal KL Threshold}
 \label{chapter-6-kl-threshold}
 
-During stage 1 of the GNN algorithm, GMR via k-means clustering is used to reduce the Gaussian mixture of states, $g_i(X)$, at each node $i$. In order to establish if track state estimates, $X_{ij}$, can be grouped into a cluster, the KL divergence, $d_{KL}$, is used as a threshold distance as it is a measure of the statistical distance between two Gaussian probability distributions \cite{KL, FRUHWIRTH19971}.
+During stage 1 of the GNN algorithm, GMR via k-means clustering is used to reduce the Gaussian mixture of states, $g_i(X)$, at each node $i$. In order to establish if track state estimates, $X_{ij}$, can be grouped into a cluster, the KL divergence, $d_{KL}$, is used as a threshold distance, as it is a measure of the statistical distance between two Gaussian probability distributions \cite{KL, FRUHWIRTH19971}.
 
-To determine the optimal pairwise $d_{KL}$ between $X_{ij}$ for a given node, a SVM classifier was trained. Pairwise $d_{KL}$ and the empirical variance of edge orientation, $\sigma_{e}^{2}$, for a given node are used as input features. Figure \ref{fig:KL-distance-truth} shows the ground truth data of these input features from $10,000$ MC simulated particle collision events, each event with ten truth tracks. Loosely compatible edge connections were formed using a hit-pair predictor based on track inclination angle of neighbouring hits, similar to the graph network constructed in \ref{fig:heat-map}. The feature vector was comprised of $\sigma_{e}$ for a given node and pairwise $d_{KL}$ between its track states. The truth particle was extracted for each pairwise connection. For a given pair of edge connections with a common node, truth 1 corresponds to all nodes originate from the same truth particle, and truth 0 corresponds to otherwise. 
+To determine the optimal pairwise $d_{KL}$ between $X_{ij}$ for a given node, a SVM classifier was trained. Pairwise $d_{KL}$ and the empirical variance of edge orientation, $\sigma_{e}^{2}$, for a given node, are used as input features. Figure \ref{fig:KL-distance-truth} shows the ground truth data of these input features from $1,000$ MC simulated particle collision events in the TrackML detector, each event with ten truth tracks. Loosely compatible edge connections were formed using a hit-pair predictor based on track inclination angle of neighbouring hits, similar to the graph network constructed in \ref{fig:heat-map}. The feature vector comprised $\sigma_{e}$ for a given node and pairwise $d_{KL}$ between its track states. The truth particle was extracted for each pairwise connection. For a given pair of edge connections with a common node, truth 1 corresponds to all nodes originating from the same truth particle, and truth 0 corresponds to otherwise. 
 
 %The truth data is presented is Figure \ref{fig:KL-distance-truth}.
 
-A SVM was trained to discriminate between the two classes \cite{scikit-learn}, using a polynomial degree three kernel. SVM predictions are shown in Figure \ref{fig:KL-distance-predictions} and were adjusted such that the TPR was tuned to 95\% in order to maintain a high purity. The SVM decision boundary was converted into a fast LUT using a similar methodology outlined in Section \ref{LUT-generation} and was directly used within the k-means clustering of the GMR stage. If $d_{KL}$ is less than the predicted threshold for a node with a given $\sigma_e$, then the pairwise states are clustered together and merged into a single state $X^M$.
-
-% The predictions and corresponding decision boundary is shown in Figure \ref{fig:KL-distance-predictions}.
-
-Other classification algorithms were explored, however the SVM was the most appropriate to determine a decision boundary to best separate the classes.
+A SVM was trained to discriminate between the two classes \cite{scikit-learn}, using a third degree polynomial kernel. SVM predictions are shown in Figure \ref{fig:KL-distance-predictions} and were adjusted such that the TPR was tuned to 95\% in order to maintain a high purity. The SVM decision boundary was converted into a fast LUT using a similar methodology outlined in Section \ref{LUT-generation} and was directly used within the k-means clustering of the GMR stage. If $d_{KL}$ is less than the predicted threshold for a node with a given $\sigma_e$, then the pairwise states are clustered together and merged into a single state $X^M$. Other classification algorithms were explored, however the SVM was found to be the most appropriate to determine a decision boundary to best separate the classes.
 
 \begin{figure}[htbp!] 
     \centering
@@ -607,7 +603,7 @@ y_C = y_s - u\sin(\phi_{AC}) + (au^2 + bu + c)\cos(\phi_{AC})
 
 % the extrapolation ends when this condition is met (target condition
 
-The extrapolation ends when $x_{C}(u) = 0$, as can be seen in Figure \ref{fig:trackml-parabolic-extrapolation-model-xy} when the parabola crosses the $Y_C$ axis. This condition forms a quadratic equation in $u$, where the solution $u^{*} = u(a, b, c)$. Using parametric derivatives, the parabolic parameters $\{a’, b’, c’ \}$ in the coordinate system of the target node, C, can be derived in terms of parabolic parameters $\{a, b, c \}$ in the coordinate system of the starting node, A at the boundary condition $x_{C}(u) = 0$. The Jacobian is then calculated by differentiation of the formulas for $\{a’, b’, c’ \}$ with respect to initial parameters $\{a, b, c \}$, given by Eq \eqref{eqn:transition-jacobian-F-kf-extrapolation-xy}.  
+The extrapolation ends when $x_{C}(u) = 0$, as can be seen in Figure \ref{fig:trackml-parabolic-extrapolation-model-xy} when the parabola crosses the $Y_C$ axis. This condition forms a quadratic equation in $u$, where the solution $u^{*} = u(a, b, c)$. Using parametric derivatives, the parabolic parameters $\{a’, b’, c’ \}$ in the coordinate system of the target node, C, can be derived in terms of parabolic parameters $\{a, b, c \}$ in the coordinate system of the starting node A, at the boundary condition $x_{C}(u) = 0$. The Jacobian is then calculated by differentiation of the formulas for $\{a’, b’, c’ \}$ with respect to initial parameters $\{a, b, c \}$, given by Eq \eqref{eqn:transition-jacobian-F-kf-extrapolation-xy}.  
 
 % quadratic equation in s, where the solution s* is a function of the parabolic parameters local to node A. We then have a function s* as a function of a, b, c
 
@@ -641,7 +637,7 @@ r = m_C - \hat{H}_{xy} \tilde{X}
 \label{eqn:residual-trackml-xy}
 \end{equation}
 
-where $\hat{H}_{xy} = [0, 0, 1]$ and $m_C$ is the $y$-coordinate of node C in its local coordinate system, hence $m_C = 0$. The covariance of the residual, $V$ , is given by Eq \eqref{eqn:covariance-of-residual-trackml-xy}
+where $\hat{H}_{xy} = [0, 0, 1]$ and $m_C$ is the $y$-coordinate of node C in its local coordinate system, hence $m_C = 0$. The covariance of the residual, $V$, is given by Eq \eqref{eqn:covariance-of-residual-trackml-xy}
 
 \begin{equation}
 {V} = \hat{H}_{xy} \widetilde{C} \hat{H}^{T}_{xy} + \sigma_{xy}^{2}
@@ -675,7 +671,7 @@ The corresponding Mahalanobis distance, $\Delta \chi^{2}$, is given by Eq \eqref
 
 
 
-A threshold cut, $d_{\chi}$, was determined using the cumulative distribution function shown in Figure \ref{fig:chi2-distance-trackml-xy-2} in order to provide 95\% efficiency on selecting the truth 1 class. Therefore, if $\Delta \chi^{2} < d_{\chi}$, then $\tilde{X}$ is fully extrapolated to its neighbour node using the KF update. The KF for state extrapolation is initialised with the Jacobian in Eq \eqref{eqn:transition-jacobian-F-kf-extrapolation-xy} and process noise in Eq \eqref{eqn:process-noise-Q-extrapolation-xy}.
+A threshold cut, $d_{\chi}$, was determined using the cumulative distribution function shown in Figure \ref{fig:chi2-distance-trackml-xy-2}, in order to provide 95\% efficiency on selecting the truth 1 class. Therefore, if $\Delta \chi^{2} < d_{\chi}$, then $\tilde{X}$ is fully extrapolated to its neighbour node using the KF update. The KF for state extrapolation is initialised with the Jacobian in Eq \eqref{eqn:transition-jacobian-F-kf-extrapolation-xy} and process noise in Eq \eqref{eqn:process-noise-Q-extrapolation-xy}.
 
 
 
