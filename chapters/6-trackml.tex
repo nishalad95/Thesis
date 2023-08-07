@@ -791,7 +791,7 @@ The process noise, $\hat{Q}_{xy}$, is implemented with the addition of a non-zer
 \label{chapter-6-r-z-plane-impl}
 
 
-Similar to Section \ref{gnn-application-toy-model}, a linear model is used for track state extrapolation in the $r$-$z$ plane. Each connection is modelled as a straight line, where the state to extrapolate, $x_{rz}$, from node $i$ to neighbour node $j$ comprises of the $z$-position at node $i$, $m_i$, and the track inclination to node $j$, $\tau_{ij}$, extracted from the combined track state estimate, $X_{ij}$, described at node $i$. The state to extrapolate, $x_{rz}$, is given by Eq \eqref{eqn:track-state-estimate-rz}.
+Similar to Section \ref{gnn-application-toy-model}, a linear model is used for track state extrapolation in the $r$-$z$ plane. Each connection is modelled as a straight line, where the state to extrapolate, $x_{rz}$, from node $i$ to neighbour node $j$ consists of the $z$-position at node $i$, $m_i$, and the track inclination to node $j$, $\tau_{ij}$, extracted from the combined track state estimate, $X_{ij}$, described at node $i$. The state to extrapolate, $x_{rz}$, is given by Eq \eqref{eqn:track-state-estimate-rz}.
 
 \begin{equation}
 x_{rz} = \begin{bmatrix} m_i \\ \tau_{ij} \end{bmatrix}
@@ -806,9 +806,9 @@ P_{rz} = \begin{bmatrix} \sigma_{rz}^2 & 0 \\ 0 & \sigma_{\tau_{rz}}^2 + \sigma_
 \label{eqn:kf-track-fit-initialised-cov-rz}
 \end{equation}
 
-The magnitude of the error in the measurement of the $r$-$z$ plane, $\sigma_{rz}$, is dependent on the detector layer where the graph node is situated. For example, for a endcap-located node the error in the measurement will be greater than for a barrel-located node, due to the orientation of the detector layer. Therefore, for a node located in the Pixel barrel $\sigma_{rz} = 0.4$mm and for a node located in the Pixel endcap $\sigma_{rz} = 0.6$mm. The derivation of the error in track inclination, $\sigma_{\tau_{rz}}$, is described in Section \ref{variance-in-inverse-track-inclination}. 
+The magnitude of the uncertainty in the measurement of the $r$-$z$ plane, $\sigma_{rz}$, is dependent on the detector layer where the graph node is situated. For example, for an endcap-located node, the uncertainty in the measurement will be greater than for a barrel-located node, due to the orientation of the detector layer. Therefore, for a node located in the Pixel barrel $\sigma_{rz} = 0.4$mm and for a node located in the Pixel endcap $\sigma_{rz} = 0.6$mm. The derivation of the uncertainty in track inclination, $\sigma_{\tau_{rz}}$, is described in Section \ref{variance-in-inverse-track-inclination}. 
 
-Similar to the procedure described in Section \ref{gnn-application-toy-model}, the state, $x_{rz}$, is projected into the subspace of measurements in the $r$-$z$ plane, where the residual and corresponding Mahalanobis distance, $\Delta \chi_{ij}^{2}$, between the projection and the measurement at each node is calculated. Similar to Section \ref{chapter-6-start-of-derivation} a threshold distance is determined by using the truth distributions of $\Delta \chi_{ij}^{2}$ in order to provide 95\% efficiency in selection of the truth class 1. 
+Similar to the procedure described in Section \ref{gnn-application-toy-model}, the state, $x_{rz}$, is projected into the subspace of measurements in the $r$-$z$ plane, where the residual and corresponding Mahalanobis distance, $\Delta \chi_{ij}^{2}$, between the projection and the measurement at each node is calculated. Similar to Section \ref{chapter-6-start-of-derivation}, a threshold distance is determined by using the truth distributions of $\Delta \chi_{ij}^{2}$ in order to provide 95\% efficiency in selection of the truth class 1. 
 
 
 
