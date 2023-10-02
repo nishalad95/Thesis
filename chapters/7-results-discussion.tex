@@ -197,9 +197,21 @@ Track Extraction 2              & 4.4   & 45.6   &  9.6    \\
 
 
 
-\subsection{Advantages of the KF Implementation}
+%\subsection{Advantages of the KF Implementation}
 
-An important feature of the KF application is that reconstruction of curved tracks is possible using a low-dimensionality model. By assuming a slow change in track direction, a dynamic model for the KF is constructed using the OU process. The OU process implicitly takes into account the track curvature, without the need to extend the track state to contain additional parameters.
+%An important feature of the KF application is that reconstruction of curved tracks is possible using a low-dimensionality model. By assuming a slow change in track direction, a dynamic model for the KF is constructed using the OU process. The OU process implicitly takes into account the track curvature, without the need to extend the track state to contain additional parameters.
+
+
+\subsection{Comparison with a Deep Learning Approach}
+
+The iterative graph-based method developed in this thesis can be compared to the graph-based method used by the Exa.TrkX group \cite{Caillou:2815578}. Their approach employs deep geometric learning of track patterns using MLPs and GNNs, as well as a graph segmentation process to identify tracks. The GNN model has an encode-process-decode architecture. The encoder is implemented using two MLPs; one for node features and one for edge features, encoding features into a D-dimensional latent space. At the decode stage, another MLP transforms the latent features of each edge into an edge classification score, representing the probability that the edge portrays two successive space points of a track. The last stage of their pipeline is track reconstruction based on the edge classification score and the graph topology. This process uses a “walkthrough” algorithm, tracing each part of the graph network and selecting the most probable edge, thereby segmenting the graph network in order to separate tracks.
+
+A key difference in the implementation of Exa.TrkX’s method with the method presented in this thesis, is that training of MLPs is executed. This process requires vast amounts of computing resources as their models are trained using a GPU farm. Whereas, the model developed in this thesis is executed on a local CPU environment, requiring far less computational resources and saving energy.
+
+An alternative procedure to the “walkthrough” algorithm used in Exa.TrkX’s graph segmentation process, is the direct application of KFs embedded within the GNN algorithm presented in this thesis. The KF is used for multiple purposes, including track extraction throughout the iterations. The addition of the special dynamic model based on the OU process implemented for the KF is advantageous, as it means that no additional parameters are required in the track state and that reconstruction of tracks is possible using a low-dimensionality model.
+
+
+
 
 
 

@@ -279,7 +279,7 @@ By applying a combination of PCA and SVM, the classifier was able to separate th
 SVMs generally perform well, even when trained with imbalanced data sets. This, coupled with the fact that a distinct decision boundary could be easily extracted and converted into a LUT, would lead to less ambiguity in comparison to applying an extrapolation using morphological smoothing. However, there are key disadvantages by using a SVM rather than Bayes' theorem in this instance. The probabilistic information contained within each discrete one-dimensional distribution of $w_{\eta}$ is lost, which is an important feature when tuning each individual distribution. Additionally, the SVM typically fits a continuous function for the decision boundary and hence may not be strict enough in certain regions. This factor is important when considering the proportion of fake seeds being accepted using a LUT generated from such a decision boundary. Due to these key differences in classifiers, this method was not pursued further.
 
 
-\subsection{Comparison with a Deep Learning Approaches}
+\subsection{Comparison with Deep Learning Approaches}
 
 %algorithms share common approaches and methods
 
