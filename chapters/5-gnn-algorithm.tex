@@ -83,7 +83,7 @@ For nodes with a high multiplicity of edge connections, the number of potential 
 \end{figure}
 
 
-Figure \ref{fig:GMR-1} shows node $A$ and its local neighbourhood $B_j$ with bidirectional edge connections. Figure \ref{fig:GMR-2} shows the expected result of GMR applied to node $A$. If clustering is successful, a merged track state estimate, $X_M$, is formed from states $X_{AB_0}$, $X_{AB_2}$, $X_{AB_3}$ clustered together and the corresponding merged state covariance, $C_M$, is formed from $C_{AB_0}$, $C_{AB_2}$, $C_{AB_3}$. Outlier states are simultaneously identified and their edges are deactivated. The incoming $B_1 - A$ edge has been deactivated (represented as a dotted line), as any incoming state information from neighbour $B_1$ is deemed incompatible at node $A$.
+Figure \ref{fig:GMR-1} shows node $A$ and its local neighbourhood $B_j$ with bidirectional edge connections. Figure \ref{fig:GMR-2} shows the expected result of GMR applied to node $A$. If clustering is successful, a merged track state estimate, $X^M$, is formed from states $X_{AB_0}$, $X_{AB_2}$, $X_{AB_3}$ clustered together and the corresponding merged state covariance, $C^M$, is formed from $C_{AB_0}$, $C_{AB_2}$, $C_{AB_3}$. Outlier states are simultaneously identified and their edges are deactivated. The incoming $B_1 - A$ edge has been deactivated (represented as a dotted line), as any incoming state information from neighbour $B_1$ is deemed incompatible at node $A$.
 
 The merged state estimate $X^{M}$ and merged state covariance $C^{M}$ are computed using the inverse-variance weighting \cite{inverse-variance-weighting} given by Eq \eqref{eqn:inverse-variance-weighting}, where $G_{ij}$ = $C_{ij}^{-1}$.
 
